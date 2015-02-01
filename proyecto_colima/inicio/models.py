@@ -40,6 +40,9 @@ class Personal(models.Model):
 
 	responsable = models.CharField(max_length=45)
 
+	def __unicode__(self):
+		return "%s-%s" % (self.rfc, self.nombre)
+
 
 # Aqui se modelan los atributos multivaluados de la clase PAGOEMPLEADO (de uno a muchos)
 class DetallePagoEmpleado(models.Model):
