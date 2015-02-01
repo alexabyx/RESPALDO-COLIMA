@@ -27,7 +27,16 @@ from inicio.models import ( AnexosTecnicos,
 						  )
 
 def registrar_proyecto(request):
-	form = RegistrarProyectoForm()
+	if request.method=="POST":
+		form = RegistrarProyectoForm(request.POST, request.FILES)
+		if form.is_valid():
+			form.save()
+			mensaje="Registro Guardado"
+			return render(request, 'inicio/registrar_proyecto.html', {'mensaje': mensaje}, context_instance=RequestContext(request))
+		else:
+			print "No paso"
+	else:
+		form=RegistrarProyectoForm()	
 	return render(request, 'inicio/registrar_proyecto.html', {'form': form}, context_instance=RequestContext(request))
 
 def registrar_factura(request):
