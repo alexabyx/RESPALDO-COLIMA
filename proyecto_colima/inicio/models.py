@@ -58,7 +58,7 @@ class DetalleDocumentoResponsiva(models.Model):
 #esta clase se encarga de representar en el sistema los atributos de la clase PROYECTOS
 
 class Proyectos(models.Model):
-	nombre = models.CharField(max_length=45, null=False)
+	nombre = models.CharField(max_length=100, null=False)
 	siglas = models.CharField(max_length=45)
 	responsable = models.ManyToManyField(Personal)
 	fecha_inicio = models.DateField(default=datetime.datetime.now())
