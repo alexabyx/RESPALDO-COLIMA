@@ -64,3 +64,5 @@ class ConsultarAnexoTecnicoForm(forms.Form):
 	porcentaje = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
 	fecha_creacion=forms.DateField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
 	archivo=forms.FileField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+
+	
