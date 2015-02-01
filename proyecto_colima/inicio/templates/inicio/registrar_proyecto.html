@@ -1,14 +1,89 @@
+<!DOCTYPE html>
 {% extends "admin/base_site.html" %}
+{% load i18n %}
+{% load staticfiles %}0
+{% block extrastyle %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}"/>
+<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap-theme.min.css' %}"/>
+<link rel="stylesheet" type="text/css" href="{% static 'js/bootstrap.min.js' %}"/>
+{% endblock %}
+<!--script type="text/javascript">
+	$("#id_nombre").addClass("")
+</script>
 {% load i18n admin_static %}
-
+-->
 
 {% block content %}
 <div id="content-main">
-		<button onclick="javascript:window.history.go(-1);">Atrás</button>
-		<form action="." method="POST">{% csrf_token %}
-			{{ form.as_p }}
-			<input type="submit" value="Registrar"/>
-		</form>
+	<div class="container">
+		<table calss="table table-bordered" align="center" border="2" bgcolor="#F2F2FC">
+			<caption><h2>Registrar Proyecto</h2></caption>
+			<td>
+				<table class="table table-bordered" align="center">
+					<form action="." method="POST">{% csrf_token %}
+						<tr>
+							<td bgcolor="#F2F2FC">
+								<!--{{ form.as_p }}-->
+								<b>{{form.nombre.label}}:</b>
+								<!--{{ form.nombre.errors }}-->
+							</td>
+							<td bgcolor="#F2F2FC">
+								{{form.nombre}}
+							</td>
+						</tr>
+						<tr>
+							<td bgcolor="#F2F2FC">
+								<b>{{form.siglas.label}}:</b>
+							</td>
+							<td bgcolor="#F2F2FC">
+								{{form.siglas}}
+							</td>
+						</tr>
+						<tr>
+							<td bgcolor="#F2F2FC">
+								<b>{{form.responsable.label}}:</b>
+							</td>
+							<td bgcolor="#F2F2FC">
+								{{form.responsable}}
+							</td>
+						</tr>
+						<tr>
+							<td bgcolor="#F2F2FC">
+								<b>{{form.fecha_inicio.label}}:</b>
+							</td>
+							<td bgcolor="#F2F2FC">
+								{{form.fecha_inicio}}
+							</td>
+						</tr>
+						<tr>
+							<td bgcolor="#F2F2FC">
+								<b>{{form.status.label}}:</b>
+							</td>
+							<td bgcolor="#F2F2FC">
+								{{form.status}}
+							</td>
+						</tr>
+						<tr>
+							<td bgcolor="#F2F2FC">
+								<b>{{form.avance.label}}:</b>
+							</td>
+							<td bgcolor="#F2F2FC">
+								{{form.avance}}
+							</td>
+						</tr>
+						<tr>
+							<td align="center" bgcolor="#F2F2FC">			
+								<button class="btn btn-info" onclick="javascript:window.history.go(-1);">Atrás</button>
+							</td>
+							<td align="center" bgcolor="#F2F2FC">
+								<button type="submit" class="btn btn-success" align="right">Registrar</button>
+							</td>
+						</tr>	
+					</form>
+				</table>
+			</td>		
+		</table>
+	</div>
 </div>
 
 
