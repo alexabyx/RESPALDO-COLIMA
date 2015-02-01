@@ -9,6 +9,8 @@ def get_upload_path(instance, filename):
     return os.path.join(filename)
 
 #PERSONAL DE DESARROLLO
+
+#esta clase se encarga de representar en el sistema los atributos de la clase PERSONAL 
 class Personal(models.Model):
 	SEXO_OPCIONES = (('H', 'Hombre'), ('M', 'Mujer'), )
 	TIPO_PAGO = (('S', 'Semanal'), ('Q', 'Quincenal'), ('M', 'Mensual'),)
@@ -38,13 +40,19 @@ class Personal(models.Model):
 
 	responsable = models.CharField(max_length=45)
 
+
+# Aqui se modelan los atributos multivaluados de la clase PAGOEMPLEADO (de uno a muchos)
 class DetallePagoEmpleado(models.Model):
 	personal = models.ForeignKey(Personal)
 	archivo_documento_de_pago = models.FileField(upload_to = get_upload_path, blank=True)	
 
+# Aqui se modelan los atributos multivaluados de la clase DOCUMENTORESPONSIVA (de uno a muchos)
+
 class DetalleDocumentoResponsiva(models.Model):
 	personal = models.ForeignKey(Personal)
 	archivo_documento_responsiva = models.FileField(upload_to = get_upload_path, blank=True)
+
+#esta clase se encarga de representar en el sistema los atributos de la clase PROYECTOS
 
 class Proyectos(models.Model):
 	nombre = models.CharField(max_length=45, null=False)
@@ -53,6 +61,8 @@ class Proyectos(models.Model):
 	fecha_inicio = models.DateField(default=datetime.datetime.now())
 	status = models.CharField(max_length=45)
 	avance = models.CharField(max_length=45)
+
+#esta clase se encarga de representar en el sistema los atributos de la clase Anexostecnicos
 
 class AnexosTecnicos(models.Model):
 	TIPOS = (('D', 'Dependencia'), ('E', 'Empresa'), ('U', 'Universidad'))
@@ -67,6 +77,8 @@ class AnexosTecnicos(models.Model):
 	fecha_creacion=models.DateField(default=datetime.datetime.now())
 	archivo=models.FileField(upload_to = get_upload_path, blank=True)
 
+#esta clase se encarga de representar en el sistema los atributos de la clase CONVENIOS
+
 class Convenios (models.Model):
 	numero=models.CharField(max_length=45)
 	proyecto=models.ForeignKey(Proyectos)
@@ -80,6 +92,8 @@ class Convenios (models.Model):
 	encargado = models.ForeignKey(Personal)
 
 
+#esta clase se encarga de representar en el sistema los atributos de la clase CONTRATOS
+
 class Contratos(models.Model):
 	numero_oficio =models.CharField(max_length=45)
 	proyecto=models.ForeignKey(Proyectos)
@@ -87,6 +101,8 @@ class Contratos(models.Model):
 	encargado=models.ForeignKey(Personal)
 	cliente=models.CharField(max_length=45, help_text = "Nombre de la dependencia")
 	archivo=models.FileField(upload_to=get_upload_path, blank=True)
+
+#esta clase se encarga de representar en el sistema los atributos de la clase ENTREGABLES
 
 class Entregables(models.Model):
 	contrato = models.ForeignKey(Contratos)
@@ -101,6 +117,8 @@ class Entregables(models.Model):
 	# def total(self):
 	# 	return len(Detalle_entregable.objects.filter(entregable=self))
 
+# Aqui se modelan los atributos multivaluados de la clase ENTREGABLES (de uno a muchos)
+
 class DetallesEntregables(models.Model):
 	entregable = models.ForeignKey(Entregables)
 	responsable = models.ForeignKey(Personal)
@@ -110,8 +128,12 @@ class DetallesEntregables(models.Model):
 	fecha_creacion=models.DateField(default=datetime.datetime.now())
 	archivo=models.FileField(upload_to=get_upload_path, blank=True)
 
+#esta clase se encarga de representar en el sistema los atributos de la clase EMPRESAS
+
 class Empresas(models.Model):
 	nombre=models.CharField(max_length=45)
+
+#esta clase se encarga de representar en el sistema los atributos de la clase FACTURAS
 
 class Facturas(models.Model):
 	TIPOS = (('D', 'Dependencia'), ('E', 'Empresa'), ('U', 'Universidad'))
@@ -137,10 +159,14 @@ class Facturas(models.Model):
 	pagada=models.BooleanField(default=False)
 	archivo=models.FileField(upload_to=get_upload_path, blank=False)
 
+#Aqui se modelan los atributos multivaluados de la clase FACTURA (de uno a muchos)
+
 class DetallesFacturas(models.Model):
 	factura = models.ForeignKey(Facturas) 
 	descripcion = models.CharField(max_length=45)
 	cantidad = models.IntegerField()
+
+#esta clase se encarga de representar en el sistema los atributos de la clase PROPUESTAS
 
 class Propuestas(models.Model):
 	TIPOS = (('E1', 'Empresa 46%'), ('E2', 'Empresa 49%'), ('U1', 'Universidad'))
@@ -158,6 +184,8 @@ class Propuestas(models.Model):
 
 	fecha_creacion=models.DateField(default=datetime.datetime.now())
 
+#esta clase se encarga de representar en el sistema los atributos de la claseDOCUMENTOS GENERALES
+
 class DocumentosGenerales(models.Model):
 	TIPOS = (('D', 'Dependencia'), ('E', 'Empresa'), ('U', 'Universidad'))
 	proyecto=models.ForeignKey(Proyectos)
@@ -167,6 +195,8 @@ class DocumentosGenerales(models.Model):
 	nombre =models.CharField(max_length=45)
 	siglas=models.CharField(max_length=45)
 	fecha_creacion=models.DateField(default=datetime.datetime.now())
+
+#Aqui se modelan los atributos multivaluados de la clase Documentos Generales (de uno a muchos)
 
 class DetallesDocumentosGenerales(models.Model):
 	documentos_generales =models.ForeignKey(DocumentosGenerales)
