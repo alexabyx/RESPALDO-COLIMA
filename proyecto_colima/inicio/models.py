@@ -79,6 +79,9 @@ class AnexosTecnicos(models.Model):
 	porcentaje = models.IntegerField()
 	fecha_creacion=models.DateField(default=datetime.datetime.now())
 	archivo=models.FileField(upload_to = get_upload_path, blank=True)
+	
+	def __unicode__(self):
+		return "%s-%s" % (self.numero_oficio, self.nombre)
 
 #esta clase se encarga de representar en el sistema los atributos de la clase CONVENIOS
 

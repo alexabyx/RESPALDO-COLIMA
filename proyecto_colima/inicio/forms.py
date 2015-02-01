@@ -52,3 +52,15 @@ class EntregablesForm(forms.ModelForm):
 class PersonalForm(forms.ModelForm):
 	class Meta:
 		model= Personal
+
+class ConsultarAnexoTecnicoForm(forms.Form):
+	numero_oficio = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
+	#proyecto = forms.ModelChoiceField(required=False, label='Proyecto', widget=forms.Select(attrs={'readonly':True}), queryset=AnexosTecnicos.objects.all())
+	proyecto = forms.CharField(required=False, label='Proyecto', widget=forms.TextInput(attrs={'readonly':True}) )
+#plan                 = forms.ModelChoiceField(required=True, label='Plan de Estudios', widget=forms.Select(), queryset=PlanEstudios.objects.all())
+	tipo = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	nombre = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	siglas = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	porcentaje = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	fecha_creacion=forms.DateField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	archivo=forms.FileField(required=False, widget=forms.TextInput(attrs={'readonly':True}))

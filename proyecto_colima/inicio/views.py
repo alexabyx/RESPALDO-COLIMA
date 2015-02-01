@@ -10,6 +10,7 @@ from django.shortcuts import render, render_to_response, get_object_or_404
 from django.conf import settings
 from django.http import HttpResponseRedirect, Http404
 from django.template import RequestContext
+from django.forms.models import model_to_dict
 
 from inicio.forms import (	AuthForm, 
 							RegistrarProyectoForm, 
@@ -20,7 +21,8 @@ from inicio.forms import (	AuthForm,
 							PropuestasForm, 
 							EmpresasForm, 
 							EntregablesForm, 
-							PersonalForm
+							PersonalForm,
+							ConsultarAnexoTecnicoForm
 						  )
 
 from inicio.models import ( AnexosTecnicos,
@@ -58,6 +60,11 @@ def anexostecnicos(request):
 		anexostecnicos = paginator.page(paginator.num_pages)
 
 	return render(request, 'inicio/anexostecnicos.html', {'anexostecnicos':anexostecnicos}, context_instance=RequestContext(request))
+
+def consultar_anexotecnico(request, anexo_id):
+	anexo= AnexosTecnicos.objects.get(id=anexo_id)
+	form = ConsultarAnexoTecnicoForm(model_to_dict(anexo))
+	return render(request, 'inicio/consultar_anexotecnico.html', {'form':form}, context_instance=RequestContext(request))
 
 def agregar_anexotecnico(request):
 	if request.method == "POST":
@@ -109,6 +116,7 @@ def eliminar_anexotecnico(request, anexo_id):
 		mensaje = "Error inesperado"
 
 	return render(request, 'inicio/eliminar_anexotecnico.html',{'mensaje': mensaje}, context_instance=RequestContext(request))
+
 
 def registrar_contratos(request):
 	form = ContratosForm()

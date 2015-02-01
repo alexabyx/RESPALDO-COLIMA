@@ -18,6 +18,7 @@ urlpatterns = patterns('proyecto_colima.inicio',
     url(r'^agregar_anexotecnico/$', agregar_anexotecnico, name = "agregar-anexotecnico"),
     url(r'^editar_anexotecnico/(?P<anexo_id>\d+)/$', editar_anexotecnico, name="editar-anexotecnico"),
     url(r'^eliminar_anexotecnico/(?P<anexo_id>\d+)/$', eliminar_anexotecnico, name="eliminar-anexotecnico"),
+    url(r'^consultar_anexotecnico/(?P<anexo_id>\d+)/$', consultar_anexotecnico, name="consultar-anexotecnico"),
 
 
     url(r'^registrar_contratos/$', registrar_contratos, name="registrar-contratos"),

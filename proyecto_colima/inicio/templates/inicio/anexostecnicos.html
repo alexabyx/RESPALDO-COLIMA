@@ -12,6 +12,7 @@
 				<li>{{anexo.numero_oficio}}-{{anexo.tipo}}-{{anexo.nombre}} 
 					<a href="{% url 'inicio:editar-anexotecnico' anexo.id %}"><button>Editar</button></a>
 					<a href="{% url 'inicio:eliminar-anexotecnico' anexo.id %}"><button>Eliminar</button></a>
+					<a href="{% url 'inicio:consultar-anexotecnico' anexo.id %}"><button>Consultar</button></a>
 				</li>
 			{% endfor %}
 		</ul>
