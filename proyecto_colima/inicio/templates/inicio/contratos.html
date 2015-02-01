@@ -1,0 +1,29 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_static %}
+
+
+{% block content %}
+<div id="content-main">
+		<a href="{% url 'inicio:agregar-contratos' %}"><button>Agregar nuevo</button></a>
+		<!--historicos son los concluidos o cancelado
+		cerrar--> 
+		<ul>
+			{% for contratos in contratos %}
+				<li>{{contratos.numero_oficio}}-{{contratos.tipo}}-{{contratos.nombre}} 
+					<a href="{% url 'inicio:editar-contratos' contratos.id %}"><button>Editar</button></a>
+					<a href="{% url 'inicio:eliminar-contratos' contratos.id %}"><button>Eliminar</button></a>
+					<a href="{% url 'inicio:consultar-contratos' ancontratosexo.id %}"><button>Consultar</button></a>
+				</li>
+			{% endfor %}
+		</ul>
+
+    {% if contratos.has_previous %}
+            <a href="?page={{ contratos.previous_page_number }}">Anterior &nbsp;&nbsp;</a>
+    {% endif %}                                    
+    {% if contratos.has_next %}
+            <a href="?page={{ contratos.next_page_number }}">Siguiente</a>
+    {% endif %}
+
+	<h5> Página {{ contratos.number }} de {{ contratos.paginator.num_pages }}</h5>     
+</div>
+{% endblock %}

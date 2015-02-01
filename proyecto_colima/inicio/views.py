@@ -26,6 +26,7 @@ from inicio.forms import (	AuthForm,
 						  )
 
 from inicio.models import ( AnexosTecnicos,
+							Contratos
 						  )
 
 def registrar_proyecto(request):
@@ -60,6 +61,21 @@ def anexostecnicos(request):
 		anexostecnicos = paginator.page(paginator.num_pages)
 
 	return render(request, 'inicio/anexostecnicos.html', {'anexostecnicos':anexostecnicos}, context_instance=RequestContext(request))
+
+def contratos(request):
+	contratos = Contratos.objects.all()
+
+	paginator = Paginator(contratos, 10)
+	page = request.GET.get('page', 1)
+
+	try:
+		contratos = paginator.page(page)
+	except PageNotAnInteger:
+		contratos = paginator.page(1)
+	except EmptyPage:
+		contratos = paginator.page(paginator.num_pages)
+
+	return render(request, 'inicio/contratos.html', {'contratos':contratos}, context_instance=RequestContext(request))
 
 def consultar_anexotecnico(request, anexo_id):
 	anexo= AnexosTecnicos.objects.get(id=anexo_id)
