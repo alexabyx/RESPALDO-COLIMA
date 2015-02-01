@@ -1,0 +1,28 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_static %}
+
+
+{% block content %}
+<div id="content-main">
+		<a href="{% url 'inicio:agregar-anexotecnico' %}"><button>Agregar nuevo</button></a>
+		<!--historicos son los concluidos o cancelado
+		cerrar--> 
+		<ul>
+			{% for anexo in anexostecnicos %}
+				<li>{{anexo.numero_oficio}}-{{anexo.tipo}}-{{anexo.nombre}} 
+					<a href="{% url 'inicio:editar-anexotecnico' anexo.id %}"><button>Editar</button></a>
+					<a href="{% url 'inicio:eliminar-anexotecnico' anexo.id %}"><button>Eliminar</button></a>
+				</li>
+			{% endfor %}
+		</ul>
+
+    {% if anexostecnicos.has_previous %}
+            <a href="?page={{ anexostecnicos.previous_page_number }}">Anterior &nbsp;&nbsp;</a>
+    {% endif %}                                    
+    {% if anexostecnicos.has_next %}
+            <a href="?page={{ anexostecnicos.next_page_number }}">Siguiente</a>
+    {% endif %}
+
+	<h5> Página {{ anexostecnicos.number }} de {{ anexostecnicos.paginator.num_pages }}</h5>     
+</div>
+{% endblock %}
