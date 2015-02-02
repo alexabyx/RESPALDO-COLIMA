@@ -25,14 +25,19 @@ from inicio.forms import (	AuthForm,
 							ConsultarAnexoTecnicoForm,
 							ConsultarContratoForm,
 							ConsultarFacturasForm,
-							ConsultarConveniosForm
+							ConsultarConveniosForm,
+							ConsultarEmpresasForm
 						  )
 
 from inicio.models import ( AnexosTecnicos,
 							Contratos,
 							Facturas,
 							Convenios,
+<<<<<<< HEAD
 							Propuestas
+=======
+							Empresas
+>>>>>>> origin/master
 						  )
 
 def registrar_proyecto(request):
@@ -421,6 +426,73 @@ def eliminar_Propuesta(request, propuesta_id):
 #y hasta aqui es el fin de propuestas
 
 
+
+
+#views de empresas
+def empresas(request):
+	empresas_list = Empresas.objects.all()
+
+	paginator = Paginator(empresas_list, 10)
+	page = request.GET.get('page', 1)
+
+	try:
+		empresas = paginator.page(page)
+	except PageNotAnInteger:
+		empresas = paginator.page(1)
+	except EmptyPage:
+		empresas = paginator.page(paginator.num_pages)
+
+	return render(request, 'inicio/empresas.html', {'empresas':empresas}, context_instance=RequestContext(request))
+
+def consultar_empresa(request, empresa_id):
+	empresa= Empresas.objects.get(id=empresa_id)
+	form = ConsultarEmpresasForm(model_to_dict(empresa))
+	return render(request, 'inicio/consultar_empresa.html', {'form':form}, context_instance=RequestContext(request))
+
+def agregar_empresa(request):
+	if request.method == "POST":
+		form = EmpresasForm(request.POST, request.FILES)
+		if form.is_valid():
+			form.save()
+			mensaje = "Guardado"
+			return render(request, 'inicio/agregar_empresa.html', {'mensaje': mensaje}, context_instance=RequestContext(request))
+	else:
+		form = EmpresasForm()
+	return render(request, 'inicio/agregar_empresa.html', {'form':form}, context_instance=RequestContext(request))
+
+def editar_empresa(request, empresa_id):
+	if request.method == "POST":
+		form = EmpresasForm(request.POST)
+		if form.is_valid():
+			empresa = Empresas.objects.get(id=empresa_id)
+			empresa.nombre = form.cleaned_data['nombre']
+			empresa.save()
+			mensaje = "Guardado"
+			return render(request, 'inicio/editar_empresa.html', {'mensaje': mensaje}, context_instance=RequestContext(request))
+	else:					
+		try:
+			empresa = Empresas.objects.get(id=empresa_id)
+		except:
+			empresa = None
+
+		form = EmpresasForm(instance=empresa)	
+
+	return render(request, 'inicio/editar_empresa.html', {'form': form}, context_instance=RequestContext(request))
+
+def eliminar_empresa(request, empresa_id):
+	try:
+		empresa = Empresas.objects.get(id=empresa_id)
+		try:
+			empresa.delete()
+			mensaje = "Eliminado"
+		except:
+			mensaje = "Falló al eliminar"
+	except:
+		empresa = None
+		mensaje = "Error inesperado"
+
+	return render(request, 'inicio/eliminar_empresa.html',{'mensaje': mensaje}, context_instance=RequestContext(request))
+#teminan las view de empresas
 def registrar_contratos(request):
 	form = ContratosForm()
 	return render(request, 'inicio/registrar_contratos.html', {'form': form}, context_instance=RequestContext(request))

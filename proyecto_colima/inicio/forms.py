@@ -159,3 +159,7 @@ class ConsultarDocumentosGeneralesForm(forms.Form):
 	nombre=forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
 	siglas=forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
 	fecha_creacion=forms.DateField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
+
+class ConsultarEmpresasForm(forms.Form):
+	nombre = forms.CharField(required=False, label='Proyecto', widget=forms.TextInput(attrs={'readonly':True}) )
+	
