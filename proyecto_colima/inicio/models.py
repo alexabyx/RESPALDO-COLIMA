@@ -67,6 +67,7 @@ class Proyectos(models.Model):
 
 #esta clase se encarga de representar en el sistema los atributos de la clase Anexostecnicos
 
+
 class AnexosTecnicos(models.Model):
 	TIPOS = (('D', 'Dependencia'), ('E', 'Empresa'), ('U', 'Universidad'))
 
@@ -96,6 +97,9 @@ class Convenios (models.Model):
 	fecha_creacion=models.DateField(default=datetime.datetime.now())
 
 	encargado = models.ForeignKey(Personal)
+
+	def __unicode__(self):
+		return "%s-%s" % (self.rfc, self.nombre)
 
 
 #esta clase se encarga de representar en el sistema los atributos de la clase CONTRATOS
