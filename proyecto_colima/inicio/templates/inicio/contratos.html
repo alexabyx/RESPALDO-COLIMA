@@ -5,6 +5,7 @@
 {% block content %}
 <div id="content-main">
 		<a href="{% url 'inicio:agregar-contrato' %}"><button>Agregar nuevo</button></a>
+		<input type="button" onclick="javascript:window.history.go(-1);" value="Regresar">
 		<!--historicos son los concluidos o cancelado
 		cerrar--> 
 		<ul>
