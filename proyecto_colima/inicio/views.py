@@ -26,18 +26,16 @@ from inicio.forms import (	AuthForm,
 							ConsultarContratoForm,
 							ConsultarFacturasForm,
 							ConsultarConveniosForm,
-							ConsultarEmpresasForm
+							ConsultarEmpresasForm,
+							ConsultarPropuestasForm
 						  )
 
 from inicio.models import ( AnexosTecnicos,
 							Contratos,
 							Facturas,
 							Convenios,
-<<<<<<< HEAD
-							Propuestas
-=======
+							Propuestas,
 							Empresas
->>>>>>> origin/master
 						  )
 
 def registrar_proyecto(request):
@@ -355,7 +353,7 @@ def eliminar_convenio(request, convenio_id):
 #y hasta aqui es el fin de propuestas
 
 def propuestas(request):
-	propuestas = propuestas.objects.all()
+	propuestas = Propuestas.objects.all()
 
 	paginator = Paginator(propuestas, 10)
 	page = request.GET.get('page', 1)
@@ -382,21 +380,24 @@ def agregar_propuesta(request):
 		form = PropuestasForm()
 	return render(request, 'inicio/agregar_propuesta.html', {'form':form}, context_instance=RequestContext(request))
 
-def consultar_propuesta(request, convenio_id):
+def consultar_propuesta(request, propuesta_id):
 	propuesta= Propuestas.objects.get(id=propuesta_id)
 	form = ConsultarPropuestasForm(model_to_dict(propuesta))
 	return render(request, 'inicio/consultar_propuesta.html', {'form':form}, context_instance=RequestContext(request))
 
-def editar_propuesta(request, convenio_id):
+def editar_propuesta(request, propuesta_id):
 	if request.method == "POST":
 		form = PropuestasForm(request.POST)
 		if form.is_valid():
 			propuesta = Propuestas.objects.get(id=propuesta_id)
-			propuesta.numero_oficio = form.cleaned_data['numero_universidad']
-			propuesta.proyecto = form.cleaned_data['siglas_universidad']
-			propuesta.responsable =form.cleaned_data['archivo']
-			propuesta.nombre_dependencia=form.cleaned_data['fecha_creacion']		
-			propuesta.encargado=form.cleaned_data['encargado']					
+			propuesta.numero_oficio = form.cleaned_data['numero_oficio']
+			propuesta.proyecto = form.cleaned_data['proyecto']
+			propuesta.responsable =form.cleaned_data['responsable']
+			propuesta.nombre_dependencia=form.cleaned_data['nombre_dependencia']		
+			propuesta.siglas_dependencia=form.cleaned_data['siglas_dependencia']
+			propuesta.tipo = form.cleaned_data['tipo']
+			propuesta.nombre = form.cleaned_data['nombre']
+			propuesta.siglas = form.cleaned_data['siglas']
 			propuesta.save()
 			mensaje = "Guardado"
 			return render(request, 'inicio/editar_convenios.html', {'mensaje': mensaje}, context_instance=RequestContext(request))
@@ -410,7 +411,7 @@ def editar_propuesta(request, convenio_id):
 
 	return render(request, 'inicio/editar_anexotecnico.html', {'form': form}, context_instance=RequestContext(request))	
 
-def eliminar_Propuesta(request, propuesta_id):
+def eliminar_propuesta(request, propuesta_id):
 	try:
 		propuesta = Propuestas.objects.get(id=propuesta_id)
 		try:

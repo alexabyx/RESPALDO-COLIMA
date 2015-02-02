@@ -64,7 +64,8 @@ class Proyectos(models.Model):
 	fecha_inicio = models.DateField(default=datetime.datetime.now())
 	status = models.CharField(max_length=45)
 	avance = models.CharField(max_length=45)
-
+	def __unicode__(self):
+		return "%s-%s" % (self.nombre, self.siglas)
 #esta clase se encarga de representar en el sistema los atributos de la clase Anexostecnicos
 
 

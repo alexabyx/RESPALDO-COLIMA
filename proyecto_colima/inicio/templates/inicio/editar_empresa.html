@@ -5,6 +5,7 @@
 {% block content %}
 {% if mensaje %}
 	<p>{{ mensaje }}</p>
+	<input type="button" onclick="javascript:window.history.go(-2);" value="Regresar">
 {% else %}
 	<div id="content-main">	
 		<input type="button" onclick="javascript:window.history.go(-1);" value="Regresar">

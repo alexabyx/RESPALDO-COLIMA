@@ -1,0 +1,30 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_static %}
+
+
+{% block content %}
+<div id="content-main">
+		<a href="{% url 'inicio:agregar-propuesta' %}"><button>Agregar nuevo</button></a>
+		<input type="button" onclick="javascript:window.history.go(-1);" value="Regresar">
+		<!--historicos son los concluidos o cancelado
+		cerrar--> 
+		<ul>
+			{% for propuesta in propuestas %}
+				<li>{{propuesta.numero_oficio}}-{{propuesta.proyecto}} - {{propuesta.responsable}}
+					<a href="{% url 'inicio:editar-propuesta' propuesta.id %}"><button>Editar</button></a>
+					<a href="{% url 'inicio:eliminar-propuesta' propuesta.id %}"><button>Eliminar</button></a>
+					<a href="{% url 'inicio:consultar-propuesta' propuesta.id %}"><button>Consultar</button></a>
+				</li>
+			{% endfor %}
+		</ul>
+
+    {% if propuestas.has_previous %}
+            <a href="?page={{ propuestas.previous_page_number }}">Anterior &nbsp;&nbsp;</a>
+    {% endif %}                                    
+    {% if propuestas.has_next %}
+            <a href="?page={{ propuestas.next_page_number }}">Siguiente</a>
+    {% endif %}
+
+	<h5> Página {{ propuestas.number }} de {{ propuestas.paginator.num_pages }}</h5>     
+</div>
+{% endblock %}

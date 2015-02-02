@@ -3,16 +3,16 @@
 
 
 {% block content %}
-{% if mensaje %}
-	<p>{{ mensaje }}</p>
-	<input type="button" onclick="javascript:window.history.go(-2);" value="Regresar">
-{% else %}
-	<div id="content-main">	
+<div id="content-main">
+		{% if mensaje %}
+			<p>{{ mensaje }}</p>
+			<input type="button" onclick="javascript:window.history.go(-2);" value="Regresar">
+		{% else %}
 		<input type="button" onclick="javascript:window.history.go(-1);" value="Regresar">
 			<form action="." method="POST">{% csrf_token %}
 				{{ form.as_p }}
 				<input type="submit" value="Registrar"/>
 			</form>
-	</div>
-{% endif %}
+		{% endif %}
+</div>
 {% endblock %}

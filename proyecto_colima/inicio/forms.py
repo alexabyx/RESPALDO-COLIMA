@@ -144,17 +144,17 @@ class ConsultarPropuestasForm(forms.Form):
 	numero_oficio = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
 	proyecto = forms.CharField(required=False, label='Proyecto', widget=forms.TextInput(attrs={'readonly':True}) )
 	responsable = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
-	nombre_dependencia=models = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	nombre_dependencia = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
 	siglas_dependencia=forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
 	tipo=forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
-	nombre=forms.DateField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
+	nombre=forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
 	siglas=forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
 	fecha_creacion=forms.DateField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
 
 class ConsultarDocumentosGeneralesForm(forms.Form):
 	proyecto = forms.CharField(required=False, label='Proyecto', widget=forms.TextInput(attrs={'readonly':True}) )
 	responsable = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
-	clave=models = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	clave = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
 	tipo=forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
 	nombre=forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
 	siglas=forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
@@ -162,4 +162,3 @@ class ConsultarDocumentosGeneralesForm(forms.Form):
 
 class ConsultarEmpresasForm(forms.Form):
 	nombre = forms.CharField(required=False, label='Proyecto', widget=forms.TextInput(attrs={'readonly':True}) )
-	

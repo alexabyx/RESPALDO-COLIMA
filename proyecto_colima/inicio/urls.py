@@ -44,11 +44,12 @@ urlpatterns = patterns('proyecto_colima.inicio',
     url(r'^eliminar_empresa/(?P<empresa_id>\d+)/$', eliminar_empresa, name="eliminar-empresa"),
     url(r'^consultar_empresa/(?P<empresa_id>\d+)/$', consultar_empresa, name="consultar-empresa"),
 
+    url(r'^propuestas/$', propuestas, name = "propuestas"),
+    url(r'^agregar_propuesta/$', agregar_propuesta, name = "agregar-propuesta"),
+    url(r'^editar_propuesta/(?P<propuesta_id>\d+)/$', editar_propuesta, name="editar-propuesta"),
+    url(r'^eliminar_propuesta/(?P<propuesta_id>\d+)/$', eliminar_propuesta, name="eliminar-propuesta"),
+    url(r'^consultar_propuesta/(?P<propuesta_id>\d+)/$', consultar_propuesta, name="consultar-propuesta"),
 
-   
-
-
-   
 
 
     url(r'^registrar_contratos/$', registrar_contratos, name="registrar-contratos"),
