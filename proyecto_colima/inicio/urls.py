@@ -26,11 +26,11 @@ urlpatterns = patterns('proyecto_colima.inicio',
     url(r'^eliminar_contrato/(?P<contrato_id>\d+)/$', eliminar_contrato, name="eliminar-contrato"),
     url(r'^consultar_contrato/(?P<contrato_id>\d+)/$', consultar_contrato, name="consultar-contrato"),
 
-    #url(r'^contratos/$', contratos, name="contratos"),
-    #url(r'^agregar_contrato/$', agregar_contrato, name = "agregar-contratos"),
-    #url(r'^editar_contrato/(?P<contrato_id>\d+)/$', editar_contrato, name="editar-contrato"),
-    #url(r'^eliminar_contrato/(?P<anexo_id>\d+)/$', eliminar_contrato, name="eliminar-contrato"),
-    #url(r'^consultar_contratos/(?P<anexo_id>\d+)/$', consultar_contratos, name="consultar-contrato"),
+    url(r'^facturas/$', facturas, name="facturas"),
+    url(r'^agregar_factura/$', agregar_factura, name = "agregar-factura"),
+    url(r'^editar_factura/(?P<factura_id>\d+)/$', editar_factura, name="editar-factura"),
+    url(r'^eliminar_factura/(?P<factura_id>\d+)/$', eliminar_factura, name="eliminar-factura"),
+    url(r'^consultar_factura/(?P<factura_id>\d+)/$', consultar_factura, name="consultar-factura"),
 
 
 

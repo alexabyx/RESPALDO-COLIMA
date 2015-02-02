@@ -27,7 +27,8 @@ from inicio.forms import (	AuthForm,
 						  )
 
 from inicio.models import ( AnexosTecnicos,
-							Contratos
+							Contratos,
+							Facturas
 						  )
 
 def registrar_proyecto(request):
@@ -148,7 +149,7 @@ def agregar_contrato(request):
 
 def consultar_contrato(request, contrato_id):
 	contrato= Contratos.objects.get(id=contrato_id)
-	form = ConsultarAnexoTecnicoForm(model_to_dict(contrato))
+	form = ConsultarContratoForm(model_to_dict(contrato))
 	return render(request, 'inicio/consultar_contrato.html', {'form':form}, context_instance=RequestContext(request))
 
 
@@ -174,7 +175,7 @@ def editar_contrato(request, contrato_id):
 
 		form = ContratosForm(instance=contrato)	
 
-	return render(request, 'inicio/editar_anexotecnico.html', {'form': form}, context_instance=RequestContext(request))
+	return render(request, 'inicio/editar_contrato.html', {'form': form}, context_instance=RequestContext(request))
 
 def eliminar_contrato(request, contrato_id):
 	try:
@@ -190,6 +191,76 @@ def eliminar_contrato(request, contrato_id):
 
 	return render(request, 'inicio/eliminar_contrato.html',{'mensaje': mensaje}, context_instance=RequestContext(request))
 
+def facturas(request):
+	facturas = Facturas.objects.all()
+
+	paginator = Paginator(facturas, 10)
+	page = request.GET.get('page', 1)
+
+	try:
+		facturas = paginator.page(page)
+	except PageNotAnInteger:
+		facturas = paginator.page(1)
+	except EmptyPage:
+		facturas = paginator.page(paginator.num_pages)
+
+	return render(request, 'inicio/facturas.html', {'facturas':facturas}, context_instance=RequestContext(request))
+
+
+
+def agregar_factura(request):
+	if request.method == "POST":
+		form = FacturasForm(request.POST, request.FILES)
+		if form.is_valid():
+			form.save()
+			mensaje = "Guardado"
+			return render(request, 'inicio/agregar_factura.html', {'mensaje': mensaje}, context_instance=RequestContext(request))
+	else:
+		form = FacturasForm()
+	return render(request, 'inicio/agregar_factura.html', {'form':form}, context_instance=RequestContext(request))
+
+def consultar_factura(request, factura_id):
+	factura= Facturas.objects.get(id=factura_id)
+	form = ConsultarFacturasForm(model_to_dict(factura))
+	return render(request, 'inicio/consultar_factura.html', {'form':form}, context_instance=RequestContext(request))
+
+def editar_factura(request, factura_id):
+	if request.method == "POST":
+		form = facturasForm(request.POST)
+		if form.is_valid():
+			factura = facturas.objects.get(id=factura_id)
+			factura.numero_oficio = form.cleaned_data['numero_oficio']
+			factura.proyecto = form.cleaned_data['proyecto']
+			factura.encargado=form.cleaned_data['encargado']
+			factura.cliente=form.cleaned_data['cliente']		
+			factura.fecha_creacion = form.cleaned_data['fecha_creacion']
+			factura.archivo = form.cleaned_data['archivo']
+			factura.save()
+			mensaje = "Guardado"
+			return render(request, 'inicio/editar_facturas.html', {'mensaje': mensaje}, context_instance=RequestContext(request))
+	else:					
+		try:
+			factura = facturas.objects.get(id=factura_id)
+		except:
+			factura = None
+
+		form = FacturasForm(instance=factura)	
+
+	return render(request, 'inicio/editar_anexotecnico.html', {'form': form}, context_instance=RequestContext(request))
+
+def eliminar_factura(request, factura_id):
+	try:
+		factura = facturas.objects.get(id=factura_id)
+		try:
+			factura.delete()
+			mensaje = "Eliminado"
+		except:
+			mensaje = "Falló al eliminar"
+	except:
+		factura = None
+		mensaje = "Error inesperado"
+
+	return render(request, 'inicio/eliminar_factura.html',{'mensaje': mensaje}, context_instance=RequestContext(request))
 
 
 def registrar_contratos(request):

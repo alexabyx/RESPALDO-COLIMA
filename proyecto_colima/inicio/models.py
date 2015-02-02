@@ -156,7 +156,7 @@ class Facturas(models.Model):
 
 	numero_factura=models.IntegerField(unique=True)
 	fecha_factura = models.DateField(default=datetime.datetime.now())
-	folio_venta=models.CharField(max_length=45)
+	folio_venta=models.CharField(max_length=45, blank=True)
 
 	rfc=models.CharField(max_length=45, help_text="RFC persona fisica/moral")
 	direccion=models.CharField(max_length=45, help_text=u"dirección persona fisica/moral")
@@ -166,7 +166,10 @@ class Facturas(models.Model):
 	total_con_numero = models.IntegerField()
 	total_con_letra = models.CharField(max_length=45)
 	pagada=models.BooleanField(default=False)
-	archivo=models.FileField(upload_to=get_upload_path, blank=False)
+	archivo=models.FileField(upload_to=get_upload_path )
+
+	def __unicode__(self):
+		return "%s-%s" % (self.nombre, self.folio_venta)
 
 #Aqui se modelan los atributos multivaluados de la clase FACTURA (de uno a muchos)
 

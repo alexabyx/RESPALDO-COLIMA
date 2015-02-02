@@ -1,0 +1,29 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_static %}
+
+
+{% block content %}
+<div id="content-main">
+		<a href="{% url 'inicio:agregar-factura' %}"><button>Agregar nuevo</button></a>
+		<!--historicos son los concluidos o cancelado
+		cerrar--> 
+		<ul>
+			{% for factura in facturas %}
+				<li>{{factura.numero_factura}}-{{factura.fecha_factura}}-{{factura.folio}} 
+					<a href="{% url 'inicio:editar-factura' factura.id %}"><button>Editar</button></a>
+					<a href="{% url 'inicio:eliminar-factura' factura.id %}"><button>Eliminar</button></a>
+					<a href="{% url 'inicio:consultar-factura' factura.id %}"><button>Consultar</button></a>
+				</li>
+			{% endfor %}
+		</ul>
+
+    {% if facturas.has_previous %}
+            <a href="?page={{ facturas.previous_page_number }}">Anterior &nbsp;&nbsp;</a>
+    {% endif %}                                    
+    {% if facturas.has_next %}
+            <a href="?page={{ facturas.next_page_number }}">Siguiente</a>
+    {% endif %}
+
+	<h5> Página {{ facturas.number }} de {{ facturas.paginator.num_pages }}</h5>     
+</div>
+{% endblock %}
