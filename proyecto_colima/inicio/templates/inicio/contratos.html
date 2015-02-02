@@ -10,7 +10,7 @@
 		cerrar--> 
 		<ul>
 			{% for contrato in contratos %}
-				<li>{{contratos.numero_oficio}}-{{contratos.proyecto}} 
+				<li>{{contrato.numero_oficio}}-{{contrato.proyecto}} 
 					<a href="{% url 'inicio:editar-contrato' contrato.id %}"><button>Editar</button></a>
 					<a href="{% url 'inicio:eliminar-contrato' contrato.id %}"><button>Eliminar</button></a>
 					<a href="{% url 'inicio:consultar-contrato' contrato.id %}"><button>Consultar</button></a>

@@ -24,12 +24,14 @@ from inicio.forms import (	AuthForm,
 							PersonalForm,
 							ConsultarAnexoTecnicoForm,
 							ConsultarContratoForm,
-							ConsultarFacturasForm
+							ConsultarFacturasForm,
+							ConsultarConveniosForm
 						  )
 
 from inicio.models import ( AnexosTecnicos,
 							Contratos,
-							Facturas
+							Facturas,
+							Convenios
 						  )
 
 def registrar_proyecto(request):
@@ -229,7 +231,7 @@ def editar_factura(request, factura_id):
 	if request.method == "POST":
 		form = FacturasForm(request.POST)
 		if form.is_valid():
-			factura = facturas.objects.get(id=factura_id)
+			factura = Facturas.objects.get(id=factura_id)
 			factura.contrato = form.cleaned_data['contrato']
 			factura.responsable = form.cleaned_data['responsable']
 			factura.tipo=form.cleaned_data['tipo']
@@ -273,6 +275,77 @@ def eliminar_factura(request, factura_id):
 
 	return render(request, 'inicio/eliminar_factura.html',{'mensaje': mensaje}, context_instance=RequestContext(request))
 
+#apartir de aqui copio convenios
+def convenios(request):
+	convenios = Convenios.objects.all()
+
+	paginator = Paginator(convenios, 10)
+	page = request.GET.get('page', 1)
+
+	try:
+		convenios = paginator.page(page)
+	except PageNotAnInteger:
+		convenios = paginator.page(1)
+	except EmptyPage:
+		convenios = paginator.page(paginator.num_pages)
+
+	return render(request, 'inicio/convenios.html', {'convenios':convenios}, context_instance=RequestContext(request))
+
+
+
+def agregar_convenios(request):
+	if request.method == "POST":
+		form = ConveniosForm(request.POST, request.FILES)
+		if form.is_valid():
+			form.save()
+			mensaje = "Guardado"
+			return render(request, 'inicio/agregar_convenio.html', {'mensaje': mensaje}, context_instance=RequestContext(request))
+	else:
+		form = ConveniosForm()
+	return render(request, 'inicio/agregar_convenio.html', {'form':form}, context_instance=RequestContext(request))
+
+def consultar_convenio(request, convenio_id):
+	convenio= Convenios.objects.get(id=convenio_id)
+	form = ConsultarConveniosForm(model_to_dict(convenio))
+	return render(request, 'inicio/consultar_convenio.html', {'form':form}, context_instance=RequestContext(request))
+
+def editar_convenio(request, convenio_id):
+	if request.method == "POST":
+		form = ConveniosForm(request.POST)
+		if form.is_valid():
+			convenio = Convenios.objects.get(id=convenio_id)
+			convenio.numero_universidad = form.cleaned_data['numero_universidad']
+			convenio.siglas_universidad = form.cleaned_data['siglas_universidad']
+			convenio.archivo=form.cleaned_data['archivo']
+			convenio.fecha_creacion=form.cleaned_data['fecha_creacion']		
+			convenio.encargado=form.cleaned_data['encargado']					
+			convenio.save()
+			mensaje = "Guardado"
+			return render(request, 'inicio/editar_convenios.html', {'mensaje': mensaje}, context_instance=RequestContext(request))
+	else:					
+		try:
+			convenio = Convenios.objects.get(id=convenio_id)
+		except:
+			convenio = None
+
+		form = ConveniosForm(instance=convenio)	
+
+	return render(request, 'inicio/editar_anexotecnico.html', {'form': form}, context_instance=RequestContext(request))	
+
+def eliminar_convenio(request, convenio_id):
+	try:
+		convenio = Convenios.objects.get(id=convenio_id)
+		try:
+			convenio.delete()
+			mensaje = "Eliminado"
+		except:
+			mensaje = "Falló al eliminar"
+	except:
+		convenio = None
+		mensaje = "Error inesperado"
+
+	return render(request, 'inicio/eliminar_convenio.html',{'mensaje': mensaje}, context_instance=RequestContext(request))
+#y hasta aqui es el fin de convenios
 
 def registrar_contratos(request):
 	form = ContratosForm()

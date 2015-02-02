@@ -1,0 +1,30 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_static %}
+
+
+{% block content %}
+<div id="content-main">
+		<a href="{% url 'inicio:agregar-convenio' %}"><button>Agregar nuevo</button></a>
+		<input type="button" onclick="javascript:window.history.go(-1);" value="Regresar">
+		<!--historicos son los concluidos o cancelado
+		cerrar--> 
+		<ul>
+			{% for convenio in convenios %}
+				<li>{{convenio.numero}}-{{convenio.proyecto}} - {{convenio.fecha_creacion}}
+					<a href="{% url 'inicio:editar-convenio' convenio.id %}"><button>Editar</button></a>
+					<a href="{% url 'inicio:eliminar-convenio' convenio.id %}"><button>Eliminar</button></a>
+					<a href="{% url 'inicio:consultar-convenio' convenio.id %}"><button>Consultar</button></a>
+				</li>
+			{% endfor %}
+		</ul>
+
+    {% if convenios.has_previous %}
+            <a href="?page={{ convenios.previous_page_number }}">Anterior &nbsp;&nbsp;</a>
+    {% endif %}                                    
+    {% if convenios.has_next %}
+            <a href="?page={{ convenios.next_page_number }}">Siguiente</a>
+    {% endif %}
+
+	<h5> Página {{ convenios.number }} de {{ convenios.paginator.num_pages }}</h5>     
+</div>
+{% endblock %}

@@ -108,17 +108,19 @@ class ConsultarProyectosForm(forms.Form):
 	nombre = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
 	siglas = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}) )
 	responsable = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
-	fecha_inicio=models = forms.DateField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	fecha_inicio = forms.DateField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
 	status=forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
 	avance=forms.FileField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
 
 class ConsultarConveniosForm(forms.Form):
 	numero = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
 	proyecto = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}) )
+	numero_universidad = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	siglas_universidad = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
 	fecha_creacion = forms.DateField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
-	encargado=models = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
-	cliente=forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
 	archivo=forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
+	#encargado = models.ForeignKey(Personal) = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+
 
 class ConsultarFacturasForm(forms.Form):
 	contrato = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}) )
