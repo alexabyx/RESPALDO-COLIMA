@@ -38,6 +38,12 @@ urlpatterns = patterns('proyecto_colima.inicio',
     url(r'^eliminar_convenio/(?P<convenio_id>\d+)/$', eliminar_convenio, name="eliminar-convenio"),
     url(r'^consultar_convenio/(?P<convenio_id>\d+)/$', consultar_convenio, name="consultar-convenio"),
 
+    url(r'^empresas/$', empresas, name = "empresas"),
+    url(r'^agregar_empresa/$', agregar_empresa, name = "agregar-empresa"),
+    url(r'^editar_empresa/(?P<empresa_id>\d+)/$', editar_empresa, name="editar-empresa"),
+    url(r'^eliminar_empresa/(?P<empresa_id>\d+)/$', eliminar_empresa, name="eliminar-empresa"),
+    url(r'^consultar_empresa/(?P<empresa_id>\d+)/$', consultar_empresa, name="consultar-empresa"),
+
 
    
 
