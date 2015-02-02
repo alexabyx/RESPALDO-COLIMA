@@ -23,7 +23,8 @@ from inicio.forms import (	AuthForm,
 							EntregablesForm, 
 							PersonalForm,
 							ConsultarAnexoTecnicoForm,
-							ConsultarContratoForm
+							ConsultarContratoForm,
+							ConsultarFacturasForm
 						  )
 
 from inicio.models import ( AnexosTecnicos,
@@ -226,31 +227,41 @@ def consultar_factura(request, factura_id):
 
 def editar_factura(request, factura_id):
 	if request.method == "POST":
-		form = facturasForm(request.POST)
+		form = FacturasForm(request.POST)
 		if form.is_valid():
 			factura = facturas.objects.get(id=factura_id)
-			factura.numero_oficio = form.cleaned_data['numero_oficio']
-			factura.proyecto = form.cleaned_data['proyecto']
-			factura.encargado=form.cleaned_data['encargado']
-			factura.cliente=form.cleaned_data['cliente']		
-			factura.fecha_creacion = form.cleaned_data['fecha_creacion']
+			factura.contrato = form.cleaned_data['contrato']
+			factura.responsable = form.cleaned_data['responsable']
+			factura.tipo=form.cleaned_data['tipo']
+			factura.nombre=form.cleaned_data['nombre']		
+			factura.siglas=form.cleaned_data['siglas']		
+			factura.numero_factura=form.cleaned_data['numero_factura']		
+			factura.fecha_factura = form.cleaned_data['fecha_factura']
+			factura.folio_venta = form.cleaned_data['folio_venta']
+			factura.rfc = form.cleaned_data['folio_venta']
+			factura.direccion = form.cleaned_data['direccion']
+			factura.subtotal = form.cleaned_data['subtotal']
+			factura.iva = form.cleaned_data['iva']
+			factura.total_con_numero = form.cleaned_data['total_con_numero']
+			factura.total_con_letra = form.cleaned_data['total_con_letra']
+			factura.pagada = form.cleaned_data['pagada']
 			factura.archivo = form.cleaned_data['archivo']
 			factura.save()
 			mensaje = "Guardado"
 			return render(request, 'inicio/editar_facturas.html', {'mensaje': mensaje}, context_instance=RequestContext(request))
 	else:					
 		try:
-			factura = facturas.objects.get(id=factura_id)
+			factura = Facturas.objects.get(id=factura_id)
 		except:
 			factura = None
 
 		form = FacturasForm(instance=factura)	
 
-	return render(request, 'inicio/editar_anexotecnico.html', {'form': form}, context_instance=RequestContext(request))
+	return render(request, 'inicio/editar_anexotecnico.html', {'form': form}, context_instance=RequestContext(request))	
 
 def eliminar_factura(request, factura_id):
 	try:
-		factura = facturas.objects.get(id=factura_id)
+		factura = Facturas.objects.get(id=factura_id)
 		try:
 			factura.delete()
 			mensaje = "Eliminado"

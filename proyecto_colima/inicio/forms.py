@@ -121,7 +121,6 @@ class ConsultarConveniosForm(forms.Form):
 	archivo=forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
 
 class ConsultarFacturasForm(forms.Form):
-	TIPOS = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
 	contrato = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}) )
 	responsable = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
 	tipo = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
