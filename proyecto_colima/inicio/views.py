@@ -31,7 +31,8 @@ from inicio.forms import (	AuthForm,
 from inicio.models import ( AnexosTecnicos,
 							Contratos,
 							Facturas,
-							Convenios
+							Convenios,
+							Propuestas
 						  )
 
 def registrar_proyecto(request):
@@ -293,7 +294,7 @@ def convenios(request):
 
 
 
-def agregar_convenios(request):
+def agregar_convenio(request):
 	if request.method == "POST":
 		form = ConveniosForm(request.POST, request.FILES)
 		if form.is_valid():
@@ -345,7 +346,80 @@ def eliminar_convenio(request, convenio_id):
 		mensaje = "Error inesperado"
 
 	return render(request, 'inicio/eliminar_convenio.html',{'mensaje': mensaje}, context_instance=RequestContext(request))
-#y hasta aqui es el fin de convenios
+
+#y hasta aqui es el fin de propuestas
+
+def propuestas(request):
+	propuestas = propuestas.objects.all()
+
+	paginator = Paginator(propuestas, 10)
+	page = request.GET.get('page', 1)
+
+	try:
+		propuestas = paginator.page(page)
+	except PageNotAnInteger:
+		propuestas = paginator.page(1)
+	except EmptyPage:
+		propuestas = paginator.page(paginator.num_pages)
+
+	return render(request, 'inicio/propuestas.html', {'propuestas':propuestas}, context_instance=RequestContext(request))
+
+
+
+def agregar_propuesta(request):
+	if request.method == "POST":
+		form = PropuestasForm(request.POST, request.FILES)
+		if form.is_valid():
+			form.save()
+			mensaje = "Guardado"
+			return render(request, 'inicio/agregar_propuesta.html', {'mensaje': mensaje}, context_instance=RequestContext(request))
+	else:
+		form = PropuestasForm()
+	return render(request, 'inicio/agregar_propuesta.html', {'form':form}, context_instance=RequestContext(request))
+
+def consultar_propuesta(request, convenio_id):
+	propuesta= Propuestas.objects.get(id=propuesta_id)
+	form = ConsultarPropuestasForm(model_to_dict(propuesta))
+	return render(request, 'inicio/consultar_propuesta.html', {'form':form}, context_instance=RequestContext(request))
+
+def editar_propuesta(request, convenio_id):
+	if request.method == "POST":
+		form = PropuestasForm(request.POST)
+		if form.is_valid():
+			propuesta = Propuestas.objects.get(id=propuesta_id)
+			propuesta.numero_oficio = form.cleaned_data['numero_universidad']
+			propuesta.proyecto = form.cleaned_data['siglas_universidad']
+			propuesta.responsable =form.cleaned_data['archivo']
+			propuesta.nombre_dependencia=form.cleaned_data['fecha_creacion']		
+			propuesta.encargado=form.cleaned_data['encargado']					
+			propuesta.save()
+			mensaje = "Guardado"
+			return render(request, 'inicio/editar_convenios.html', {'mensaje': mensaje}, context_instance=RequestContext(request))
+	else:					
+		try:
+			propuesta = Propuestas.objects.get(id=propuesta_id)
+		except:
+			propuesta = None
+
+		form = PropuestasForm(instance=propuesta)	
+
+	return render(request, 'inicio/editar_anexotecnico.html', {'form': form}, context_instance=RequestContext(request))	
+
+def eliminar_Propuesta(request, propuesta_id):
+	try:
+		propuesta = Propuestas.objects.get(id=propuesta_id)
+		try:
+			propuesta.delete()
+			mensaje = "Eliminado"
+		except:
+			mensaje = "Falló al eliminar"
+	except:
+		propuesta = None
+		mensaje = "Error inesperado"
+
+	return render(request, 'inicio/eliminar_propuesta.html',{'mensaje': mensaje}, context_instance=RequestContext(request))
+#y hasta aqui es el fin de propuestas
+
 
 def registrar_contratos(request):
 	form = ContratosForm()
