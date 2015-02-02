@@ -176,7 +176,7 @@ def editar_contrato(request, contrato_id):
 
 	return render(request, 'inicio/editar_anexotecnico.html', {'form': form}, context_instance=RequestContext(request))
 
-def eliminar_contrato(request, anexo_id):
+def eliminar_contrato(request, contrato_id):
 	try:
 		contrato = Contratos.objects.get(id=contrato_id)
 		try:
@@ -189,6 +189,8 @@ def eliminar_contrato(request, anexo_id):
 		mensaje = "Error inesperado"
 
 	return render(request, 'inicio/eliminar_contrato.html',{'mensaje': mensaje}, context_instance=RequestContext(request))
+
+
 
 def registrar_contratos(request):
 	form = ContratosForm()
