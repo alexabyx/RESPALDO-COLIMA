@@ -1,0 +1,16 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_static %}
+
+
+{% block content %}
+{% if mensaje %}
+	<p>{{ mensaje }}</p>
+{% else %}
+	<div id="content-main">	
+		<input type="button" onclick="javascript:window.history.go(-1);" value="Regresar">
+			<form action="." method="POST">{% csrf_token %}
+				{{ form.as_p }}
+			</form>
+	</div>
+{% endif %}
+{% endblock %}
