@@ -108,6 +108,9 @@ class Contratos(models.Model):
 	cliente=models.CharField(max_length=45, help_text = "Nombre de la dependencia")
 	archivo=models.FileField(upload_to=get_upload_path, blank=True)
 
+	def __unicode__(self):
+		return "%s-%s" % (self.numero_oficio, self.proyecto)
+
 #esta clase se encarga de representar en el sistema los atributos de la clase ENTREGABLES
 
 class Entregables(models.Model):

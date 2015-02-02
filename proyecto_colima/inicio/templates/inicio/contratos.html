@@ -4,15 +4,15 @@
 
 {% block content %}
 <div id="content-main">
-		<a href="{% url 'inicio:agregar-contratos' %}"><button>Agregar nuevo</button></a>
+		<a href="{% url 'inicio:agregar-contrato' %}"><button>Agregar nuevo</button></a>
 		<!--historicos son los concluidos o cancelado
 		cerrar--> 
 		<ul>
-			{% for contratos in contratos %}
-				<li>{{contratos.numero_oficio}}-{{contratos.tipo}}-{{contratos.nombre}} 
-					<a href="{% url 'inicio:editar-contratos' contratos.id %}"><button>Editar</button></a>
-					<a href="{% url 'inicio:eliminar-contratos' contratos.id %}"><button>Eliminar</button></a>
-					<a href="{% url 'inicio:consultar-contratos' ancontratosexo.id %}"><button>Consultar</button></a>
+			{% for contrato in contratos %}
+				<li>{{contratos.numero_oficio}}-{{contratos.proyecto}} 
+					<a href="{% url 'inicio:editar-contrato' contrato.id %}"><button>Editar</button></a>
+					<a href="{% url 'inicio:eliminar-contrato' contrato.id %}"><button>Eliminar</button></a>
+					<a href="{% url 'inicio:consultar-contrato' contrato.id %}"><button>Consultar</button></a>
 				</li>
 			{% endfor %}
 		</ul>

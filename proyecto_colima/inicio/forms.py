@@ -65,4 +65,97 @@ class ConsultarAnexoTecnicoForm(forms.Form):
 	fecha_creacion=forms.DateField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
 	archivo=forms.FileField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
 
-	
+class ConsultarContratoForm(forms.Form):
+	numero_oficio = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
+	proyecto = forms.CharField(required=False, label='Proyecto', widget=forms.TextInput(attrs={'readonly':True}) )
+	tipo = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	proyecto=models = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	fecha_creacion=forms.DateField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	cliente=forms.FileField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
+	archivo=forms.FileField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+
+class ConsultarEntregables(forms.Form):
+	contratrato = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
+	proyecto = forms.CharField(required=False, label='Proyecto', widget=forms.TextInput(attrs={'readonly':True}) )
+	responsable = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+
+
+class ConsultarPersonalForm(forms.Form):
+	rfc = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
+	nombre = forms.CharField(required=False, label='Proyecto', widget=forms.TextInput(attrs={'readonly':True}) )
+	tipo = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	nombre = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	apellido_paterno = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	apellido_materno = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	siglas_nombre = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	genero = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	direccion = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	telefono = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	no_seguro = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	fecha_ingreso = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	puesto = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	turno = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	tipo_plaza = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	tipo_pago = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	monto = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	numero_oficio_contrato = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	fecha_vencimiento_contrato = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	fecha_baja=forms.DateField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	motivo_baja=forms.FileField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	responsable=forms.FileField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+
+
+class ConsultarProyectosForm(forms.Form):
+	nombre = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
+	siglas = forms.CharField(required=False, label='Proyecto', widget=forms.TextInput(attrs={'readonly':True}) )
+	responsable = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	fecha_inicio=models = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	status=forms.DateField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	avance=forms.FileField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
+
+class ConsultarConveniosForm(forms.Form):
+	numero = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
+	proyecto = forms.CharField(required=False, label='Proyecto', widget=forms.TextInput(attrs={'readonly':True}) )
+	fecha_creacion = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	encargado=models = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	cliente=forms.DateField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	archivo=forms.FileField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
+
+class ConsultarFacturasForm(forms.Form):
+	TIPOS = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
+	contrato = forms.CharField(required=False, label='Proyecto', widget=forms.TextInput(attrs={'readonly':True}) )
+	responsable = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	tipo = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	nombre = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	siglas = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	numero_factura = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	fecha_factura = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	folio_venta = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	rfc = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	direccion = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	subtotal = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	iva = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	total_con_numero = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	total_con_letra = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	pagada = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	archivo = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+
+class ConsultarPropuestasForm(forms.Form):
+	numero_oficio = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
+	proyecto = forms.CharField(required=False, label='Proyecto', widget=forms.TextInput(attrs={'readonly':True}) )
+	responsable = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	nombre_dependencia=models = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	siglas_dependencia=forms.DateField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	tipo=forms.FileField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
+	nombre=forms.FileField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
+	siglas=forms.FileField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
+	fecha_creacion=forms.FileField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
+
+class ConsultarDocumentosGeneralesForm(forms.Form):
+	proyecto = forms.CharField(required=False, label='Proyecto', widget=forms.TextInput(attrs={'readonly':True}) )
+	responsable = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	clave=models = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	tipo=forms.DateField(required=False, widget=forms.TextInput(attrs={'readonly':True}))
+	nombre=forms.FileField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
+	siglas=forms.FileField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	
+	fecha_creacion=forms.FileField(required=False, widget=forms.TextInput(attrs={'readonly':True}))	

@@ -22,7 +22,8 @@ from inicio.forms import (	AuthForm,
 							EmpresasForm, 
 							EntregablesForm, 
 							PersonalForm,
-							ConsultarAnexoTecnicoForm
+							ConsultarAnexoTecnicoForm,
+							ConsultarContratoForm
 						  )
 
 from inicio.models import ( AnexosTecnicos,
@@ -61,21 +62,6 @@ def anexostecnicos(request):
 		anexostecnicos = paginator.page(paginator.num_pages)
 
 	return render(request, 'inicio/anexostecnicos.html', {'anexostecnicos':anexostecnicos}, context_instance=RequestContext(request))
-
-def contratos(request):
-	contratos = Contratos.objects.all()
-
-	paginator = Paginator(contratos, 10)
-	page = request.GET.get('page', 1)
-
-	try:
-		contratos = paginator.page(page)
-	except PageNotAnInteger:
-		contratos = paginator.page(1)
-	except EmptyPage:
-		contratos = paginator.page(paginator.num_pages)
-
-	return render(request, 'inicio/contratos.html', {'contratos':contratos}, context_instance=RequestContext(request))
 
 def consultar_anexotecnico(request, anexo_id):
 	anexo= AnexosTecnicos.objects.get(id=anexo_id)
@@ -133,6 +119,76 @@ def eliminar_anexotecnico(request, anexo_id):
 
 	return render(request, 'inicio/eliminar_anexotecnico.html',{'mensaje': mensaje}, context_instance=RequestContext(request))
 
+def contratos(request):
+	contratos = Contratos.objects.all()
+
+	paginator = Paginator(contratos, 10)
+	page = request.GET.get('page', 1)
+
+	try:
+		contratos = paginator.page(page)
+	except PageNotAnInteger:
+		contratos = paginator.page(1)
+	except EmptyPage:
+		contratos = paginator.page(paginator.num_pages)
+
+	return render(request, 'inicio/contratos.html', {'contratos':contratos}, context_instance=RequestContext(request))
+
+def agregar_contrato(request):
+	if request.method == "POST":
+		form = ContratosForm(request.POST, request.FILES)
+		if form.is_valid():
+			form.save()
+			mensaje = "Guardado"
+			return render(request, 'inicio/agregar_contrato.html', {'mensaje': mensaje}, context_instance=RequestContext(request))
+	else:
+		form = ContratosForm()
+	return render(request, 'inicio/agregar_contrato.html', {'form':form}, context_instance=RequestContext(request))
+
+
+def consultar_contrato(request, contrato_id):
+	contrato= Contratos.objects.get(id=contrato_id)
+	form = ConsultarAnexoTecnicoForm(model_to_dict(contrato))
+	return render(request, 'inicio/consultar_contrato.html', {'form':form}, context_instance=RequestContext(request))
+
+
+def editar_contrato(request, contrato_id):
+	if request.method == "POST":
+		form = ContratosForm(request.POST)
+		if form.is_valid():
+			contrato = Contratos.objects.get(id=contrato_id)
+			contrato.numero_oficio = form.cleaned_data['numero_oficio']
+			contrato.proyecto = form.cleaned_data['proyecto']
+			contrato.encargado=form.cleaned_data['encargado']
+			contrato.cliente=form.cleaned_data['cliente']		
+			contrato.fecha_creacion = form.cleaned_data['fecha_creacion']
+			contrato.archivo = form.cleaned_data['archivo']
+			contrato.save()
+			mensaje = "Guardado"
+			return render(request, 'inicio/editar_contratos.html', {'mensaje': mensaje}, context_instance=RequestContext(request))
+	else:					
+		try:
+			contrato = Contratos.objects.get(id=contrato_id)
+		except:
+			contrato = None
+
+		form = ContratosForm(instance=contrato)	
+
+	return render(request, 'inicio/editar_anexotecnico.html', {'form': form}, context_instance=RequestContext(request))
+
+def eliminar_contrato(request, anexo_id):
+	try:
+		contrato = Contratos.objects.get(id=contrato_id)
+		try:
+			contrato.delete()
+			mensaje = "Eliminado"
+		except:
+			mensaje = "Falló al eliminar"
+	except:
+		contrato = None
+		mensaje = "Error inesperado"
+
+	return render(request, 'inicio/eliminar_contrato.html',{'mensaje': mensaje}, context_instance=RequestContext(request))
 
 def registrar_contratos(request):
 	form = ContratosForm()
