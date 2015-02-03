@@ -1,14 +1,17 @@
 from django.contrib import admin
 from inicio.models import *
+
+class DetallePagoEmpleadoAdminInline(admin.TabularInline):
+	model = DetallePagoEmpleado
+	extra = 2
  
 class PersonalAdmin(admin.ModelAdmin):
 	list_display = ('rfc',)
 	list_filter = ['turno', 'genero', 'tipo_pago']
 	search_fields = ['rfc', 'nombre', 'apellido_paterno', 'apellido_materno']
+	inlines = [DetallePagoEmpleadoAdminInline]
 
 
-class DetallePagoEmpleadoAdmin(admin.ModelAdmin):
-	list_display = ('personal',)
 
 class DetalleDocumentoResponsivaAdmin(admin.ModelAdmin):
 	list_display = ('personal', )
@@ -71,7 +74,7 @@ class DocumentosGeneralesAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Personal, PersonalAdmin)
-admin.site.register(DetallePagoEmpleado,DetallePagoEmpleadoAdmin)
+#admin.site.register(DetallePagoEmpleado,DetallePagoEmpleadoAdmin)
 admin.site.register(DetalleDocumentoResponsiva, DetalleDocumentoResponsivaAdmin)
 admin.site.register(Proyectos, ProyectosAdmin)
 admin.site.register(AnexosTecnicos, AnexosTecnicosAdmin)

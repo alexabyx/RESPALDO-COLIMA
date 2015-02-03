@@ -3,6 +3,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 import datetime
+import os
 # Create your models here.
 
 def get_upload_path(instance, filename):
@@ -14,6 +15,7 @@ def get_upload_path(instance, filename):
 class Personal(models.Model):
 	SEXO_OPCIONES = (('H', 'Hombre'), ('M', 'Mujer'), )
 	TIPO_PAGO = (('S', 'Semanal'), ('Q', 'Quincenal'), ('M', 'Mensual'),)
+	TIPO_PLAZA = (('B', 'Becario'), ('H','Honorarios'), ('E', 'Efectivo'), ('O', 'Otro'))
 
 	rfc = models.CharField(max_length=45)
 	credencial_elector = models.FileField(upload_to = get_upload_path, blank=True)
@@ -28,17 +30,18 @@ class Personal(models.Model):
 	fecha_ingreso = models.DateField(default=datetime.datetime.now())
 	puesto = models.CharField(max_length=45)
 	turno = models.CharField(max_length=45)
-	tipo_plaza = models.CharField(max_length=45)
+	tipo_plaza = models.CharField(max_length=45, choices = TIPO_PLAZA)
+	#En caso de que se seleccione Otro, abrir campo de especificacion
 	tipo_pago = models.CharField(max_length=1, choices=TIPO_PAGO)
 	monto = models.IntegerField()	
-	numero_oficio_contrato = models.CharField(max_length=45)
+	numero_oficio_contrato = models.CharField(max_length=45) # Dreprecated
 	dias_trabajo_al_mes = models.IntegerField()
 	
 	fecha_vencimiento_contrato = models.DateField()
 	fecha_baja = models.DateField()
 	motivo_baja = models.CharField(max_length=45)
 
-	responsable = models.CharField(max_length=45)
+	responsable = models.CharField(max_length=45) #REsponsable de pagar... incluir en detalle pago....
 
 	def __unicode__(self):
 		return "%s-%s" % (self.rfc, self.nombre)
@@ -58,36 +61,49 @@ class DetalleDocumentoResponsiva(models.Model):
 #esta clase se encarga de representar en el sistema los atributos de la clase PROYECTOS
 
 class Proyectos(models.Model):
+	#
+	#Relacion uno a muchas Empresas(49, 46) 
+	#
+	CHOICE = (('A', 'Activo'), ('H', 'Historico'))
 	nombre = models.CharField(max_length=150, null=False)
 	siglas = models.CharField(max_length=45)
 	responsable = models.ManyToManyField(Personal)
 	fecha_inicio = models.DateField(default=datetime.datetime.now())
-	status = models.CharField(max_length=45)
+	status = models.CharField(max_length=45, choices = CHOICE) #dreprecated
 	avance = models.CharField(max_length=45)
+	# fecha_fin
+	# comentario
+	# fecha_cambio #Una fecha de reprogramacion
+
 	def __unicode__(self):
 		return "%s-%s" % (self.nombre, self.siglas)
 #esta clase se encarga de representar en el sistema los atributos de la clase Anexostecnicos
 
 
 class AnexosTecnicos(models.Model):
+	#Responsable distinto del proyeto
+	#
+	#
 	TIPOS = (('D', 'Dependencia'), ('E', 'Empresa'), ('U', 'Universidad'))
 
 	numero_oficio = models.IntegerField(blank=False)	
 	proyecto = models.ForeignKey(Proyectos)
 
-	tipo = models.CharField(max_length=1, choices=TIPOS)
+	tipo = models.CharField(max_length=1, choices=TIPOS) # Dreprecated
 	nombre = models.CharField(max_length=45)
 	siglas = models.CharField(max_length=45)
-	porcentaje = models.IntegerField()
+	porcentaje = models.IntegerField() # Deprecated
 	fecha_creacion=models.DateField(default=datetime.datetime.now())
 	archivo=models.FileField(upload_to = get_upload_path, blank=True)
 	
+	#status = En proceso/en revision/aceptado
 	def __unicode__(self):
 		return "%s-%s" % (self.numero_oficio, self.nombre)
 
 #esta clase se encarga de representar en el sistema los atributos de la clase CONVENIOS
 
 class Convenios (models.Model):
+	# lo mismo que Contratos,  
 	numero=models.CharField(max_length=45)
 	proyecto=models.ForeignKey(Proyectos)
 
@@ -109,10 +125,12 @@ class Contratos(models.Model):
 	numero_oficio =models.CharField(max_length=45)
 	proyecto=models.ForeignKey(Proyectos)
 	fecha_creacion=models.DateField(default=datetime.datetime.now())
-	encargado=models.ForeignKey(Personal)
-	cliente=models.CharField(max_length=45, help_text = "Nombre de la dependencia")
-	archivo=models.FileField(upload_to=get_upload_path, blank=True)
+	encargado=models.ForeignKey(Personal) #Responsable
+	cliente=models.CharField(max_length=45, help_text = "Nombre de la dependencia") # Deprecated
+	archivo=models.FileField(upload_to=get_upload_path, blank=True) # Deprecated
 
+	#Contrato Dependencia universidad
+	#Convenio Universidad Empresa 46/49
 	def __unicode__(self):
 		return "%s-%s" % (self.numero_oficio, self.proyecto)
 
@@ -123,10 +141,14 @@ class Entregables(models.Model):
 	proyecto = models.ForeignKey(Proyectos)
 	responsable = models.ForeignKey(Personal)
 
+	#nombre = models.CharField(max_length=45)
+	#fecha_creacion=models.DateField(default=datetime.datetime.now())
 	nombre = models.CharField(max_length=45)
 	fecha_creacion=models.DateField(default=datetime.datetime.now())
 	archivo = models.FileField(upload_to=get_upload_path, blank=True)
 	
+	# Total de entregables ---UNO/N----
+
 	# @property
 	# def total(self):
 	# 	return len(Detalle_entregable.objects.filter(entregable=self))
@@ -150,7 +172,8 @@ class Empresas(models.Model):
 #esta clase se encarga de representar en el sistema los atributos de la clase FACTURAS
 
 class Facturas(models.Model):
-	TIPOS = (('D', 'Dependencia'), ('E', 'Empresa'), ('U', 'Universidad'))
+	#TIPOS = (('D', 'Dependencia'), ('E', 'Empresa'), ('U', 'Universidad'))
+	TIPOS = (('E2', 'Empresa 46%'), ('E1', 'Empresa 49%'), ('U', 'Universidad'))
 	
 	contrato = models.ForeignKey(Contratos)
 	responsable = models.ForeignKey(Personal)
@@ -161,7 +184,7 @@ class Facturas(models.Model):
 
 	numero_factura=models.IntegerField(unique=True)
 	fecha_factura = models.DateField(default=datetime.datetime.now())
-	folio_venta=models.CharField(max_length=45, blank=True)
+	folio_venta=models.CharField(max_length=45, blank=True, help_text="Folio de la factura")
 
 	rfc=models.CharField(max_length=45, help_text="RFC persona fisica/moral")
 	direccion=models.CharField(max_length=45, help_text=u"dirección persona fisica/moral")
@@ -172,6 +195,8 @@ class Facturas(models.Model):
 	total_con_letra = models.CharField(max_length=45)
 	pagada=models.BooleanField(default=False)
 	archivo=models.FileField(upload_to=get_upload_path )
+	# archivo_xml=models.FileField(upload_to=get_upload_path ) #Archivo en XML
+	# archivo_fisico=models.FileField(upload_to=get_upload_path ) #Archivo fisico de la factura
 
 	def __unicode__(self):
 		return "%s-%s" % (self.nombre, self.folio_venta)
@@ -190,8 +215,10 @@ class Propuestas(models.Model):
 
 	numero_oficio = models.CharField(max_length=45)
 	proyecto = models.ForeignKey(Proyectos)
+
 	responsable = models.ForeignKey(Personal)
 
+	# Deprecated. viene directamente del proyecto
 	nombre_dependencia=models.CharField(max_length=45)
 	siglas_dependencia=models.CharField(max_length=45)
 
