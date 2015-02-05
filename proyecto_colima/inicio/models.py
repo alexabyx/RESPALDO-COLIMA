@@ -38,7 +38,7 @@ class Personal(models.Model):
 	fecha_vencimiento_contrato 	= models.DateField()
 	fecha_baja 					= models.DateField()
 	motivo_baja 				= models.CharField(max_length=45)
-	responsable 				= models.CharField(max_length=45) #REsponsable de pagar... incluir en detalle pago....
+	#responsable 				= models.CharField(max_length=45) #REsponsable de pagar... incluir en detalle pago....
 
 	def __unicode__(self):
 		return "%s-%s" % (self.rfc, self.nombre)
@@ -62,18 +62,20 @@ class DetalleDocumentoResponsiva(models.Model):
 #esta clase se encarga de representar en el sistema los atributos de la clase PROYECTOS
 class Proyectos(models.Model):
 
-	STATUS = (('A', 'Activo'), ('H', 'Historico'))
+	STATUS = (('A', 'Activo'), ('H', 'Historico'))#falta una entidad clientes la modelo despues alex
 
 	nombre 			= models.CharField(max_length=150)
 	siglas 			= models.CharField(max_length=45)
 	responsable 	= models.ManyToManyField(Personal)
-	empresa 		= models.ManyToManyField(Empresas)
+	empresa 		= models.ManyToManyField(Empresas)#necesitamos platicar estod dos campos
+	empresa 		= models.ManyToManyField(Empresas)#este y el de arriba por que talvez lo mejor sea hacer catalogos
 	fecha_inicio 	= models.DateField(default=datetime.datetime.now().date())
 	fecha_fin 		= models.DateField(default=datetime.datetime.now().date())
-	status 			= models.CharField(max_length=3, choices = STATUS) #dreprecated
+	#status 			= models.CharField(max_length=3, choices = STATUS) #dreprecated
 	avance 			= models.CharField(max_length=45)
 	comentario 		= models.CharField(max_length=500)
 	fecha_cambio 	= models.DateField()
+	cliente			= models.CharField(max_length=3)#dependencia
 
 	#
 	#Relacion uno a muchas Empresas(49, 46) 
@@ -94,10 +96,10 @@ class AnexosTecnicos(models.Model):
 
 	numero_oficio 	= models.IntegerField(blank=False)	
 	proyecto 		= models.ForeignKey(Proyectos)
-	tipo 			= models.CharField(max_length=1, choices=TIPOS) # Dreprecated
+	#tipo 			= models.CharField(max_length=1, choices=TIPOS) # Dreprecated
 	nombre 			= models.CharField(max_length=45)
 	siglas 			= models.CharField(max_length=45)
-	porcentaje 		= models.IntegerField() # Deprecated
+	#porcentaje 		= models.IntegerField() # Deprecated
 	status 			= models.CharField(max_length=3, choices=STATUS)
 	fecha_creacion  = models.DateField(default=datetime.datetime.now().date())
 	archivo         = models.FileField(upload_to=get_upload_path, blank=True)
@@ -117,8 +119,8 @@ class Convenios (models.Model):
 	numero 				= models.CharField(max_length=45)
 	proyecto 			= models.ForeignKey(Proyectos)
 
-	numero_universidad 	= models.CharField(max_length=45)
-	siglas_universidad	= models.CharField(max_length=45)
+	#numero_universidad 	= models.CharField(max_length=45)
+	#siglas_universidad	= models.CharField(max_length=45)
 
 	archivo 			= models.FileField(upload_to=get_upload_path, blank=True)
 	fecha_creacion 		= models.DateField(default=datetime.datetime.now().date())
@@ -137,8 +139,8 @@ class Contratos(models.Model):
 	proyecto        = models.ForeignKey(Proyectos)
 	fecha_creacion  = models.DateField(default=datetime.datetime.now().date())
 	encargado 		= models.ForeignKey(Personal) #Responsable
-	cliente 		= models.CharField(max_length=45, help_text = "Nombre de la dependencia") # Deprecated
-	archivo 		= models.FileField(upload_to=get_upload_path, blank=True) # Deprecated
+	#cliente 		= models.CharField(max_length=45, help_text = "Nombre de la dependencia") # Deprecated
+	archivo 		= models.FileField(upload_to=get_upload_path, blank=True) # Deprecated no entiendo por que eeste quedo en des uso nesesitamos hablarlo
 
 	#Contrato Dependencia universidad
 	#Convenio Universidad Empresa 46/49
@@ -151,10 +153,10 @@ class Contratos(models.Model):
 class Entregables(models.Model):
 	REPOSITORIO 	= settings.ENTREGABLES
 
-	contrato 		= models.ForeignKey(Contratos)
+	#contrato 		= models.ForeignKey(Contratos)
 	proyecto 		= models.ForeignKey(Proyectos)
 	responsable 	= models.ForeignKey(Personal)
-	archivo 		= models.FileField(upload_to=get_upload_path, blank=True)
+	#archivo 		= models.FileField(upload_to=get_upload_path, blank=True)
 
 	# nombre = models.CharField(max_length=45)
 	# fecha_creacion=models.DateField(default=datetime.datetime.now())
@@ -175,6 +177,8 @@ class DetallesEntregables(models.Model):
 #esta clase se encarga de representar en el sistema los atributos de la clase EMPRESAS
 class Empresas(models.Model):
 	nombre=models.CharField(max_length=45)
+	siglas_empresa=models.CharField(max_length=45)#cuastiona la necesidad del a existencia de todos los campos de siglas pero temporalmetne que se queden
+
 
 #esta clase se encarga de representar en el sistema los atributos de la clase FACTURAS
 class Facturas(models.Model):
@@ -225,9 +229,9 @@ class Propuestas(models.Model):
 	# nombre_dependencia=models.CharField(max_length=45)
 	# siglas_dependencia=models.CharField(max_length=45)
 
-	tipo 			= models.CharField(max_length=3, choices=TIPOS)
-	nombre 			= models.CharField(max_length=45)
-	siglas 			= models.CharField(max_length=45)
+	#tipo 			= models.CharField(max_length=3, choices=TIPOS)muerto
+	#nombre 			= models.CharField(max_length=45)muerto
+	#siglas 			= models.CharField(max_length=45)muerto
 
 	fecha_creacion 	= models.DateField(default=datetime.datetime.now().date())
 
@@ -236,11 +240,11 @@ class DocumentosGenerales(models.Model):
 	TIPOS 			= (('D1', 'Dependencia'), ('E', 'Empresa'), ('U1', 'Universidad'))
 
 	proyecto 		= models.ForeignKey(Proyectos)
-	responsable 	= models.ForeignKey(Personal)
+	#responsable 	= models.ForeignKey(Personal)
 	clave 			= models.CharField(max_length=45)
-	tipo 			= models.CharField(max_length=3, choices=TIPOS)
-	nombre 			= models.CharField(max_length=45)
-	siglas 			= models.CharField(max_length=45)
+	#tipo 			= models.CharField(max_length=3, choices=TIPOS)muerto
+	#nombre 			= models.CharField(max_length=45)muertomuerto
+	#siglas 			= models.CharField(max_length=45)muerto
 	fecha_creacion 	= models.DateField(default=datetime.datetime.now().date())
 
 #Aqui se modelan los atributos multivaluados de la clase Documentos Generales (de uno a muchos)
