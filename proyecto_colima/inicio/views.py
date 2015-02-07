@@ -19,7 +19,7 @@ from inicio.forms import (	AuthForm,
 							ContratosForm, 
 							ConveniosForm, 
 							PropuestasForm, 
-							EmpresasForm, 
+							EntidadesForm, 
 							EntregablesForm, 
 							PersonalForm,
 							ConsultarAnexoTecnicoForm,
@@ -35,7 +35,7 @@ from inicio.models import ( AnexosTecnicos,
 							Facturas,
 							Convenios,
 							Propuestas,
-							Empresas
+							Entidades
 						  )
 
 def registrar_proyecto(request):
