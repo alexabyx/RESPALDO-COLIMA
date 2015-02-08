@@ -7,7 +7,7 @@ from inicio.models import ( Proyectos,
 							Contratos,
 							Convenios,
 							Propuestas,
-							Empresas,
+							Entidades,
 							Entregables,
 							Personal
 							)
@@ -55,9 +55,9 @@ class PropuestasForm(forms.ModelForm):
 	class Meta:
 		model = Propuestas
 
-class EmpresasForm(forms.ModelForm):
+class EntidadesForm(forms.ModelForm):
 	class Meta:
-		model = Empresas
+		model = Entidades
 
 class EntregablesForm(forms.ModelForm):
 	class Meta:

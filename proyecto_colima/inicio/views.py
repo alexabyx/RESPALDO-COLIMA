@@ -31,7 +31,7 @@ from inicio.forms import (	AuthForm,
 							ContratosForm, 
 							ConveniosForm, 
 							PropuestasForm, 
-							EmpresasForm, 
+							EntidadesForm, 
 							EntregablesForm, 
 							PersonalForm,
 							ConsultarAnexoTecnicoForm,
@@ -142,6 +142,16 @@ def eliminar_proyecto(request):
 
 	return http_response	
 
+<<<<<<< HEAD
+=======
+from inicio.models import ( AnexosTecnicos,
+							Contratos,
+							Facturas,
+							Convenios,
+							Propuestas,
+							Entidades
+						  )
+>>>>>>> c8fbaa5fbd30dbd6b0b482c9ee9eed2af841b972
 
 def registrar_proyecto(request):
 	if request.method=="POST":
