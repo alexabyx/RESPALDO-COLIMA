@@ -1,16 +1,28 @@
 #! -*- coding:utf-8 -*-
 # Create your views here.
 
-from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login, logout
-from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.core.urlresolvers import reverse_lazy
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger, InvalidPage
-from django.shortcuts import render, render_to_response, get_object_or_404
-from django.conf import settings
-from django.http import HttpResponseRedirect, Http404
-from django.template import RequestContext
+from django.contrib.auth import authenticate, login, logout
 from django.forms.models import model_to_dict
+from django.shortcuts import render, render_to_response, get_object_or_404
+from django.template import RequestContext
+from django.conf import settings
+from django.http import HttpResponse, HttpResponseRedirect, Http404
+
+from django.views.generic.detail import DetailView
+from django.views.generic.edit import UpdateView, CreateView
+
+from inicio.models import ( Proyectos,
+							AnexosTecnicos,
+							Contratos,
+							Facturas,
+							Convenios,
+							Propuestas,
+							Empresas
+						  )
 
 from inicio.forms import (	AuthForm, 
 							RegistrarProyectoForm, 
@@ -29,14 +41,107 @@ from inicio.forms import (	AuthForm,
 							ConsultarEmpresasForm,
 							ConsultarPropuestasForm
 						  )
+#
+#==================OPERACIONES DE PROYECTOS========================
+#
 
-from inicio.models import ( AnexosTecnicos,
-							Contratos,
-							Facturas,
-							Convenios,
-							Propuestas,
-							Empresas
-						  )
+@login_required(login_url='/')
+def proyectos(request):
+	proyectos_list = Proyectos.objects.all()
+
+	paginator = Paginator(proyectos_list, 10)
+	page = request.GET.get('page', 1)
+
+	try:
+		proyectos = paginator.page(page)
+	except PageNotAnInteger:
+		proyectos = paginator.page(1)
+	except EmptyPage:
+		proyectos = paginator.page(paginator.num_pages)
+
+	return render(request, 'inicio/proyectos.html', {'proyectos': proyectos}, context_instance=RequestContext(request))
+
+class ProyectoDetailView(DetailView):
+	
+	template_name = "inicio/proyecto_detail.html"
+	model = Proyectos
+
+	def get_object(self):
+		object = super(ProyectoDetailView, self).get_object()
+		return object
+
+def editar_proyecto(request, pk):
+	if request.method=="POST":
+		form = RegistrarProyectoForm(request.POST, request.FILES)
+		if form.is_valid():
+			try:	
+				Proyectos.objects.filter(id=int(pk)).update( nombre = form.cleaned_data['nombre'],
+								 siglas = form.cleaned_data['siglas'],
+								 #responsable = form.cleaned_data['cliente']
+								 fecha_inicio = form.cleaned_data['fecha_inicio'],
+								 #fecha_fin = form.cleaned_data['fecha_fin']
+								 status = form.cleaned_data['status'],
+								 avance = form.cleaned_data['avance'],
+								 #comentario = form.cleaned_data['comentario']
+								 #cliente = form.cleaned_data['cliente']
+													)
+
+				mensaje = "El proyecto ha sido creado exitosamente"
+			except:
+				mensaje = "El proyecto no pudo ser actualizado"
+
+			return render(request, 'inicio/proyecto_create.html', {'mensaje': mensaje})
+		else:
+			print "No paso"
+	else:
+		proyecto = Proyectos.objects.get(id=int(pk))
+		form=RegistrarProyectoForm(model_to_dict(proyecto))
+	return render(request, 'inicio/proyecto_create.html', {'form': form})
+
+def crear_proyecto(request):
+	if request.method=="POST":
+		form = RegistrarProyectoForm(request.POST, request.FILES)
+		if form.is_valid():
+			proyecto = Proyectos.objects.create( nombre = form.cleaned_data['nombre'],
+												 siglas = form.cleaned_data['siglas'],
+												 #responsable = form.cleaned_data['cliente']
+												 fecha_inicio = form.cleaned_data['fecha_inicio'],
+												 #fecha_fin = form.cleaned_data['fecha_fin']
+												 status = form.cleaned_data['status'],
+												 avance = form.cleaned_data['avance'],
+												 #comentario = form.cleaned_data['comentario']
+												 #cliente = form.cleaned_data['cliente']
+												)
+			mensaje = "El proyecto ha sido creado exitosamente"
+			return render(request, 'inicio/proyecto_create.html', {'mensaje': mensaje})
+		else:
+			print "No paso"
+	else:
+		form=RegistrarProyectoForm()
+	return render(request, 'inicio/proyecto_create.html', {'form': form})
+
+def eliminar_proyecto(request):
+	import json
+
+	if not request.is_ajax():
+		raise Http404
+
+	pk = request.POST.get('pk')
+
+	try:
+		proyecto = Proyectos.objects.get(id=pk)
+		#proyecto.habilitado=False 
+	except Exception, e:
+		print "Error: ", e
+		mensaje = {'mensaje': "Fallo la operación", 'error': True}
+	else:
+		mensaje = {'mensaje': "Operación exitosa", 'error': False}
+
+	content = json.dumps(mensaje)
+	http_response = HttpResponse(content, content_type="application/json")
+
+	return http_response	
+
 
 def registrar_proyecto(request):
 	if request.method=="POST":
@@ -518,35 +623,5 @@ def registrar_personal(request):
 	form = PersonalForm()
 	return render(request, 'inicio/registrar_personal.html', {'form': form}, context_instance=RequestContext(request))
 
-def inicio(request):
-	if request.method == "POST":
-		form = AuthForm(request.POST)
-		if form.is_valid():
-			username = form.cleaned_data['username']
-			password = form.cleaned_data['password']
-			try:
-				usuario = authenticate(username = username, password=password)
-			except:
-				usuario = None
-			print usuario
-			if usuario is not None:
-				if usuario.is_active:                        
-					login(request, usuario)
-					request.session.set_expiry(settings.TIEMPO_EXPIRACION_SESION)
-					return HttpResponseRedirect('administrar_usuarios')
-				else:
-					mensaje = "Usuario inactivo"
-					return render(request, 'inicio/login.html', {'form': form, 'mensaje': mensaje}, context_instance=RequestContext(request))					
-			else:
-				mensaje = "Usuario o contraseña incorrectos"
-				return render(request, 'inicio/login.html', {'form': form, 'mensaje': mensaje}, context_instance=RequestContext(request))
-		else:
-			return render(request, 'inicio/login.html', {'form': form }, context_instance=RequestContext(request))
-	else:
-		form = AuthForm()
-	return render(request, 'inicio/login.html', {'form': form }, context_instance=RequestContext(request))
 
-@login_required(login_url="/inicio")
-def administrar_usuarios(request):
-	return render(request, 'inicio/administrar_usuarios.html',{},context_instance=RequestContext(request))
 

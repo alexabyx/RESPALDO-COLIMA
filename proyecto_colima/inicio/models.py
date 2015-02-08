@@ -4,7 +4,13 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from django.db import models
 
+from inicio.helpers import get_upload_path
+
 import datetime
+
+#esta clase se encarga de representar en el sistema los atributos de la clase EMPRESAS
+class Empresas(models.Model):
+	nombre=models.CharField(max_length=45)
 
 #esta clase se encarga de representar en el sistema los atributos de la clase PERSONAL 
 class Personal(models.Model):
@@ -66,17 +72,17 @@ class Proyectos(models.Model):
 
 	nombre 			= models.CharField(max_length=150)
 	siglas 			= models.CharField(max_length=45)
-	responsable 	= models.ManyToManyField(Personal)
-	empresa 		= models.ManyToManyField(Empresas)
+	#responsable 	= models.ManyToManyField(Personal)
+	#empresa 		= models.ManyToManyField(Empresas)
 	fecha_inicio 	= models.DateField(default=datetime.datetime.now().date())
-	fecha_fin 		= models.DateField(default=datetime.datetime.now().date())
+	#fecha_fin 		= models.DateField(default=datetime.datetime.now().date())
 	status 			= models.CharField(max_length=3, choices = STATUS) #dreprecated
 	avance 			= models.CharField(max_length=45)
-	comentario 		= models.CharField(max_length=500)
-	fecha_cambio 	= models.DateField()
+	#comentario 		= models.CharField(max_length=500)
+	#fecha_cambio 	= models.DateField()
 
 	#
-	#Relacion uno a muchas Empresas(49, 46) 
+	# Relacion uno a muchas Empresas(49, 46) 
 	#
 	# fecha_fin
 	# comentario
@@ -171,10 +177,6 @@ class DetallesEntregables(models.Model):
 	siglas 			= models.CharField(max_length=45)
 	fecha_creacion 	= models.DateField(default=datetime.datetime.now())
 	archivo 		= models.FileField(upload_to=get_upload_path, blank=True)
-
-#esta clase se encarga de representar en el sistema los atributos de la clase EMPRESAS
-class Empresas(models.Model):
-	nombre=models.CharField(max_length=45)
 
 #esta clase se encarga de representar en el sistema los atributos de la clase FACTURAS
 class Facturas(models.Model):

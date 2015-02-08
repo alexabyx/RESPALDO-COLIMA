@@ -19,7 +19,7 @@ class DetalleDocumentoResponsivaAdmin(admin.ModelAdmin):
 
 class ProyectosAdmin(admin.ModelAdmin):
 	list_display = ('siglas', 'fecha_inicio', 'avance')
-	list_filter = ('responsable', 'status')
+	#list_filter = ('responsable', 'status')
 
 class AnexosTecnicosAdmin(admin.ModelAdmin):
 	list_display = ('tipo', 'nombre', 'siglas')
@@ -41,7 +41,7 @@ class DetallesEntregablesAdminInline(admin.TabularInline):
 
 class EntregablesAdmin(admin.ModelAdmin):
 	list_display = ('contrato', 'proyecto', 'responsable')
-	list_filter = ('fecha_creacion',)
+	#list_filter = ('fecha_creacion',)
 
 	inlines = [DetallesEntregablesAdminInline]
 

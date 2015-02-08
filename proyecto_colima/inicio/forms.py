@@ -12,14 +12,28 @@ from inicio.models import ( Proyectos,
 							Personal
 							)
 
-
 class AuthForm(forms.Form):
-    username = forms.CharField(required=True, max_length = 10, label=u'Usuario', widget = forms.TextInput(attrs = {'id':'usernames'}))  
-    password = forms.CharField(required=True,label=u'Contraseña',widget=forms.PasswordInput(attrs = {'id':'elpassword'}))
+    username = forms.CharField(required=True, max_length = 10, label=u'Usuario', widget = forms.TextInput(attrs = {'class': "form-control", 'id':"inputEmail3", 'placeholder':"Usuario", 'name': "username"}))  
+    password = forms.CharField(required=True,label=u'Contraseña',widget=forms.PasswordInput(attrs = {'type':"password", 'class':"form-control", 'id':"inputPassword3", 'placeholder':"Contraseña", 'name':"password"}))
 
-class RegistrarProyectoForm(forms.ModelForm):
-	class Meta:
-		model = Proyectos
+class RegistrarProyectoForm(forms.Form):
+	STATUS = (('A', 'Activo'), ('H', 'Historico'))
+	
+	nombre 			= forms.CharField(required=True, max_length=150, widget=forms.TextInput(attrs={'type': "text", 'class': "form-control"}))
+	siglas 			= forms.CharField(required=True, max_length=45, widget=forms.TextInput(attrs={'type': "text", 'class': "form-control"}))
+	#responsable 	= forms.ManyToManyField(Personal)
+	#empresa 		= forms.ManyToManyField(Empresas)
+	fecha_inicio 	= forms.DateField(required=True, input_formats=['%d-%m-%Y', '%Y-%m-%d', '%d/%m/%Y', '%Y/%m/%d'], widget=forms.TextInput(attrs={'type': "date", 'class': "form-control"}) )
+	#fecha_fin 		= forms.DateField(default=datetime.datetime.now().date())
+	status 			= forms.CharField(required=True, max_length=3, widget=forms.Select(choices=STATUS, attrs={ 'type': "select", 'class': "form-control"})) #dreprecated
+	avance 			= forms.CharField(required=True, max_length=45, widget=forms.TextInput(attrs={'type': "text", 'class': "form-control"}))
+	#comentario 		= forms.CharField(max_length=500)
+	#fecha_cambio 	= forms.DateField()
+
+
+# class RegistrarProyectoForm(forms.ModelForm):
+# 	class Meta:
+# 		model = Proyectos
 
 class FacturasForm(forms.ModelForm):
 	class Meta:

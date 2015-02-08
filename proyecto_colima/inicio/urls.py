@@ -1,19 +1,31 @@
 from django.conf.urls import patterns, include, url
 from inicio.views import *
-
+from inicio.views_login import *
+from inicio.views_modal import *
 
 urlpatterns = patterns('proyecto_colima.inicio',
-    # Examples:
-    # url(r'^$', 'proyecto_colima.views.home', name='home'),
-    # url(r'^blog/', include('blog.urls')),
 
-    url(r'^$', inicio, name="login"),
-    url(r'^administrar_usuarios/$', administrar_usuarios, name="administrar-usuarios"),
+    #URL LOGOUT Y ADMINISTRACION
+    url(r'^$', administracion, name="index"),
+    url(r'^logout/$', logout_web, name="logout-web"),
+
+    #MODALES
+    url(r'^modal_ok/$', modal_ok, name="modal-ok"),
+    url(r'^modal_aviso/$', modal_aviso, name="modal-aviso"),
+    url(r'^modal_error/$', modal_error, name="modal-error"),
+    
+    #PROYECTOS
+    url(r'^proyectos/$', proyectos, name="proyectos"),
+    url(r'^detalle_proyecto/(?P<pk>\d+)/$', ProyectoDetailView.as_view(), name="detalle-proyecto"),
+    url(r'^editar_proyecto/(?P<pk>\d+)/$', editar_proyecto, name="editar-proyecto"),
+    #url(r'^eliminar_proyecto/(?P<pk>\d+)/$', ProyectoDeleteView.as_view(), name="eliminar-proyecto"),
+    url(r'^eliminar_proyecto/$', eliminar_proyecto, name='eliminar-proyecto'),
+    url(r'^crear_proyecto/$', crear_proyecto, name="crear-proyecto"),
 
     url(r'^registrar_proyecto/$', registrar_proyecto, name="registrar-proyecto"),
+
+
     url(r'^registrar_factura/$', registrar_factura, name="registrar-factura"),
-
-
     url(r'^anexostecnicos/$', anexostecnicos, name = "anexostecnicos"),
     url(r'^agregar_anexotecnico/$', agregar_anexotecnico, name = "agregar-anexotecnico"),
     url(r'^editar_anexotecnico/(?P<anexo_id>\d+)/$', editar_anexotecnico, name="editar-anexotecnico"),

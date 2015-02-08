@@ -1,0 +1,185 @@
+{% load i18n %}
+{% load staticfiles %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es" lang="es">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Administración | Proyecto Colima</title>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
+	<script type="text/javascript" src="{% static "fancybox/jquery.mousewheel-3.0.4.pack.js" %}"></script>
+	<script type="text/javascript" src="{% static "fancybox/jquery.fancybox-1.3.4.pack.js" %}"></script>
+	<script type="text/javascript" src="{% static "fancybox/jquery.fancybox-1.3.4.js" %}"></script>
+	<script type="text/javascript" src="{% static "fancybox/jquery.easing-1.3.pack.js" %}"></script>
+	<link rel="stylesheet" type="text/css" href="{% static "fancybox/jquery.fancybox-1.3.4.css" %}" media="screen" />
+
+    <script>
+     function detalle(proyecto_id){
+     	$.fancybox.showActivity();
+		$.get('/administracion/detalle_proyecto/'+proyecto_id+'/', {}, function(data){ 
+			$.fancybox({'content': data,
+						'transitionIn'	: 'elastic',
+						'transitionOut'	: 'elastic',
+						'onComplete': function(){ $('#fancybox-content').css("width", $('#fancybox-outer').width());},
+						'onClosed':function(){ window.location.reload();},
+					   });
+		});   	
+     }
+
+     function aviso(proyecto_id){
+     	$.fancybox.showActivity();
+     	var data = {mensaje: "¿Está seguro de querer eliminar este proyecto?"}
+     	$.get('/administracion/modal_aviso/', data, function(response){
+     		$.fancybox({'content': response,
+     					'onComplete':function(){
+     						$('#aceptar').click(function(){
+     								$(this).attr("disabled", "disabled");
+									//$.fancybox.close();
+									eliminar(proyecto_id);
+     						});
+
+     						$("#cancelar").click(function(){
+									$.fancybox.close();
+     						});
+     					},
+     					});
+
+     	});
+     }
+
+     function eliminar(proyecto_id){
+     	$.fancybox.showActivity();
+
+     	var csrfmiddlewaretoken = $("input[name='csrfmiddlewaretoken']").val();
+     	var data = {'pk': proyecto_id, 'csrfmiddlewaretoken': csrfmiddlewaretoken}
+
+     	$.post('/administracion/eliminar_proyecto/', data, function(response){
+     		if(response.error){
+     			$.get('/administracion/modal_error/', {}, function(_response){ 
+					$.fancybox({'content': _response,
+							'transitionIn'	: 'elastic',
+							'transitionOut'	: 'elastic',
+							'onComplete': function(){ $('#fancybox-content').css("width", $('#fancybox-outer').width());},
+							'onClosed':function(){ window.location.reload();},
+								});
+     			});
+     		}
+     		else{
+     			$.fancybox.showActivity();
+     			$.get('/administracion/modal_ok/', {}, function(_response){
+					$.fancybox({'content': _response,
+							'transitionIn'	: 'elastic',
+							'transitionOut'	: 'elastic',
+							'onComplete': function(){ $('#fancybox-content').css("width", $('#fancybox-outer').width());},
+							'onClosed':function(){ window.location.reload();},
+							});
+     			});
+
+     		}
+
+     	});
+     } 
+    </script>
+    
+    <style>
+    .bienvenida{
+    	padding-right: 15px;
+    }
+    .menu{
+    	padding-left: 15px;
+    	width: 15%;
+    }
+    .panel{
+    	width: 80%;
+    	margin-left: 10%;
+    	margin-right: 10%;
+    }
+    .agregar{
+	    margin-left: 89%;
+	    margin-top: -20px    	
+    }
+    </style>
+  </head>
+  <body>
+  	<header>
+		<nav class="navbar navbar-default">
+		  <div class="container-fluid">
+				<a class="navbar-brand" href="{% url 'administracion:index' %}">
+				Proyecto Colima
+				</a>
+
+	            {% if user.is_authenticated %}
+	            	<p class="navbar-text navbar-right bienvenida">Bienvenido/a, {{ user.first_name }} {{ user.last_name }}. <a class="navbar-link" href="{% url 'administracion:logout-web' %}">Cerrar sesión</a> </p>
+                {% else %}
+                	<p class="navbar-text navbar-right"> </p>
+	            {% endif %}
+		    </div>
+		</nav>
+
+  	</header>
+
+	<div class="panel panel-primary">
+	  <!-- Default panel contents -->
+	  <div class="panel-heading">
+	  	  	Listado de proyectos
+	  <div>
+	  	<a href="{% url 'administracion:crear-proyecto' %}">
+	  		<button type="button" class="btn btn-default agregar" />Agregar nuevo</button>
+	  	</a>
+	  </div>
+	  </div>
+
+	  <!-- Table -->
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th>Nombre</th>
+					<th>Fecha de inicio</th>
+					<th>Avance</th>
+					<th>Acciones</th>
+				</tr>
+			</thead>
+			{% for proyecto in proyectos %}
+			<tr>
+				<td>
+					<a onClick="detalle({{proyecto.id}});"> {{ proyecto.nombre }} </a>
+					
+				</td>
+				<td>{{ proyecto.fecha_inicio }}</td>
+				<td>{{ proyecto.avance }}</td>
+				<td>
+					{% csrf_token %}
+					<a href="{% url 'administracion:editar-proyecto' proyecto.id %}" >Editar</a>
+					<a onClick="aviso({{ proyecto.id }});">Eliminar</a>
+			</tr>
+			{% endfor %}			
+		</table>
+	</div>	
+	<div>
+		<nav>
+		  <ul class="pager">
+		    {% if proyectos.has_previous %}
+	           <li><a href="?page={{ proyectos.previous_page_number }}">Anterior</a></li> 
+		    {% endif %}                                    
+			<h5> Página {{ proyectos.number }} de {{ proyectos.paginator.num_pages }}</h5>
+		    {% if proyectos.has_next %}
+	    		<li><a href="?page={{ proyectos.next_page_number }}">Siguiente</a></li>
+		    {% endif %}
+		  </ul>
+		</nav>	
+	</div>	
+  </body>
+</html>
+
+
+
+
