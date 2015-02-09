@@ -2,38 +2,61 @@
 
 from django import forms
 from inicio.models import ( Proyectos,
+							Clientes,
 							Facturas,
 							AnexosTecnicos,
 							Contratos,
 							Convenios,
 							Propuestas,
-							Entidades,
+							Empresas,
 							Entregables,
 							Personal
 							)
+
+from inicio.helpers import get_upload_path
 
 class AuthForm(forms.Form):
     username = forms.CharField(required=True, max_length = 10, label=u'Usuario', widget = forms.TextInput(attrs = {'class': "form-control", 'id':"inputEmail3", 'placeholder':"Usuario", 'name': "username"}))  
     password = forms.CharField(required=True,label=u'Contraseña',widget=forms.PasswordInput(attrs = {'type':"password", 'class':"form-control", 'id':"inputPassword3", 'placeholder':"Contraseña", 'name':"password"}))
 
+CHOICES = tuple(zip([int(p['id']) for p in Personal.objects.all().values('id').distinct()], [str(p['nombre']) for p in Personal.objects.all().values('nombre').distinct()]))
 class RegistrarProyectoForm(forms.Form):
-	STATUS = (('A', 'Activo'), ('H', 'Historico'))
-	
-	nombre 			= forms.CharField(required=True, max_length=150, widget=forms.TextInput(attrs={'type': "text", 'class': "form-control"}))
+	nombre 			= forms.CharField(required=True, max_length=150, help_text=u"Nombre del proyecto", widget=forms.TextInput(attrs={'type': "text", 'class': "form-control"}))
 	siglas 			= forms.CharField(required=True, max_length=45, widget=forms.TextInput(attrs={'type': "text", 'class': "form-control"}))
-	#responsable 	= forms.ManyToManyField(Personal)
-	#empresa 		= forms.ManyToManyField(Empresas)
+	responsable		= forms.MultipleChoiceField(required=False, widget=forms.SelectMultiple(attrs={'class':"form-control", 'size':3}), choices=CHOICES,help_text='Personal a cargo')
+
 	fecha_inicio 	= forms.DateField(required=True, input_formats=['%d-%m-%Y', '%Y-%m-%d', '%d/%m/%Y', '%Y/%m/%d'], widget=forms.TextInput(attrs={'type': "date", 'class': "form-control"}) )
-	#fecha_fin 		= forms.DateField(default=datetime.datetime.now().date())
-	status 			= forms.CharField(required=True, max_length=3, widget=forms.Select(choices=STATUS, attrs={ 'type': "select", 'class': "form-control"})) #dreprecated
+	fecha_fin 		= forms.DateField(required=True, input_formats=['%d-%m-%Y', '%Y-%m-%d', '%d/%m/%Y', '%Y/%m/%d'], widget=forms.TextInput(attrs={'type': "date", 'class': "form-control"}) )
 	avance 			= forms.CharField(required=True, max_length=45, widget=forms.TextInput(attrs={'type': "text", 'class': "form-control"}))
-	#comentario 		= forms.CharField(max_length=500)
-	#fecha_cambio 	= forms.DateField()
 
+	comentario 		= forms.CharField(max_length=500, widget=forms.Textarea(attrs={'class':"form-control", 'rows': 5, 'cols': 50}))
+	#fecha_cambio 	= forms.DateField(required=False, input_formats=['%d-%m-%Y', '%Y-%m-%d', '%d/%m/%Y', '%Y/%m/%d'], widget=forms.TextInput(attrs={'type': "date", 'class': "form-control"}) )
+	cliente			= forms.ModelChoiceField(queryset=Clientes.objects.all(),required=True, widget=forms.Select(attrs={'type': "select", 'class': "form-control"}))
 
-# class RegistrarProyectoForm(forms.ModelForm):
-# 	class Meta:
-# 		model = Proyectos
+class RegistrarFacturaForm(forms.Form):
+	
+	contrato 			= forms.ModelChoiceField(required=True, queryset=Contratos.objects.all(), widget=forms.Select(attrs={'type': "select", 'class': "form-control"}))
+	responsable 		= forms.ModelChoiceField(required=True, queryset=Personal.objects.all(), widget=forms.Select(attrs={'type': "select", 'class': "form-control"}))
+
+	tipo 				= forms.ChoiceField(required=True, widget=forms.Select(attrs={'type': "select", 'class': "form-control"}), choices=Facturas.TIPOS)
+	nombre 				= forms.CharField(required=True, max_length=150, widget=forms.TextInput(attrs={'type': "text", 'class': "form-control"}))
+	siglas 				= forms.CharField(required=True, max_length=150, widget=forms.TextInput(attrs={'type': "text", 'class': "form-control"}))
+
+	numero_factura 		= forms.IntegerField(required=True, widget=forms.TextInput(attrs={'type': "number", 'class': "form-control"}))
+	fecha_factura 		= forms.DateField(required=True, input_formats=['%d-%m-%Y', '%Y-%m-%d', '%d/%m/%Y', '%Y/%m/%d'], widget=forms.TextInput(attrs={'type': "date", 'class': "form-control"}) )
+	folio_venta 		= forms.CharField(required=True, max_length=150, help_text="Folio de la factura", widget=forms.TextInput(attrs={'type': "text", 'class': "form-control"}))
+
+	rfc 				= forms.CharField(required=True, max_length=150, help_text="RFC persona fisica/moral", widget=forms.TextInput(attrs={'type': "text", 'class': "form-control"}))
+	direccion 			= forms.CharField(required=True, max_length=150, help_text=u"dirección persona fisica/moral", widget=forms.TextInput(attrs={'type': "text", 'class': "form-control"}))
+
+	subtotal 			= forms.IntegerField(required=True, widget=forms.TextInput(attrs={'type': "text", 'class': "form-control"}))
+	iva 				= forms.IntegerField(required=True, widget=forms.TextInput(attrs={'type': "text", 'class': "form-control"}))
+	total_con_numero 	= forms.IntegerField(required=True, widget=forms.TextInput(attrs={'type': "number", 'class': "form-control"}))
+	total_con_letra 	= forms.CharField(required=True, max_length=150, widget=forms.TextInput(attrs={'type': "text", 'class': "form-control"}))
+	pagada 				= forms.BooleanField(widget=forms.CheckboxInput(attrs={'type': "checkbox"}))	
+	archivo_xml 		= forms.FileField(required=False, widget=forms.FileInput(attrs={"type":"file", "id": "exampleInputFile"})) #Archivo en XML
+	archivo_fisico 		= forms.FileField(required=False, widget=forms.FileInput(attrs={"type":"file", "id": "exampleInputFile"})) #Archivo fisico de la factura
+
 
 class FacturasForm(forms.ModelForm):
 	class Meta:
@@ -55,9 +78,9 @@ class PropuestasForm(forms.ModelForm):
 	class Meta:
 		model = Propuestas
 
-class EntidadesForm(forms.ModelForm):
+class EmpresasForm(forms.ModelForm):
 	class Meta:
-		model = Entidades
+		model = Empresas
 
 class EntregablesForm(forms.ModelForm):
 	class Meta:

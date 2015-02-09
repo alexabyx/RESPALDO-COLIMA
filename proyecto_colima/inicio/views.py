@@ -16,6 +16,8 @@ from django.views.generic.detail import DetailView
 from django.views.generic.edit import UpdateView, CreateView
 
 from inicio.models import ( Proyectos,
+							Personal,
+							Clientes,
 							AnexosTecnicos,
 							Contratos,
 							Facturas,
@@ -25,13 +27,14 @@ from inicio.models import ( Proyectos,
 						  )
 
 from inicio.forms import (	AuthForm, 
-							RegistrarProyectoForm, 
+							RegistrarProyectoForm,
+							RegistrarFacturaForm, 
 							FacturasForm, 
 							AnexosTecnicosForm, 
 							ContratosForm, 
 							ConveniosForm, 
 							PropuestasForm, 
-							EntidadesForm, 
+							EmpresasForm, 
 							EntregablesForm, 
 							PersonalForm,
 							ConsultarAnexoTecnicoForm,
@@ -47,9 +50,9 @@ from inicio.forms import (	AuthForm,
 
 @login_required(login_url='/')
 def proyectos(request):
-	proyectos_list = Proyectos.objects.all()
+	proyectos_list = Proyectos.objects.filter(habilitado=True)
 
-	paginator = Paginator(proyectos_list, 10)
+	paginator = Paginator(proyectos_list, 9)
 	page = request.GET.get('page', 1)
 
 	try:
@@ -72,48 +75,60 @@ class ProyectoDetailView(DetailView):
 
 def editar_proyecto(request, pk):
 	if request.method=="POST":
-		form = RegistrarProyectoForm(request.POST, request.FILES)
+		form = RegistrarProyectoForm(request.POST)
 		if form.is_valid():
-			try:	
-				Proyectos.objects.filter(id=int(pk)).update( nombre = form.cleaned_data['nombre'],
-								 siglas = form.cleaned_data['siglas'],
-								 #responsable = form.cleaned_data['cliente']
-								 fecha_inicio = form.cleaned_data['fecha_inicio'],
-								 #fecha_fin = form.cleaned_data['fecha_fin']
-								 status = form.cleaned_data['status'],
-								 avance = form.cleaned_data['avance'],
-								 #comentario = form.cleaned_data['comentario']
-								 #cliente = form.cleaned_data['cliente']
-													)
+			try:
+				Proyectos.objects.filter(id=int(pk)).update( 
+															nombre = form.cleaned_data['nombre'],
+															siglas = form.cleaned_data['siglas'],
+															fecha_inicio = form.cleaned_data['fecha_inicio'],
+															fecha_fin = form.cleaned_data['fecha_fin'],
+															avance = form.cleaned_data['avance'],
+															comentario = form.cleaned_data['comentario'],
+															cliente = form.cleaned_data['cliente'],								
+															)
 
-				mensaje = "El proyecto ha sido creado exitosamente"
-			except:
+				proyecto = Proyectos.objects.get(id = int(pk))
+
+				proyecto.responsable.clear()			
+
+				for responsable in form.cleaned_data['responsable']:
+					personal = Personal.objects.get(id = int(responsable))
+					proyecto.responsable.add(personal)
+				proyecto.save()
+
+				return HttpResponseRedirect('/administracion/proyectos/')
+			except Exception, e:				
+				print "Error: ", e
 				mensaje = "El proyecto no pudo ser actualizado"
-
-			return render(request, 'inicio/proyecto_create.html', {'mensaje': mensaje})
 		else:
 			print "No paso"
 	else:
 		proyecto = Proyectos.objects.get(id=int(pk))
 		form=RegistrarProyectoForm(model_to_dict(proyecto))
-	return render(request, 'inicio/proyecto_create.html', {'form': form})
+	return render(request, 'inicio/proyecto_edit.html', {'form': form})
 
 def crear_proyecto(request):
 	if request.method=="POST":
-		form = RegistrarProyectoForm(request.POST, request.FILES)
+		form = RegistrarProyectoForm(request.POST)
 		if form.is_valid():
-			proyecto = Proyectos.objects.create( nombre = form.cleaned_data['nombre'],
-												 siglas = form.cleaned_data['siglas'],
-												 #responsable = form.cleaned_data['cliente']
-												 fecha_inicio = form.cleaned_data['fecha_inicio'],
-												 #fecha_fin = form.cleaned_data['fecha_fin']
-												 status = form.cleaned_data['status'],
-												 avance = form.cleaned_data['avance'],
-												 #comentario = form.cleaned_data['comentario']
-												 #cliente = form.cleaned_data['cliente']
+			proyecto = Proyectos.objects.create(
+												nombre = form.cleaned_data['nombre'],
+												siglas = form.cleaned_data['siglas'],
+												fecha_inicio = form.cleaned_data['fecha_inicio'],
+												fecha_fin = form.cleaned_data['fecha_fin'],
+												avance = form.cleaned_data['avance'],
+												comentario = form.cleaned_data['comentario'],
+												cliente = form.cleaned_data['cliente'],
 												)
+			for responsable in form.cleaned_data['responsable']:
+				personal = Personal.objects.get(id = int(responsable))
+				proyecto.responsable.add(personal)
+			proyecto.save()
+
 			mensaje = "El proyecto ha sido creado exitosamente"
-			return render(request, 'inicio/proyecto_create.html', {'mensaje': mensaje})
+			return HttpResponseRedirect('/administracion/proyectos/')
+			#return render(request, 'inicio/proyecto_create.html', {'mensaje': mensaje})
 		else:
 			print "No paso"
 	else:
@@ -129,8 +144,7 @@ def eliminar_proyecto(request):
 	pk = request.POST.get('pk')
 
 	try:
-		proyecto = Proyectos.objects.get(id=pk)
-		#proyecto.habilitado=False 
+		proyecto = Proyectos.objects.filter(id=pk).update(habilitado=False)
 	except Exception, e:
 		print "Error: ", e
 		mensaje = {'mensaje': "Fallo la operación", 'error': True}
@@ -142,39 +156,109 @@ def eliminar_proyecto(request):
 
 	return http_response	
 
-<<<<<<< HEAD
-=======
-from inicio.models import ( AnexosTecnicos,
-							Contratos,
-							Facturas,
-							Convenios,
-							Propuestas,
-							Entidades
-						  )
->>>>>>> c8fbaa5fbd30dbd6b0b482c9ee9eed2af841b972
+#
+#==================OPERACIONES DE FACTURAS========================
+#
+def facturas(request):
+	facturas_list = Facturas.objects.all()
 
-def registrar_proyecto(request):
+	paginator = Paginator(facturas_list, 9)
+	page = request.GET.get('page', 1)
+
+	try:
+		facturas = paginator.page(page)
+	except PageNotAnInteger:
+		facturas = paginator.page(1)
+	except EmptyPage:
+		facturas = paginator.page(paginator.num_pages)
+
+	return render(request, 'inicio/facturas.html', {'facturas': facturas}, context_instance=RequestContext(request))
+
+class FacturaDetailView(DetailView):
+	
+	template_name = "inicio/factura_detail.html"
+	model = Facturas
+
+	def get_object(self):
+		object = super(FacturaDetailView, self).get_object()
+		return object
+
+def editar_factura(request, pk):
 	if request.method=="POST":
-		form = RegistrarProyectoForm(request.POST, request.FILES)
+		form = RegistrarFacturaForm(request.POST, request.FILES)
 		if form.is_valid():
-			form.save()
-			mensaje="Registro Guardado"
-			return render(request, 'inicio/registrar_proyecto.html', {'mensaje': mensaje}, context_instance=RequestContext(request))
+			try:
+				Facturas.objects.filter(id=int(pk)).update(
+															contrato 			= form.cleaned_data['contrato'],
+															responsable 		= form.cleaned_data['responsable'],
+															tipo 				= form.cleaned_data['tipo'],
+															nombre 				= form.cleaned_data['nombre'],
+															siglas 				= form.cleaned_data['siglas'],
+															numero_factura 		= form.cleaned_data['numero_factura'],
+															fecha_factura 		= form.cleaned_data['fecha_factura'],
+															folio_venta 		= form.cleaned_data['folio_venta'],
+															rfc 				= form.cleaned_data['rfc'],
+															direccion 			= form.cleaned_data['direccion'],
+															subtotal 			= form.cleaned_data['subtotal'],
+															iva 				= form.cleaned_data['iva'],
+															total_con_numero 	= form.cleaned_data['total_con_numero'],
+															total_con_letra 	= form.cleaned_data['total_con_letra'],
+															pagada 				= form.cleaned_data['pagada'],
+															archivo_xml 		= form.cleaned_data['archivo_xml'],
+															archivo_fisico 		= form.cleaned_data['archivo_fisico'],
+															)
+
+				return HttpResponseRedirect('/administracion/facturas/')
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "La factura no pudo ser actualizada"
 		else:
 			print "No paso"
 	else:
-		form=RegistrarProyectoForm()	
-	return render(request, 'inicio/registrar_proyecto.html', {'form': form}, context_instance=RequestContext(request))
+		factura = Facturas.objects.get(id=int(pk))
+		form=RegistrarFacturaForm(model_to_dict(factura))
+	return render(request, 'inicio/factura_edit.html', {'form': form})
 
-def registrar_factura(request):
-	form = FacturasForm()
-	return render(request, 'inicio/registrar_factura.html', {'form': form}, context_instance=RequestContext(request))
+def crear_factura(request):
+	if request.method=="POST":
+		form = RegistrarFacturaForm(request.POST, request.FILES)
+		if form.is_valid():
+			factura = Facturas.objects.create(
+												contrato 			= form.cleaned_data['contrato'],
+												responsable 		= form.cleaned_data['responsable'],
+												tipo 				= form.cleaned_data['tipo'],
+												nombre 				= form.cleaned_data['nombre'],
+												siglas 				= form.cleaned_data['siglas'],
+												numero_factura 		= form.cleaned_data['numero_factura'],
+												fecha_factura 		= form.cleaned_data['fecha_factura'],
+												folio_venta 		= form.cleaned_data['folio_venta'],
+												rfc 				= form.cleaned_data['rfc'],
+												direccion 			= form.cleaned_data['direccion'],
+												subtotal 			= form.cleaned_data['subtotal'],
+												iva 				= form.cleaned_data['iva'],
+												total_con_numero 	= form.cleaned_data['total_con_numero'],
+												total_con_letra 	= form.cleaned_data['total_con_letra'],
+												pagada 				= form.cleaned_data['pagada'],
+												archivo_xml 		= form.cleaned_data['archivo_xml'],
+												archivo_fisico 		= form.cleaned_data['archivo_fisico'],
+												)
 
-#VIEWS PARA ANEXOS TECNICOS
+			mensaje = "La factura ha sido creada exitosamente"
+			return HttpResponseRedirect('/administracion/facturas/')
+
+		else:
+			print "No paso"
+	else:
+		form=RegistrarFacturaForm()
+	return render(request, 'inicio/factura_create.html', {'form': form})
+
+#
+#==================OPERACIONES DE ANEXOStECNICOS========================
+#
 def anexostecnicos(request):
-	anexostecnicos_list = AnexosTecnicos.objects.all().order_by('-fecha_creacion')
+	anexostecnicos_list = AnexosTecnicos.objects.filter(habilitado=True).order_by('-fecha_creacion')
 
-	paginator = Paginator(anexostecnicos_list, 10)
+	paginator = Paginator(anexostecnicos_list, 9)
 	page = request.GET.get('page', 1)
 
 	try:
@@ -185,6 +269,21 @@ def anexostecnicos(request):
 		anexostecnicos = paginator.page(paginator.num_pages)
 
 	return render(request, 'inicio/anexostecnicos.html', {'anexostecnicos':anexostecnicos}, context_instance=RequestContext(request))
+
+
+
+
+
+
+
+
+
+def registrar_factura(request):
+	form = FacturasForm()
+	return render(request, 'inicio/registrar_factura.html', {'form': form}, context_instance=RequestContext(request))
+
+#VIEWS PARA ANEXOS TECNICOS
+
 
 def consultar_anexotecnico(request, anexo_id):
 	anexo= AnexosTecnicos.objects.get(id=anexo_id)
@@ -313,86 +412,86 @@ def eliminar_contrato(request, contrato_id):
 
 	return render(request, 'inicio/eliminar_contrato.html',{'mensaje': mensaje}, context_instance=RequestContext(request))
 
-def facturas(request):
-	facturas = Facturas.objects.all()
+# def facturas(request):
+# 	facturas = Facturas.objects.all()
 
-	paginator = Paginator(facturas, 10)
-	page = request.GET.get('page', 1)
+# 	paginator = Paginator(facturas, 10)
+# 	page = request.GET.get('page', 1)
 
-	try:
-		facturas = paginator.page(page)
-	except PageNotAnInteger:
-		facturas = paginator.page(1)
-	except EmptyPage:
-		facturas = paginator.page(paginator.num_pages)
+# 	try:
+# 		facturas = paginator.page(page)
+# 	except PageNotAnInteger:
+# 		facturas = paginator.page(1)
+# 	except EmptyPage:
+# 		facturas = paginator.page(paginator.num_pages)
 
-	return render(request, 'inicio/facturas.html', {'facturas':facturas}, context_instance=RequestContext(request))
+# 	return render(request, 'inicio/facturas.html', {'facturas':facturas}, context_instance=RequestContext(request))
 
 
 
-def agregar_factura(request):
-	if request.method == "POST":
-		form = FacturasForm(request.POST, request.FILES)
-		if form.is_valid():
-			form.save()
-			mensaje = "Guardado"
-			return render(request, 'inicio/agregar_factura.html', {'mensaje': mensaje}, context_instance=RequestContext(request))
-	else:
-		form = FacturasForm()
-	return render(request, 'inicio/agregar_factura.html', {'form':form}, context_instance=RequestContext(request))
+# def agregar_factura(request):
+# 	if request.method == "POST":
+# 		form = FacturasForm(request.POST, request.FILES)
+# 		if form.is_valid():
+# 			form.save()
+# 			mensaje = "Guardado"
+# 			return render(request, 'inicio/agregar_factura.html', {'mensaje': mensaje}, context_instance=RequestContext(request))
+# 	else:
+# 		form = FacturasForm()
+# 	return render(request, 'inicio/agregar_factura.html', {'form':form}, context_instance=RequestContext(request))
 
-def consultar_factura(request, factura_id):
-	factura= Facturas.objects.get(id=factura_id)
-	form = ConsultarFacturasForm(model_to_dict(factura))
-	return render(request, 'inicio/consultar_factura.html', {'form':form}, context_instance=RequestContext(request))
+# def consultar_factura(request, factura_id):
+# 	factura= Facturas.objects.get(id=factura_id)
+# 	form = ConsultarFacturasForm(model_to_dict(factura))
+# 	return render(request, 'inicio/consultar_factura.html', {'form':form}, context_instance=RequestContext(request))
 
-def editar_factura(request, factura_id):
-	if request.method == "POST":
-		form = FacturasForm(request.POST)
-		if form.is_valid():
-			factura = Facturas.objects.get(id=factura_id)
-			factura.contrato = form.cleaned_data['contrato']
-			factura.responsable = form.cleaned_data['responsable']
-			factura.tipo=form.cleaned_data['tipo']
-			factura.nombre=form.cleaned_data['nombre']		
-			factura.siglas=form.cleaned_data['siglas']		
-			factura.numero_factura=form.cleaned_data['numero_factura']		
-			factura.fecha_factura = form.cleaned_data['fecha_factura']
-			factura.folio_venta = form.cleaned_data['folio_venta']
-			factura.rfc = form.cleaned_data['folio_venta']
-			factura.direccion = form.cleaned_data['direccion']
-			factura.subtotal = form.cleaned_data['subtotal']
-			factura.iva = form.cleaned_data['iva']
-			factura.total_con_numero = form.cleaned_data['total_con_numero']
-			factura.total_con_letra = form.cleaned_data['total_con_letra']
-			factura.pagada = form.cleaned_data['pagada']
-			factura.archivo = form.cleaned_data['archivo']
-			factura.save()
-			mensaje = "Guardado"
-			return render(request, 'inicio/editar_facturas.html', {'mensaje': mensaje}, context_instance=RequestContext(request))
-	else:					
-		try:
-			factura = Facturas.objects.get(id=factura_id)
-		except:
-			factura = None
+# def editar_factura(request, factura_id):
+# 	if request.method == "POST":
+# 		form = FacturasForm(request.POST)
+# 		if form.is_valid():
+# 			factura = Facturas.objects.get(id=factura_id)
+# 			factura.contrato = form.cleaned_data['contrato']
+# 			factura.responsable = form.cleaned_data['responsable']
+# 			factura.tipo=form.cleaned_data['tipo']
+# 			factura.nombre=form.cleaned_data['nombre']		
+# 			factura.siglas=form.cleaned_data['siglas']		
+# 			factura.numero_factura=form.cleaned_data['numero_factura']		
+# 			factura.fecha_factura = form.cleaned_data['fecha_factura']
+# 			factura.folio_venta = form.cleaned_data['folio_venta']
+# 			factura.rfc = form.cleaned_data['folio_venta']
+# 			factura.direccion = form.cleaned_data['direccion']
+# 			factura.subtotal = form.cleaned_data['subtotal']
+# 			factura.iva = form.cleaned_data['iva']
+# 			factura.total_con_numero = form.cleaned_data['total_con_numero']
+# 			factura.total_con_letra = form.cleaned_data['total_con_letra']
+# 			factura.pagada = form.cleaned_data['pagada']
+# 			factura.archivo = form.cleaned_data['archivo']
+# 			factura.save()
+# 			mensaje = "Guardado"
+# 			return render(request, 'inicio/editar_facturas.html', {'mensaje': mensaje}, context_instance=RequestContext(request))
+# 	else:					
+# 		try:
+# 			factura = Facturas.objects.get(id=factura_id)
+# 		except:
+# 			factura = None
 
-		form = FacturasForm(instance=factura)	
+# 		form = FacturasForm(instance=factura)	
 
-	return render(request, 'inicio/editar_anexotecnico.html', {'form': form}, context_instance=RequestContext(request))	
+# 	return render(request, 'inicio/editar_anexotecnico.html', {'form': form}, context_instance=RequestContext(request))	
 
-def eliminar_factura(request, factura_id):
-	try:
-		factura = Facturas.objects.get(id=factura_id)
-		try:
-			factura.delete()
-			mensaje = "Eliminado"
-		except:
-			mensaje = "Falló al eliminar"
-	except:
-		factura = None
-		mensaje = "Error inesperado"
+# def eliminar_factura(request, factura_id):
+# 	try:
+# 		factura = Facturas.objects.get(id=factura_id)
+# 		try:
+# 			factura.delete()
+# 			mensaje = "Eliminado"
+# 		except:
+# 			mensaje = "Falló al eliminar"
+# 	except:
+# 		factura = None
+# 		mensaje = "Error inesperado"
 
-	return render(request, 'inicio/eliminar_factura.html',{'mensaje': mensaje}, context_instance=RequestContext(request))
+# 	return render(request, 'inicio/eliminar_factura.html',{'mensaje': mensaje}, context_instance=RequestContext(request))
 
 #apartir de aqui copio convenios
 def convenios(request):

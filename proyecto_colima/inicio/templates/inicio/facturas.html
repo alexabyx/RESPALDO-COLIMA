@@ -1,30 +1,98 @@
-{% extends "admin/base_site.html" %}
-{% load i18n admin_static %}
+{% extends "inicio/base_colima.html" %}
+{% load i18n %}
+{% load staticfiles %}
+	{% block title %}Facturas{% endblock %}
+	{% block extrascript %}
+    <script>
+     function detalle(factura_id){
+     	$.fancybox.showActivity();
+		$.get('/administracion/detalle_factura/'+factura_id+'/', {}, function(data){ 
+			$.fancybox({'content': data,
+						'transitionIn'	: 'elastic',
+						'transitionOut'	: 'elastic',
+						'onComplete': function(){ $('#fancybox-content').css("width", $('#fancybox-outer').width());},
+						'onClosed':function(){ window.location.reload();},
+					   });
+		});   	
+     }
+ 
+    </script>
+    {% endblock %}
 
+    {% block extrastyle %}
+    <style>
+    .bienvenida{
+    	padding-right: 15px;
+    }
+    .menu{
+    	padding-left: 15px;
+    	width: 15%;
+    }
+    .panel{
+    	width: 80%;
+    	margin-left: 10%;
+    	margin-right: 10%;
+    }
+    .agregar{
+	    margin-left: 98%;
+	    margin-top: -20px    	
+    }
+    </style>
+    {% endblock %}
 
-{% block content %}
-<div id="content-main">
-		<a href="{% url 'inicio:agregar-factura' %}"><button>Agregar nuevo</button></a>
-		<input type="button" onclick="javascript:window.history.go(-1);" value="Regresar">
-		<!--historicos son los concluidos o cancelado
-		cerrar--> 
-		<ul>
+    {% block contenido %}
+	<div class="panel panel-primary">
+	  <!-- Default panel contents -->
+	  <div class="panel-heading">
+	  	  	Listado de facturas
+	  <div>
+	  	<a title="Agregar nuevo" href="{% url 'administracion:crear-factura' %}">
+	  		<img class="agregar" src="{% static "icons/agregar.png" %}">
+	  		<!-- <button type="button" class="btn btn-default agregar" />Agregar nuevo</button>-->
+	  	</a>
+	  </div>
+	  </div>
+
+	  <!-- Table -->
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th>Tipo</th>
+					<th>Nombre</th>
+					<th>No. factura</th>
+					<th>Fecha</th>
+					<th>Acciones</th>
+				</tr>
+			</thead>
 			{% for factura in facturas %}
-				<li>{{factura.numero_factura}}-{{factura.fecha_factura}}-{{factura.folio}} 
-					<a href="{% url 'inicio:editar-factura' factura.id %}"><button>Editar</button></a>
-					<a href="{% url 'inicio:eliminar-factura' factura.id %}"><button>Eliminar</button></a>
-					<a href="{% url 'inicio:consultar-factura' factura.id %}"><button>Consultar</button></a>
-				</li>
-			{% endfor %}
-		</ul>
-
-    {% if facturas.has_previous %}
-            <a href="?page={{ facturas.previous_page_number }}">Anterior &nbsp;&nbsp;</a>
-    {% endif %}                                    
-    {% if facturas.has_next %}
-            <a href="?page={{ facturas.next_page_number }}">Siguiente</a>
-    {% endif %}
-
-	<h5> Página {{ facturas.number }} de {{ facturas.paginator.num_pages }}</h5>     
-</div>
-{% endblock %}
+			<tr>
+				<td>{{ factura.tipo }}</td>
+				<td>{{ factura.nombre }}</td>
+				<td>{{ factura.numero_factura }}</td>
+				<td>{{ factura.fecha_factura }}</td>
+				<td>
+					{% csrf_token %}
+					<a onClick="detalle({{factura.id}});" title="Consultar">
+						<img src="{% static "icons/consultar.png" %}">
+					</a>&nbsp; &nbsp;
+					<a href="{% url 'administracion:editar-factura' factura.id %}" title="Editar" >
+						<img src="{% static "icons/editar.png" %}"> 
+					</a>
+			</tr>
+			{% endfor %}			
+		</table>
+	</div>	
+	<div>
+		<nav>
+		  <ul class="pager">
+		    {% if facturas.has_previous %}
+	           <li><a href="?page={{ facturas.previous_page_number }}">Anterior</a></li> 
+		    {% endif %}                                    
+			Página {{ facturas.number }} de {{ facturas.paginator.num_pages }}
+		    {% if facturas.has_next %}
+	    		<li><a href="?page={{ facturas.next_page_number }}">Siguiente</a></li>
+		    {% endif %}
+		  </ul>
+		</nav>	
+	</div>
+	{% endblock %}	

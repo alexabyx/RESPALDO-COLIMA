@@ -6,7 +6,7 @@ DATABASES = {
         'NAME': 'so_factory',
         'USER': 'root',
         'PASSWORD': '',
-        'HOST': '192.168.100.2',
+        'HOST': 'localhost',
         'PORT': '3306',
         'OPTIONS': {
         'init_command': 'SET storage_engine=INNODB',

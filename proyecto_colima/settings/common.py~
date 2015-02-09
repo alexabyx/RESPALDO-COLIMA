@@ -122,4 +122,3 @@ ENTREGABLES                     = os.path.join(REPOSITORIO_GENERAL, 'entregables
 DETALLES_ENTREGABLES            = os.path.join(REPOSITORIO_GENERAL, 'detalles_entregables', '')
 FACTURAS                        = os.path.join(REPOSITORIO_GENERAL, 'facturas', '')
 DETALLE_DOCUMENTOS_GENERALES    = os.path.join(REPOSITORIO_GENERAL, 'detalle_documentos_generales', '')
-print FACTURAS

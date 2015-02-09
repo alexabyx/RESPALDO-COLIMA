@@ -41,7 +41,7 @@ class Personal(models.Model):
 	fecha_vencimiento_contrato 	= models.DateField()
 	fecha_baja 					= models.DateField()
 	motivo_baja 				= models.CharField(max_length=150)
-	habilidado 					= models.BooleanField(default=True)
+	habilitado 					= models.BooleanField(default=True)
 	def __unicode__(self):
 		return "%s-%s" % (self.rfc, self.nombre)
 
@@ -64,16 +64,16 @@ class DetalleDocumentoResponsiva(models.Model):
 class Clientes(models.Model):
 	REPOSITORIO 			= settings.DETALLE_DOCUMENTOS_GENERALES
 
-	Nombre 					= models.CharField(max_length=150)
+	nombre 					= models.CharField(max_length=150)
 	siglas					= models.CharField(max_length=150)
 	fecha_creacion 			= models.DateField(default=datetime.datetime.now().date())
-	habilidado 				= models.BooleanField(default=True)
+	habilitado 				= models.BooleanField(default=True)
 
+	def __unicode__(self):
+		return "%s" % (self.nombre)
 
 #esta clase se encarga de representar en el sistema los atributos de la clase PROYECTOS
 class Proyectos(models.Model):
-
-	STATUS = (('A', 'Activo'), ('H', 'Historico'))#falta una entidad clientes la modelo despues alex
 
 	nombre 			= models.CharField(max_length=150)
 	siglas 			= models.CharField(max_length=150)
@@ -83,9 +83,9 @@ class Proyectos(models.Model):
 	
 	avance 			= models.CharField(max_length=150)
 	comentario 		= models.CharField(max_length=500)
-	fecha_cambio 	= models.DateField()
+	fecha_cambio 	= models.DateField(auto_now=True)
 	cliente			= models.ForeignKey(Clientes)
-	habilidado 		= models.BooleanField(default=True)
+	habilitado 		= models.BooleanField(default=True)
 	#
 	# Relacion uno a muchas Empresas(49, 46) 
 	#
@@ -112,7 +112,7 @@ class AnexosTecnicos(models.Model):
 	status 			= models.CharField(max_length=3, choices=STATUS)
 	fecha_creacion  = models.DateField(default=datetime.datetime.now().date())
 	archivo         = models.FileField(upload_to=get_upload_path, blank=True)
-	habilidado 		= models.BooleanField(default=True)
+	habilitado 		= models.BooleanField(default=True)
 	#Responsable distinto del proyeto
 	#
 	#		
@@ -134,7 +134,7 @@ class Convenios (models.Model):
 	fecha_creacion 		= models.DateField(default=datetime.datetime.now().date())
 
 	encargado = models.ForeignKey(Personal)
-	habilidado 		= models.BooleanField(default=True)
+	habilitado 		= models.BooleanField(default=True)
 	def __unicode__(self):
 		return "%s-%s" % (self.rfc, self.nombre)
 
@@ -149,7 +149,7 @@ class Contratos(models.Model):
 	encargado 		= models.ForeignKey(Personal) #Responsable
 	
 	archivo 		= models.FileField(upload_to=get_upload_path, blank=True) # Deprecated no entiendo por que eeste quedo en des uso nesesitamos hablarlo
-	habilidado 		= models.BooleanField(default=True)
+	habilitado 		= models.BooleanField(default=True)
 	#Contrato Dependencia universidad
 	
 
@@ -163,7 +163,7 @@ class Entregables(models.Model):
 
 	proyecto 		= models.ForeignKey(Proyectos)
 	responsable 	= models.ForeignKey(Personal)
-	habilidado 		= models.BooleanField(default=True)
+	habilitado 		= models.BooleanField(default=True)
 	total 			= models.IntegerField()
 	
 	#Total de entregables ---UNO/N----
@@ -189,7 +189,7 @@ class Facturas(models.Model):
 	contrato 			= models.ForeignKey(Contratos)
 	responsable 		= models.ForeignKey(Personal)
 
-	tipo 				= models.CharField(max_length=1, choices=TIPOS)
+	tipo 				= models.CharField(max_length=3, choices=TIPOS)
 	nombre 				= models.CharField(max_length=150)
 	siglas 				= models.CharField(max_length=150)
 
@@ -211,6 +211,11 @@ class Facturas(models.Model):
 	def __unicode__(self):
 		return "%s-%s" % (self.nombre, self.folio_venta)
 
+	@property
+	def tipo_tipo(self):
+		TIPOS_DICT = dict(self.TIPOS)
+		return TIPOS_DICT[self.tipo]
+
 #Aqui se modelan los atributos multivaluados de la clase FACTURA (de uno a muchos)
 class DetallesFacturas(models.Model):
 	factura 		= models.ForeignKey(Facturas) 
@@ -225,7 +230,7 @@ class Propuestas(models.Model):
 	proyecto 		= models.ForeignKey(Proyectos)
 	responsable 	= models.ForeignKey(Personal)
 	fecha_creacion 	= models.DateField(default=datetime.datetime.now().date())
-	habilidado 		= models.BooleanField(default=True)
+	habilitado 		= models.BooleanField(default=True)
 #esta clase se encarga de representar en el sistema los atributos de la claseDOCUMENTOS GENERALES
 class DocumentosGenerales(models.Model):
 	TIPOS 			= (('D1', 'Dependencia'), ('E', 'Empresa'), ('U1', 'Universidad'))
@@ -254,11 +259,11 @@ class Entidades(models.Model):
 	siglas 				= models.CharField(max_length=150)#cuastiona la necesidad del a existencia de todos los campos de siglas pero temporalmetne que se queden
 	tipo 				= models.CharField(max_length=3, choices=TIPOS)
 	fecha_creacion 		= models.DateField(default=datetime.datetime.now().date())
-	habilidado 			= models.BooleanField(default=True)
+	habilitado 			= models.BooleanField(default=True)
 
 
 class Entidad_proyecto(models.Model):
-	TIPOS 					= ( ('46', '46%'), ('49', '49%'))
+	TIPOS 					= ( (46, '46%'), (49, '49%'))
 
 	documentos_generales 	= models.ForeignKey(Entidades)
 	proyectos 				= models.ForeignKey(Proyectos)

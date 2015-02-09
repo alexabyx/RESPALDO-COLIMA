@@ -1,30 +1,154 @@
-{% extends "admin/base_site.html" %}
-{% load i18n admin_static %}
+{% extends "inicio/base_colima.html" %}
+{% load i18n %}
+{% load staticfiles %}
+	{% block title %}Proyectos{% endblock %}
+	{% block extrascript %}
+    <script>
+     function detalle(proyecto_id){
+     	$.fancybox.showActivity();
+		$.get('/administracion/detalle_proyecto/'+proyecto_id+'/', {}, function(data){ 
+			$.fancybox({'content': data,
+						'transitionIn'	: 'elastic',
+						'transitionOut'	: 'elastic',
+						'onComplete': function(){ $('#fancybox-content').css("width", $('#fancybox-outer').width());},
+						'onClosed':function(){ window.location.reload();},
+					   });
+		});   	
+     }
 
+     function aviso(proyecto_id){
+     	$.fancybox.showActivity();
+     	var data = {mensaje: "¿Está seguro de querer eliminar este proyecto?"}
+     	$.get('/administracion/modal_aviso/', data, function(response){
+     		$.fancybox({'content': response,
+     					'onComplete':function(){
+     						$('#aceptar').click(function(){
+     								$(this).attr("disabled", "disabled");
+									//$.fancybox.close();
+									eliminar(proyecto_id);
+     						});
 
-{% block content %}
-<div id="content-main">
-		<a href="{% url 'inicio:agregar-anexotecnico' %}"><button>Agregar nuevo</button></a>
-		<input type="button" onclick="javascript:window.history.go(-1);" value="Regresar">
-		<!--historicos son los concluidos o cancelado
-		cerrar--> 
-		<ul>
-			{% for anexo in anexostecnicos %}
-				<li>{{anexo.numero_oficio}}-{{anexo.tipo}}-{{anexo.nombre}} 
-					<a href="{% url 'inicio:editar-anexotecnico' anexo.id %}"><button>Editar</button></a>
-					<a href="{% url 'inicio:eliminar-anexotecnico' anexo.id %}"><button>Eliminar</button></a>
-					<a href="{% url 'inicio:consultar-anexotecnico' anexo.id %}"><button>Consultar</button></a>
-				</li>
-			{% endfor %}
-		</ul>
+     						$("#cancelar").click(function(){
+									$.fancybox.close();
+     						});
+     					},
+     					});
 
-    {% if anexostecnicos.has_previous %}
-            <a href="?page={{ anexostecnicos.previous_page_number }}">Anterior &nbsp;&nbsp;</a>
-    {% endif %}                                    
-    {% if anexostecnicos.has_next %}
-            <a href="?page={{ anexostecnicos.next_page_number }}">Siguiente</a>
-    {% endif %}
+     	});
+     }
 
-	<h5> Página {{ anexostecnicos.number }} de {{ anexostecnicos.paginator.num_pages }}</h5>     
-</div>
-{% endblock %}
+     function eliminar(proyecto_id){
+     	$.fancybox.showActivity();
+
+     	var csrfmiddlewaretoken = $("input[name='csrfmiddlewaretoken']").val();
+     	var data = {'pk': proyecto_id, 'csrfmiddlewaretoken': csrfmiddlewaretoken}
+
+     	$.post('/administracion/eliminar_proyecto/', data, function(response){
+     		if(response.error){
+     			$.get('/administracion/modal_error/', {}, function(_response){ 
+					$.fancybox({'content': _response,
+							'transitionIn'	: 'elastic',
+							'transitionOut'	: 'elastic',
+							'onComplete': function(){ $('#fancybox-content').css("width", $('#fancybox-outer').width());},
+							'onClosed':function(){ window.location.reload();},
+								});
+     			});
+     		}
+     		else{
+     			$.fancybox.showActivity();
+     			$.get('/administracion/modal_ok/', {}, function(_response){
+					$.fancybox({'content': _response,
+							'transitionIn'	: 'elastic',
+							'transitionOut'	: 'elastic',
+							'onComplete': function(){ $('#fancybox-content').css("width", $('#fancybox-outer').width());},
+							'onClosed':function(){ window.location.reload();},
+							});
+     			});
+
+     		}
+
+     	});
+     } 
+    </script>
+    {% endblock %}
+
+    {% block extrastyle %}
+    <style>
+    .bienvenida{
+    	padding-right: 15px;
+    }
+    .menu{
+    	padding-left: 15px;
+    	width: 15%;
+    }
+    .panel{
+    	width: 80%;
+    	margin-left: 10%;
+    	margin-right: 10%;
+    }
+    .agregar{
+	    margin-left: 98%;
+	    margin-top: -20px    	
+    }
+    </style>
+    {% endblock %}
+
+    {% block contenido %}
+	<div class="panel panel-primary">
+	  <!-- Default panel contents -->
+	  <div class="panel-heading">
+	  	  	Listado de anexos tecnicos
+	  <div>
+	  	<a title="Agregar nuevo" href="{% url 'administracion:crear-proyecto' %}">
+	  		<img class="agregar" src="{% static "icons/agregar.png" %}">
+	  		<!-- <button type="button" class="btn btn-default agregar" />Agregar nuevo</button>-->
+	  	</a>
+	  </div>
+	  </div>
+
+	  <!-- Table -->
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th>Nombre</th>
+					<th>Fecha de inicio</th>
+					<th>Avance</th>
+					<th>Acciones</th>
+				</tr>
+			</thead>
+			{% for anexotecnico in anexostecnicos %}
+			<tr>
+				<td>
+					{{ anexotecnico.nombre }}
+				</td>
+				<td>{{ anexotecnico.fecha_inicio }}</td>
+				<td>{% if anexotecnico.avance %} {{ anexotecnico.avance }}% {% else %}0%{% endif %}</td>
+				<td>
+					{% csrf_token %}
+					<a onClick="detalle({{anexotecnico.id}});" title="Consultar">
+						<img src="{% static "icons/consultar.png" %}">
+					</a>&nbsp; &nbsp;
+					<a href="{% url 'administracion:editar-anexotecnico' anexotecnico.id %}" title="Editar" >
+						<img src="{% static "icons/editar.png" %}"> 
+					</a>&nbsp; &nbsp;
+					<a onClick="aviso({{ anexotecnico.id }});" title="Eliminar">
+						<img src="{% static "icons/eliminar.png" %}"> 
+					</a>
+			</tr>
+			{% endfor %}			
+		</table>
+	</div>	
+	<div>
+		<nav>
+		  <ul class="pager">
+		    {% if anexostecnicos.has_previous %}
+	           <li><a href="?page={{ anexostecnicos.previous_page_number }}">Anterior</a></li> 
+		    {% endif %}                                    
+			Página {{ anexostecnicos.number }} de {{ anexostecnicos.paginator.num_pages }}
+		    {% if anexostecnicos.has_next %}
+	    		<li><a href="?page={{ anexostecnicos.next_page_number }}">Siguiente</a></li>
+		    {% endif %}
+		  </ul>
+		</nav>	
+	</div>
+	{% endblock %}	

@@ -18,10 +18,41 @@
 	  <span class="input-group-addon" id="basic-addon1">Siglas</span>
 	  <input type="text" class="form-control" readonly="readonly" value="{{object.siglas}}" aria-describedby="basic-addon1"><br>
 	</div>
-
+	{% for responsable in object.responsable.all %}
 	<div class="input-group">
-	  <span class="input-group-addon" id="basic-addon1">fecha de inicio</span>
+	  <span class="input-group-addon" id="basic-addon1">Responsable {{forloop.counter}} </span>
+	  <input type="text" class="form-control" readonly="readonly" value="{{responsable.nombre}} {{responsable.apellido_paterno}} {{responsable.apellido_materno}}" aria-describedby="basic-addon1"><br>
+	</div>
+	{% endfor %}
+	<div class="input-group">
+	  <span class="input-group-addon" id="basic-addon1">Fecha inicio</span>
 	  <input type="text" class="form-control" readonly="readonly" value="{{object.fecha_inicio}}" aria-describedby="basic-addon1"><br>
+	</div>
+	<div class="input-group">
+	  <span class="input-group-addon" id="basic-addon1">Fecha fin</span>
+	  <input type="text" class="form-control" readonly="readonly" value="{{object.fecha_fin}}" aria-describedby="basic-addon1"><br>
+	</div>
+		<div class="input-group">
+	  <span class="input-group-addon" id="basic-addon1">Avance</span>
+	  {% if object.avance %}
+	  <input type="text" class="form-control" readonly="readonly" value="{{object.avance}}%" aria-describedby="basic-addon1">
+	  {% else %}
+	  <input type="text" class="form-control" readonly="readonly" value="0%" aria-describedby="basic-addon1">
+	  {% endif %}
+	  <br>
+
+	</div>
+		<div class="input-group">
+	  <span class="input-group-addon" id="basic-addon1">Comentario</span>
+	  <textarea class="form-control" readonly="readonly" aria-describedby="basic-addon1">{{object.comentario}}</textarea><br>
+	</div>
+		<div class="input-group">
+	  <span class="input-group-addon" id="basic-addon1">Fecha cambio</span>
+	  <input type="text" class="form-control" readonly="readonly" value="{{object.fecha_cambio}}" aria-describedby="basic-addon1"><br>
+	</div>
+	<div class="input-group">
+	  <span class="input-group-addon" id="basic-addon1">Cliente</span>
+	  <input type="text" class="form-control" readonly="readonly" value="{{object.cliente}}" aria-describedby="basic-addon1"><br>
 	</div>
 </div>
 
@@ -30,7 +61,3 @@
 <button type="button" class="btn btn-default" data-dismiss="modal" onclick="javascript: $.fancybox.close()">Aceptar</button>
 	</center>
   	
-</div>
-
-
-
