@@ -1,12 +1,12 @@
 {% extends "inicio/base_colima.html" %}
 {% load i18n %}
 {% load staticfiles %}
-	{% block titulo %}Proyectos{% endblock %}
+	{% block titulo %}Entregables{% endblock %}
 	{% block extrascript %}
     <script>
-     function detalle(proyecto_id){
+     function detalle(entregable_id){
      	$.fancybox.showActivity();
-		$.get('/administracion/detalle_proyecto/'+proyecto_id+'/', {}, function(data){ 
+		$.get('/administracion/detalle_entregable/'+entregable_id+'/', {}, function(data){ 
 			$.fancybox({'content': data,
 						'transitionIn'	: 'elastic',
 						'transitionOut'	: 'elastic',
@@ -16,16 +16,16 @@
 		});   	
      }
 
-     function aviso(proyecto_id){
+     function aviso(entregable_id){
      	$.fancybox.showActivity();
-     	var data = {mensaje: "¿Está seguro de querer eliminar este proyecto?"}
+     	var data = {mensaje: "¿Está seguro de querer eliminar este entregable?"}
      	$.get('/administracion/modal_aviso/', data, function(response){
      		$.fancybox({'content': response,
      					'onComplete':function(){
      						$('#aceptar').click(function(){
      								$(this).attr("disabled", "disabled");
 									//$.fancybox.close();
-									eliminar(proyecto_id);
+									eliminar(entregable_id);
      						});
 
      						$("#cancelar").click(function(){
@@ -37,13 +37,13 @@
      	});
      }
 
-     function eliminar(proyecto_id){
+     function eliminar(entregable_id){
      	$.fancybox.showActivity();
 
      	var csrfmiddlewaretoken = $("input[name='csrfmiddlewaretoken']").val();
-     	var data = {'pk': proyecto_id, 'csrfmiddlewaretoken': csrfmiddlewaretoken}
+     	var data = {'pk': entregable_id, 'csrfmiddlewaretoken': csrfmiddlewaretoken}
 
-     	$.post('/administracion/eliminar_proyecto/', data, function(response){
+     	$.post('/administracion/eliminar_entregable/', data, function(response){
      		if(response.error){
      			$.get('/administracion/modal_error/', {}, function(_response){ 
 					$.fancybox({'content': _response,
@@ -97,9 +97,9 @@
 	<div class="panel panel-primary">
 	  <!-- Default panel contents -->
 	  <div class="panel-heading">
-	  	  	Listado de proyectos
+	  	  	Listado de entregables
 	  <div>
-	  	<a title="Agregar nuevo" href="{% url 'administracion:crear-proyecto' %}">
+	  	<a title="Agregar nuevo" href="{% url 'administracion:crear-entregable' %}">
 	  		<img class="agregar" src="{% static "icons/agregar.png" %}">
 	  		<!-- <button type="button" class="btn btn-default agregar" />Agregar nuevo</button>-->
 	  	</a>
@@ -110,28 +110,26 @@
 		<table class="table table-striped">
 			<thead>
 				<tr>
-					<th>Nombre</th>
-					<th>Fecha de inicio</th>
-					<th>Avance</th>
+					<th>Proyecto</th>
+					<th>Responsable</th>
+					<th>Total</th>
 					<th>Acciones</th>
 				</tr>
 			</thead>
-			{% for proyecto in proyectos %}
+			{% for entregable in entregables %}
 			<tr>
-				<td>
-					{{ proyecto.nombre }}
-				</td>
-				<td>{{ proyecto.fecha_inicio }}</td>
-				<td>{% if proyecto.avance %} {{ proyecto.avance }}% {% else %}0%{% endif %}</td>
+				<td>{{ entregable.proyecto }} </td>
+				<td>{{ entregable.responsable }}</td>
+				<td>{{ entregable.total }}</td>
 				<td>
 					{% csrf_token %}
-					<a onClick="detalle({{proyecto.id}});" title="Consultar">
+					<a onClick="detalle({{entregable.id}});" title="Consultar">
 						<img src="{% static "icons/consultar.png" %}">
 					</a>&nbsp; &nbsp;
-					<a href="{% url 'administracion:editar-proyecto' proyecto.id %}" title="Editar" >
+					<a href="{% url 'administracion:editar-entregable' entregable.id %}" title="Editar" >
 						<img src="{% static "icons/editar.png" %}"> 
 					</a>&nbsp; &nbsp;
-					<a onClick="aviso({{ proyecto.id }});" title="Eliminar">
+					<a onClick="aviso({{ entregable.id }});" title="Eliminar">
 						<img src="{% static "icons/eliminar.png" %}"> 
 					</a>
 			</tr>
@@ -141,14 +139,14 @@
 	<div>
 		<nav>
 		  <ul class="pager">
-		    {% if proyectos.has_previous %}
-	           <li><a href="?page={{ proyectos.previous_page_number }}">Anterior</a></li> 
+		    {% if entregables.has_previous %}
+	           <li><a href="?page={{ entregables.previous_page_number }}">Anterior</a></li> 
 		    {% endif %}                                    
-			Página {{ proyectos.number }} de {{ proyectos.paginator.num_pages }}
-		    {% if proyectos.has_next %}
-	    		<li><a href="?page={{ proyectos.next_page_number }}">Siguiente</a></li>
+			Página {{ entregables.number }} de {{ entregables.paginator.num_pages }}
+		    {% if entregables.has_next %}
+	    		<li><a href="?page={{ entregables.next_page_number }}">Siguiente</a></li>
 		    {% endif %}
 		  </ul>
 		</nav>	
 	</div>
-	{% endblock %}	
+	{% endblock %}		

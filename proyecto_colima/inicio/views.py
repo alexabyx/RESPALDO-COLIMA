@@ -23,26 +23,20 @@ from inicio.models import ( Proyectos,
 							Facturas,
 							Convenios,
 							Propuestas,
-							Empresas
+							Entidades,
+							Entregables,
 						  )
 
-from inicio.forms import (	AuthForm, 
-							RegistrarProyectoForm,
+from inicio.forms import (	RegistrarProyectoForm,
 							RegistrarFacturaForm, 
-							FacturasForm, 
-							AnexosTecnicosForm, 
-							ContratosForm, 
-							ConveniosForm, 
-							PropuestasForm, 
-							EmpresasForm, 
-							EntregablesForm, 
-							PersonalForm,
-							ConsultarAnexoTecnicoForm,
-							ConsultarContratoForm,
-							ConsultarFacturasForm,
-							ConsultarConveniosForm,
-							ConsultarEmpresasForm,
-							ConsultarPropuestasForm
+							RegistrarAnexotecnicoForm,
+							RegistrarContratoForm,
+							RegistrarConvenioForm,
+							RegistrarPropuestaForm,
+							RegistrarPersonalForm,
+							RegistrarClienteForm,
+							RegistrarEntidadForm,
+							RegistrarEntregableForm,
 						  )
 #
 #==================OPERACIONES DE PROYECTOS========================
@@ -128,7 +122,6 @@ def crear_proyecto(request):
 
 			mensaje = "El proyecto ha sido creado exitosamente"
 			return HttpResponseRedirect('/administracion/proyectos/')
-			#return render(request, 'inicio/proyecto_create.html', {'mensaje': mensaje})
 		else:
 			print "No paso"
 	else:
@@ -253,7 +246,7 @@ def crear_factura(request):
 	return render(request, 'inicio/factura_create.html', {'form': form})
 
 #
-#==================OPERACIONES DE ANEXOStECNICOS========================
+#==================OPERACIONES DE ANEXOSTECNICOS========================
 #
 def anexostecnicos(request):
 	anexostecnicos_list = AnexosTecnicos.objects.filter(habilitado=True).order_by('-fecha_creacion')
@@ -270,81 +263,90 @@ def anexostecnicos(request):
 
 	return render(request, 'inicio/anexostecnicos.html', {'anexostecnicos':anexostecnicos}, context_instance=RequestContext(request))
 
-
-
-
-
-
-
-
-
-def registrar_factura(request):
-	form = FacturasForm()
-	return render(request, 'inicio/registrar_factura.html', {'form': form}, context_instance=RequestContext(request))
-
-#VIEWS PARA ANEXOS TECNICOS
-
-
-def consultar_anexotecnico(request, anexo_id):
-	anexo= AnexosTecnicos.objects.get(id=anexo_id)
-	form = ConsultarAnexoTecnicoForm(model_to_dict(anexo))
-	return render(request, 'inicio/consultar_anexotecnico.html', {'form':form}, context_instance=RequestContext(request))
-
-def agregar_anexotecnico(request):
-	if request.method == "POST":
-		form = AnexosTecnicosForm(request.POST, request.FILES)
+def crear_anexotecnico(request):
+	if request.method=="POST":
+		form = RegistrarAnexotecnicoForm(request.POST, request.FILES)
 		if form.is_valid():
-			form.save()
-			mensaje = "Guardado"
-			return render(request, 'inicio/agregar_anexotecnico.html', {'mensaje': mensaje}, context_instance=RequestContext(request))
+			anexotecnico = AnexosTecnicos.objects.create(
+														numero_oficio 	= form.cleaned_data['numero_oficio'],	
+														proyecto 		= form.cleaned_data['proyecto'],
+														nombre 			= form.cleaned_data['nombre'],
+														siglas 			= form.cleaned_data['siglas'],
+														status 			= form.cleaned_data['status'],
+														archivo         = form.cleaned_data['archivo'],
+														)
+
+			mensaje = "El anexotecnico ha sido creado exitosamente"
+			return HttpResponseRedirect('/administracion/anexostecnicos/')
+		else:
+			print "No paso"
 	else:
-		form = AnexosTecnicosForm()
-	return render(request, 'inicio/agregar_anexotecnico.html', {'form':form}, context_instance=RequestContext(request))
+		form=RegistrarAnexotecnicoForm()
+	return render(request, 'inicio/anexotecnico_create.html', {'form': form})
 
-def editar_anexotecnico(request, anexo_id):
-	if request.method == "POST":
-		form = AnexosTecnicosForm(request.POST)
+def editar_anexotecnico(request, pk):
+	if request.method=="POST":
+		form = RegistrarAnexotecnicoForm(request.POST, request.FILES)
 		if form.is_valid():
-			anexo = AnexosTecnicos.objects.get(id=anexo_id)
-			anexo.numero_oficio = form.cleaned_data['numero_oficio']
-			anexo.proyecto = form.cleaned_data['proyecto']
-			anexo.tipo = form.cleaned_data['tipo']
-			anexo.nombre = form.cleaned_data['nombre']
-			anexo.siglas = form.cleaned_data['siglas']
-			anexo.porcentaje = form.cleaned_data['porcentaje']
-			anexo.fecha_creacion = form.cleaned_data['fecha_creacion']
-			anexo.archivo = form.cleaned_data['archivo']
-			anexo.save()
-			mensaje = "Guardado"
-			return render(request, 'inicio/editar_anexotecnico.html', {'mensaje': mensaje}, context_instance=RequestContext(request))
-	else:					
-		try:
-			anexo = AnexosTecnicos.objects.get(id=anexo_id)
-		except:
-			anexo = None
+			try:
+				AnexosTecnicos.objects.filter(id=int(pk)).update(
+																numero_oficio 	= form.cleaned_data['numero_oficio'],	
+																proyecto 		= form.cleaned_data['proyecto'],
+																nombre 			= form.cleaned_data['nombre'],
+																siglas 			= form.cleaned_data['siglas'],
+																status 			= form.cleaned_data['status'],
+																archivo         = form.cleaned_data['archivo'],
+																)
 
-		form = AnexosTecnicosForm(instance=anexo)	
+				return HttpResponseRedirect('/administracion/anexostecnicos/')
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "El anexotecnico no pudo ser actualizado"
+		else:
+			print "No paso"
+	else:
+		anexotecnico = AnexosTecnicos.objects.get(id=int(pk))
+		form=RegistrarAnexotecnicoForm(model_to_dict(anexotecnico))
+	return render(request, 'inicio/anexotecnico_edit.html', {'form': form})
 
-	return render(request, 'inicio/editar_anexotecnico.html', {'form': form}, context_instance=RequestContext(request))
+class AnexotecnicoDetailView(DetailView):
+	
+	template_name = "inicio/anexotecnico_detail.html"
+	model = AnexosTecnicos
 
-def eliminar_anexotecnico(request, anexo_id):
+	def get_object(self):
+		object = super(AnexotecnicoDetailView, self).get_object()
+		return object
+
+def eliminar_anexotecnico(request):
+	import json
+
+	if not request.is_ajax():
+		raise Http404
+
+	pk = request.POST.get('pk')
+
 	try:
-		anexo = AnexosTecnicos.objects.get(id=anexo_id)
-		try:
-			anexo.delete()
-			mensaje = "Eliminado"
-		except:
-			mensaje = "Falló al eliminar"
-	except:
-		anexo = None
-		mensaje = "Error inesperado"
+		proyecto = AnexosTecnicos.objects.filter(id=pk).update(habilitado=False)
+	except Exception, e:
+		print "Error: ", e
+		mensaje = {'mensaje': "Fallo la operación", 'error': True}
+	else:
+		mensaje = {'mensaje': "Operación exitosa", 'error': False}
 
-	return render(request, 'inicio/eliminar_anexotecnico.html',{'mensaje': mensaje}, context_instance=RequestContext(request))
+	content = json.dumps(mensaje)
+	http_response = HttpResponse(content, content_type="application/json")
+
+	return http_response
+
+#
+#==================OPERACIONES DE CONTATOS========================
+#
 
 def contratos(request):
-	contratos = Contratos.objects.all()
+	contratos_list = Contratos.objects.filter(habilitado=True).order_by('-fecha_creacion')
 
-	paginator = Paginator(contratos, 10)
+	paginator = Paginator(contratos_list, 9)
 	page = request.GET.get('page', 1)
 
 	try:
@@ -356,148 +358,85 @@ def contratos(request):
 
 	return render(request, 'inicio/contratos.html', {'contratos':contratos}, context_instance=RequestContext(request))
 
-def agregar_contrato(request):
-	if request.method == "POST":
-		form = ContratosForm(request.POST, request.FILES)
+class ContratoDetailView(DetailView):
+	
+	template_name = "inicio/contrato_detail.html"
+	model = Contratos
+
+	def get_object(self):
+		object = super(ContratoDetailView, self).get_object()
+		return object
+
+def crear_contrato(request):
+	if request.method=="POST":
+		form = RegistrarContratoForm(request.POST, request.FILES)
 		if form.is_valid():
-			form.save()
-			mensaje = "Guardado"
-			return render(request, 'inicio/agregar_contrato.html', {'mensaje': mensaje}, context_instance=RequestContext(request))
+			contrato = Contratos.objects.create(
+												numero_oficio 	= form.cleaned_data['numero_oficio'],	
+												proyecto 		= form.cleaned_data['proyecto'],
+												encargado 		= form.cleaned_data['encargado'],
+												archivo         = form.cleaned_data['archivo'],
+												)
+
+			mensaje = "El contrato ha sido creado exitosamente"
+			return HttpResponseRedirect('/administracion/contratos/')
+		else:
+			print "No paso"
 	else:
-		form = ContratosForm()
-	return render(request, 'inicio/agregar_contrato.html', {'form':form}, context_instance=RequestContext(request))
+		form=RegistrarContratoForm()
+	return render(request, 'inicio/contrato_create.html', {'form': form})
 
-
-def consultar_contrato(request, contrato_id):
-	contrato= Contratos.objects.get(id=contrato_id)
-	form = ConsultarContratoForm(model_to_dict(contrato))
-	return render(request, 'inicio/consultar_contrato.html', {'form':form}, context_instance=RequestContext(request))
-
-
-def editar_contrato(request, contrato_id):
-	if request.method == "POST":
-		form = ContratosForm(request.POST)
+def editar_contrato(request, pk):
+	if request.method=="POST":
+		form = RegistrarContratoForm(request.POST, request.FILES)
 		if form.is_valid():
-			contrato = Contratos.objects.get(id=contrato_id)
-			contrato.numero_oficio = form.cleaned_data['numero_oficio']
-			contrato.proyecto = form.cleaned_data['proyecto']
-			contrato.encargado=form.cleaned_data['encargado']
-			contrato.cliente=form.cleaned_data['cliente']		
-			contrato.fecha_creacion = form.cleaned_data['fecha_creacion']
-			contrato.archivo = form.cleaned_data['archivo']
-			contrato.save()
-			mensaje = "Guardado"
-			return render(request, 'inicio/editar_contratos.html', {'mensaje': mensaje}, context_instance=RequestContext(request))
-	else:					
-		try:
-			contrato = Contratos.objects.get(id=contrato_id)
-		except:
-			contrato = None
+			try:
+				Contratos.objects.filter(id=int(pk)).update(
+															numero_oficio 	= form.cleaned_data['numero_oficio'],	
+															proyecto 		= form.cleaned_data['proyecto'],
+															encargado 			= form.cleaned_data['encargado'],
+															archivo         = form.cleaned_data['archivo'],
+															)
 
-		form = ContratosForm(instance=contrato)	
+				return HttpResponseRedirect('/administracion/contratos/')
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "El contrato no pudo ser actualizado"
+		else:
+			print "No paso"
+	else:
+		contrato = Contratos.objects.get(id=int(pk))
+		form=RegistrarContratoForm(model_to_dict(contrato))
+	return render(request, 'inicio/contrato_edit.html', {'form': form})	
 
-	return render(request, 'inicio/editar_contrato.html', {'form': form}, context_instance=RequestContext(request))
+def eliminar_contrato(request):
+	import json
 
-def eliminar_contrato(request, contrato_id):
+	if not request.is_ajax():
+		raise Http404
+
+	pk = request.POST.get('pk')
+
 	try:
-		contrato = Contratos.objects.get(id=contrato_id)
-		try:
-			contrato.delete()
-			mensaje = "Eliminado"
-		except:
-			mensaje = "Falló al eliminar"
-	except:
-		contrato = None
-		mensaje = "Error inesperado"
+		contrato = Contratos.objects.filter(id=pk).update(habilitado=False)
+	except Exception, e:
+		print "Error: ", e
+		mensaje = {'mensaje': "Fallo la operación", 'error': True}
+	else:
+		mensaje = {'mensaje': "Operación exitosa", 'error': False}
 
-	return render(request, 'inicio/eliminar_contrato.html',{'mensaje': mensaje}, context_instance=RequestContext(request))
+	content = json.dumps(mensaje)
+	http_response = HttpResponse(content, content_type="application/json")
 
-# def facturas(request):
-# 	facturas = Facturas.objects.all()
+	return http_response
 
-# 	paginator = Paginator(facturas, 10)
-# 	page = request.GET.get('page', 1)
-
-# 	try:
-# 		facturas = paginator.page(page)
-# 	except PageNotAnInteger:
-# 		facturas = paginator.page(1)
-# 	except EmptyPage:
-# 		facturas = paginator.page(paginator.num_pages)
-
-# 	return render(request, 'inicio/facturas.html', {'facturas':facturas}, context_instance=RequestContext(request))
-
-
-
-# def agregar_factura(request):
-# 	if request.method == "POST":
-# 		form = FacturasForm(request.POST, request.FILES)
-# 		if form.is_valid():
-# 			form.save()
-# 			mensaje = "Guardado"
-# 			return render(request, 'inicio/agregar_factura.html', {'mensaje': mensaje}, context_instance=RequestContext(request))
-# 	else:
-# 		form = FacturasForm()
-# 	return render(request, 'inicio/agregar_factura.html', {'form':form}, context_instance=RequestContext(request))
-
-# def consultar_factura(request, factura_id):
-# 	factura= Facturas.objects.get(id=factura_id)
-# 	form = ConsultarFacturasForm(model_to_dict(factura))
-# 	return render(request, 'inicio/consultar_factura.html', {'form':form}, context_instance=RequestContext(request))
-
-# def editar_factura(request, factura_id):
-# 	if request.method == "POST":
-# 		form = FacturasForm(request.POST)
-# 		if form.is_valid():
-# 			factura = Facturas.objects.get(id=factura_id)
-# 			factura.contrato = form.cleaned_data['contrato']
-# 			factura.responsable = form.cleaned_data['responsable']
-# 			factura.tipo=form.cleaned_data['tipo']
-# 			factura.nombre=form.cleaned_data['nombre']		
-# 			factura.siglas=form.cleaned_data['siglas']		
-# 			factura.numero_factura=form.cleaned_data['numero_factura']		
-# 			factura.fecha_factura = form.cleaned_data['fecha_factura']
-# 			factura.folio_venta = form.cleaned_data['folio_venta']
-# 			factura.rfc = form.cleaned_data['folio_venta']
-# 			factura.direccion = form.cleaned_data['direccion']
-# 			factura.subtotal = form.cleaned_data['subtotal']
-# 			factura.iva = form.cleaned_data['iva']
-# 			factura.total_con_numero = form.cleaned_data['total_con_numero']
-# 			factura.total_con_letra = form.cleaned_data['total_con_letra']
-# 			factura.pagada = form.cleaned_data['pagada']
-# 			factura.archivo = form.cleaned_data['archivo']
-# 			factura.save()
-# 			mensaje = "Guardado"
-# 			return render(request, 'inicio/editar_facturas.html', {'mensaje': mensaje}, context_instance=RequestContext(request))
-# 	else:					
-# 		try:
-# 			factura = Facturas.objects.get(id=factura_id)
-# 		except:
-# 			factura = None
-
-# 		form = FacturasForm(instance=factura)	
-
-# 	return render(request, 'inicio/editar_anexotecnico.html', {'form': form}, context_instance=RequestContext(request))	
-
-# def eliminar_factura(request, factura_id):
-# 	try:
-# 		factura = Facturas.objects.get(id=factura_id)
-# 		try:
-# 			factura.delete()
-# 			mensaje = "Eliminado"
-# 		except:
-# 			mensaje = "Falló al eliminar"
-# 	except:
-# 		factura = None
-# 		mensaje = "Error inesperado"
-
-# 	return render(request, 'inicio/eliminar_factura.html',{'mensaje': mensaje}, context_instance=RequestContext(request))
-
-#apartir de aqui copio convenios
+#
+#==================OPERACIONES DE CONVENIOS========================
+#
 def convenios(request):
-	convenios = Convenios.objects.all()
+	convenios_list = Convenios.objects.filter(habilitado=True).order_by('-fecha_creacion')
 
-	paginator = Paginator(convenios, 10)
+	paginator = Paginator(convenios_list, 9)
 	page = request.GET.get('page', 1)
 
 	try:
@@ -509,67 +448,85 @@ def convenios(request):
 
 	return render(request, 'inicio/convenios.html', {'convenios':convenios}, context_instance=RequestContext(request))
 
+class ConvenioDetailView(DetailView):
+	
+	template_name = "inicio/convenio_detail.html"
+	model = Convenios
 
+	def get_object(self):
+		object = super(ConvenioDetailView, self).get_object()
+		return object
 
-def agregar_convenio(request):
-	if request.method == "POST":
-		form = ConveniosForm(request.POST, request.FILES)
+def crear_convenio(request):
+	if request.method=="POST":
+		form = RegistrarConvenioForm(request.POST, request.FILES)
 		if form.is_valid():
-			form.save()
-			mensaje = "Guardado"
-			return render(request, 'inicio/agregar_convenio.html', {'mensaje': mensaje}, context_instance=RequestContext(request))
+			convenio = Convenios.objects.create(
+												numero 		= form.cleaned_data['numero'],
+												proyecto 	= form.cleaned_data['proyecto'],
+												encargado 	= form.cleaned_data['encargado'],
+												archivo 	= form.cleaned_data['archivo'],
+												)
+
+			mensaje = "El convenio ha sido creado exitosamente"
+			return HttpResponseRedirect('/administracion/convenios/')
+		else:
+			print "No paso"
 	else:
-		form = ConveniosForm()
-	return render(request, 'inicio/agregar_convenio.html', {'form':form}, context_instance=RequestContext(request))
+		form=RegistrarConvenioForm()
+	return render(request, 'inicio/convenio_create.html', {'form': form})
 
-def consultar_convenio(request, convenio_id):
-	convenio= Convenios.objects.get(id=convenio_id)
-	form = ConsultarConveniosForm(model_to_dict(convenio))
-	return render(request, 'inicio/consultar_convenio.html', {'form':form}, context_instance=RequestContext(request))
-
-def editar_convenio(request, convenio_id):
-	if request.method == "POST":
-		form = ConveniosForm(request.POST)
+def editar_convenio(request, pk):
+	if request.method=="POST":
+		form = RegistrarConvenioForm(request.POST, request.FILES)
 		if form.is_valid():
-			convenio = Convenios.objects.get(id=convenio_id)
-			convenio.numero_universidad = form.cleaned_data['numero_universidad']
-			convenio.siglas_universidad = form.cleaned_data['siglas_universidad']
-			convenio.archivo=form.cleaned_data['archivo']
-			convenio.fecha_creacion=form.cleaned_data['fecha_creacion']		
-			convenio.encargado=form.cleaned_data['encargado']					
-			convenio.save()
-			mensaje = "Guardado"
-			return render(request, 'inicio/editar_convenios.html', {'mensaje': mensaje}, context_instance=RequestContext(request))
-	else:					
-		try:
-			convenio = Convenios.objects.get(id=convenio_id)
-		except:
-			convenio = None
+			try:
+				Convenios.objects.filter(id=int(pk)).update(
+															numero 		= form.cleaned_data['numero'],
+															proyecto 	= form.cleaned_data['proyecto'],
+															encargado 	= form.cleaned_data['encargado'],
+															archivo 	= form.cleaned_data['archivo'],					
+															)
 
-		form = ConveniosForm(instance=convenio)	
+				return HttpResponseRedirect('/administracion/convenios/')
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "El convenio no pudo ser actualizado"
+		else:
+			print "No paso"
+	else:
+		convenio = Convenios.objects.get(id=int(pk))
+		form=RegistrarConvenioForm(model_to_dict(convenio))
+	return render(request, 'inicio/convenio_edit.html', {'form': form})	
 
-	return render(request, 'inicio/editar_anexotecnico.html', {'form': form}, context_instance=RequestContext(request))	
+def eliminar_convenio(request):
+	import json
 
-def eliminar_convenio(request, convenio_id):
+	if not request.is_ajax():
+		raise Http404
+
+	pk = request.POST.get('pk')
+
 	try:
-		convenio = Convenios.objects.get(id=convenio_id)
-		try:
-			convenio.delete()
-			mensaje = "Eliminado"
-		except:
-			mensaje = "Falló al eliminar"
-	except:
-		convenio = None
-		mensaje = "Error inesperado"
+		contrato = Convenios.objects.filter(id=pk).update(habilitado=False)
+	except Exception, e:
+		print "Error: ", e
+		mensaje = {'mensaje': "Fallo la operación", 'error': True}
+	else:
+		mensaje = {'mensaje': "Operación exitosa", 'error': False}
 
-	return render(request, 'inicio/eliminar_convenio.html',{'mensaje': mensaje}, context_instance=RequestContext(request))
+	content = json.dumps(mensaje)
+	http_response = HttpResponse(content, content_type="application/json")
 
-#y hasta aqui es el fin de propuestas
+	return http_response
 
+#
+#==================OPERACIONES DE PROPUESTAS========================
+#
 def propuestas(request):
-	propuestas = Propuestas.objects.all()
+	propuestas_list = Propuestas.objects.filter(habilitado=True).order_by('-fecha_creacion')
 
-	paginator = Paginator(propuestas, 10)
+	paginator = Paginator(propuestas_list, 9)
 	page = request.GET.get('page', 1)
 
 	try:
@@ -581,156 +538,460 @@ def propuestas(request):
 
 	return render(request, 'inicio/propuestas.html', {'propuestas':propuestas}, context_instance=RequestContext(request))
 
+class PropuestaDetailView(DetailView):
+	
+	template_name = "inicio/propuesta_detail.html"
+	model = Propuestas
 
+	def get_object(self):
+		object = super(PropuestaDetailView, self).get_object()
+		return object
 
-def agregar_propuesta(request):
-	if request.method == "POST":
-		form = PropuestasForm(request.POST, request.FILES)
+def crear_propuesta(request):
+	if request.method=="POST":
+		form = RegistrarPropuestaForm(request.POST)
 		if form.is_valid():
-			form.save()
-			mensaje = "Guardado"
-			return render(request, 'inicio/agregar_propuesta.html', {'mensaje': mensaje}, context_instance=RequestContext(request))
+			propuestas = Propuestas.objects.create(
+												numero_oficio 	= form.cleaned_data['numero_oficio'],
+												proyecto 		= form.cleaned_data['proyecto'],
+												responsable 	= form.cleaned_data['responsable'],
+												)
+
+			mensaje = "La propuesta ha sido creada exitosamente"
+			return HttpResponseRedirect('/administracion/propuestas/')
+		else:
+			print "No paso"
 	else:
-		form = PropuestasForm()
-	return render(request, 'inicio/agregar_propuesta.html', {'form':form}, context_instance=RequestContext(request))
+		form=RegistrarPropuestaForm()
+	return render(request, 'inicio/propuesta_create.html', {'form': form})
 
-def consultar_propuesta(request, propuesta_id):
-	propuesta= Propuestas.objects.get(id=propuesta_id)
-	form = ConsultarPropuestasForm(model_to_dict(propuesta))
-	return render(request, 'inicio/consultar_propuesta.html', {'form':form}, context_instance=RequestContext(request))
-
-def editar_propuesta(request, propuesta_id):
-	if request.method == "POST":
-		form = PropuestasForm(request.POST)
+def editar_propuesta(request, pk):
+	if request.method=="POST":
+		form = RegistrarPropuestaForm(request.POST)
 		if form.is_valid():
-			propuesta = Propuestas.objects.get(id=propuesta_id)
-			propuesta.numero_oficio = form.cleaned_data['numero_oficio']
-			propuesta.proyecto = form.cleaned_data['proyecto']
-			propuesta.responsable =form.cleaned_data['responsable']
-			propuesta.nombre_dependencia=form.cleaned_data['nombre_dependencia']		
-			propuesta.siglas_dependencia=form.cleaned_data['siglas_dependencia']
-			propuesta.tipo = form.cleaned_data['tipo']
-			propuesta.nombre = form.cleaned_data['nombre']
-			propuesta.siglas = form.cleaned_data['siglas']
-			propuesta.save()
-			mensaje = "Guardado"
-			return render(request, 'inicio/editar_convenios.html', {'mensaje': mensaje}, context_instance=RequestContext(request))
-	else:					
-		try:
-			propuesta = Propuestas.objects.get(id=propuesta_id)
-		except:
-			propuesta = None
+			try:
+				Propuestas.objects.filter(id=int(pk)).update(
+															numero_oficio 	= form.cleaned_data['numero_oficio'],
+															proyecto 		= form.cleaned_data['proyecto'],
+															responsable 	= form.cleaned_data['responsable'],
+															)
 
-		form = PropuestasForm(instance=propuesta)	
+				return HttpResponseRedirect('/administracion/propuestas/')
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "El convenio no pudo ser actualizado"
+		else:
+			print "No paso"
+	else:
+		propuesta = Propuestas.objects.get(id=int(pk))
+		form=RegistrarPropuestaForm(model_to_dict(propuesta))
+	return render(request, 'inicio/propuesta_edit.html', {'form': form})	
 
-	return render(request, 'inicio/editar_anexotecnico.html', {'form': form}, context_instance=RequestContext(request))	
+def eliminar_propuesta(request):
+	import json
 
-def eliminar_propuesta(request, propuesta_id):
+	if not request.is_ajax():
+		raise Http404
+
+	pk = request.POST.get('pk')
+
 	try:
-		propuesta = Propuestas.objects.get(id=propuesta_id)
-		try:
-			propuesta.delete()
-			mensaje = "Eliminado"
-		except:
-			mensaje = "Falló al eliminar"
-	except:
-		propuesta = None
-		mensaje = "Error inesperado"
+		propuesta = Propuestas.objects.filter(id=pk).update(habilitado=False)
+	except Exception, e:
+		print "Error: ", e
+		mensaje = {'mensaje': "Fallo la operación", 'error': True}
+	else:
+		mensaje = {'mensaje': "Operación exitosa", 'error': False}
 
-	return render(request, 'inicio/eliminar_propuesta.html',{'mensaje': mensaje}, context_instance=RequestContext(request))
-#y hasta aqui es el fin de propuestas
+	content = json.dumps(mensaje)
+	http_response = HttpResponse(content, content_type="application/json")
 
+	return http_response
 
+#
+#==================OPERACIONES DE PERSONAL========================
+#
+def personal(request):
+	personal_list = Personal.objects.filter(habilitado=True).order_by('-fecha_ingreso')
 
-
-#views de empresas
-def empresas(request):
-	empresas_list = Empresas.objects.all()
-
-	paginator = Paginator(empresas_list, 10)
+	paginator = Paginator(personal_list, 9)
 	page = request.GET.get('page', 1)
 
 	try:
-		empresas = paginator.page(page)
+		personal = paginator.page(page)
 	except PageNotAnInteger:
-		empresas = paginator.page(1)
+		personal = paginator.page(1)
 	except EmptyPage:
-		empresas = paginator.page(paginator.num_pages)
+		personal = paginator.page(paginator.num_pages)
 
-	return render(request, 'inicio/empresas.html', {'empresas':empresas}, context_instance=RequestContext(request))
+	return render(request, 'inicio/personal.html', {'personal':personal}, context_instance=RequestContext(request))
 
-def consultar_empresa(request, empresa_id):
-	empresa= Empresas.objects.get(id=empresa_id)
-	form = ConsultarEmpresasForm(model_to_dict(empresa))
-	return render(request, 'inicio/consultar_empresa.html', {'form':form}, context_instance=RequestContext(request))
+class PersonalDetailView(DetailView):
+	
+	template_name = "inicio/personal_detail.html"
+	model = Personal
 
-def agregar_empresa(request):
-	if request.method == "POST":
-		form = EmpresasForm(request.POST, request.FILES)
+	def get_object(self):
+		object = super(PersonalDetailView, self).get_object()
+		return object
+
+def crear_personal(request):
+	if request.method=="POST":
+		form = RegistrarPersonalForm(request.POST, request.FILES)
 		if form.is_valid():
-			form.save()
-			mensaje = "Guardado"
-			return render(request, 'inicio/agregar_empresa.html', {'mensaje': mensaje}, context_instance=RequestContext(request))
+			personal = Personal.objects.create(	
+												rfc 						= form.cleaned_data['rfc'],
+												credencial_elector 			= form.cleaned_data['credencial_elector'],
+												nombre 						= form.cleaned_data['nombre'],
+												apellido_paterno 			= form.cleaned_data['apellido_paterno'],
+												apellido_materno 			= form.cleaned_data['apellido_materno'],
+												siglas_nombre 				= form.cleaned_data['siglas_nombre'],
+												genero 						= form.cleaned_data['genero'],
+												direccion 					= form.cleaned_data['direccion'],
+												telefono 					= form.cleaned_data['telefono'],
+												no_seguro 					= form.cleaned_data['no_seguro'],
+												fecha_ingreso 				= form.cleaned_data['fecha_ingreso'],
+												puesto 						= form.cleaned_data['puesto'],
+												turno 						= form.cleaned_data['turno'],
+												tipo_plaza 					= form.cleaned_data['tipo_plaza'],
+												especificacion 				= form.cleaned_data['especificacion'],
+												tipo_pago 					= form.cleaned_data['tipo_pago'],
+												monto 						= form.cleaned_data['monto'],
+												dias_trabajo_al_mes 		= form.cleaned_data['dias_trabajo_al_mes'],
+												fecha_vencimiento_contrato 	= form.cleaned_data['fecha_vencimiento_contrato'],
+												fecha_baja 					= form.cleaned_data['fecha_baja'],
+												motivo_baja 				= form.cleaned_data['motivo_baja'],
+												)
+
+			mensaje = "El empleado ha sido creada exitosamente"
+			return HttpResponseRedirect('/administracion/personal/')
+		else:
+			print "No paso"
 	else:
-		form = EmpresasForm()
-	return render(request, 'inicio/agregar_empresa.html', {'form':form}, context_instance=RequestContext(request))
+		form=RegistrarPersonalForm()
+	return render(request, 'inicio/personal_create.html', {'form': form})
 
-def editar_empresa(request, empresa_id):
-	if request.method == "POST":
-		form = EmpresasForm(request.POST)
+def editar_personal(request, pk):
+	if request.method=="POST":
+		form = RegistrarPersonalForm(request.POST, request.FILES)
 		if form.is_valid():
-			empresa = Empresas.objects.get(id=empresa_id)
-			empresa.nombre = form.cleaned_data['nombre']
-			empresa.save()
-			mensaje = "Guardado"
-			return render(request, 'inicio/editar_empresa.html', {'mensaje': mensaje}, context_instance=RequestContext(request))
-	else:					
-		try:
-			empresa = Empresas.objects.get(id=empresa_id)
-		except:
-			empresa = None
+			try:
+				Personal.objects.filter(id=int(pk)).update(
+															rfc 						= form.cleaned_data['rfc'],
+															credencial_elector 			= form.cleaned_data['credencial_elector'],
+															nombre 						= form.cleaned_data['nombre'],
+															apellido_paterno 			= form.cleaned_data['apellido_paterno'],
+															apellido_materno 			= form.cleaned_data['apellido_materno'],
+															siglas_nombre 				= form.cleaned_data['siglas_nombre'],
+															genero 						= form.cleaned_data['genero'],
+															direccion 					= form.cleaned_data['direccion'],
+															telefono 					= form.cleaned_data['telefono'],
+															no_seguro 					= form.cleaned_data['no_seguro'],
+															fecha_ingreso 				= form.cleaned_data['fecha_ingreso'],
+															puesto 						= form.cleaned_data['puesto'],
+															turno 						= form.cleaned_data['turno'],
+															tipo_plaza 					= form.cleaned_data['tipo_plaza'],
+															especificacion 				= form.cleaned_data['especificacion'],
+															tipo_pago 					= form.cleaned_data['tipo_pago'],
+															monto 						= form.cleaned_data['monto'],
+															dias_trabajo_al_mes 		= form.cleaned_data['dias_trabajo_al_mes'],
+															fecha_vencimiento_contrato 	= form.cleaned_data['fecha_vencimiento_contrato'],
+															fecha_baja 					= form.cleaned_data['fecha_baja'],
+															motivo_baja 				= form.cleaned_data['motivo_baja'],
+															)
 
-		form = EmpresasForm(instance=empresa)	
+				return HttpResponseRedirect('/administracion/personal/')
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "El convenio no pudo ser actualizado"
+		else:
+			print "No paso"
+	else:
+		personal = Personal.objects.get(id=int(pk))
+		form=RegistrarPersonalForm(model_to_dict(personal))
+	return render(request, 'inicio/personal_edit.html', {'form': form})	
 
-	return render(request, 'inicio/editar_empresa.html', {'form': form}, context_instance=RequestContext(request))
+def eliminar_personal(request):
+	import json
 
-def eliminar_empresa(request, empresa_id):
+	if not request.is_ajax():
+		raise Http404
+
+	pk = request.POST.get('pk')
+
 	try:
-		empresa = Empresas.objects.get(id=empresa_id)
-		try:
-			empresa.delete()
-			mensaje = "Eliminado"
-		except:
-			mensaje = "Falló al eliminar"
-	except:
-		empresa = None
-		mensaje = "Error inesperado"
+		personal = Personal.objects.filter(id=pk).update(habilitado=False)
+	except Exception, e:
+		print "Error: ", e
+		mensaje = {'mensaje': "Fallo la operación", 'error': True}
+	else:
+		mensaje = {'mensaje': "Operación exitosa", 'error': False}
 
-	return render(request, 'inicio/eliminar_empresa.html',{'mensaje': mensaje}, context_instance=RequestContext(request))
-#teminan las view de empresas
-def registrar_contratos(request):
-	form = ContratosForm()
-	return render(request, 'inicio/registrar_contratos.html', {'form': form}, context_instance=RequestContext(request))
+	content = json.dumps(mensaje)
+	http_response = HttpResponse(content, content_type="application/json")
 
-def registrar_convenios(request):
-	form = ConveniosForm()
-	return render(request, 'inicio/registrar_convenios.html', {'form': form}, context_instance=RequestContext(request))
+	return http_response
 
-def registrar_propuestas(request):
-	form = PropuestasForm()
-	return render(request, 'inicio/registrar_propuestas.html', {'form': form}, context_instance=RequestContext(request))
+#
+#==================OPERACIONES DE CLIENTES========================
+#
 
-def registrar_empresa(request):
-	form = EmpresasForm
-	return render(request, 'inicio/registrar_empresa.html', {'form': form}, context_instance=RequestContext(request))
+def clientes(request):
+	clientes_list = Clientes.objects.filter(habilitado=True).order_by('-fecha_creacion')
 
-def registrar_entregable(request):
-	form = EntregablesForm()
-	return render(request, 'inicio/registrar_entregable.html', {'form': form}, context_instance=RequestContext(request))
+	paginator = Paginator(clientes_list, 9)
+	page = request.GET.get('page', 1)
 
-def registrar_personal(request):
-	form = PersonalForm()
-	return render(request, 'inicio/registrar_personal.html', {'form': form}, context_instance=RequestContext(request))
+	try:
+		clientes = paginator.page(page)
+	except PageNotAnInteger:
+		clientes = paginator.page(1)
+	except EmptyPage:
+		clientes = paginator.page(paginator.num_pages)
 
+	return render(request, 'inicio/clientes.html', {'clientes':clientes}, context_instance=RequestContext(request))
 
+class ClienteDetailView(DetailView):
+	
+	template_name = "inicio/cliente_detail.html"
+	model = Clientes
 
+	def get_object(self):
+		object = super(ClienteDetailView, self).get_object()
+		return object
+
+def crear_cliente(request):
+	if request.method=="POST":
+		form = RegistrarClienteForm(request.POST)
+		if form.is_valid():
+			cliente = Clientes.objects.create(
+												nombre 	= form.cleaned_data['nombre'],
+												siglas	= form.cleaned_data['siglas'],
+												)
+
+			mensaje = "El cliente ha sido creada exitosamente"
+			return HttpResponseRedirect('/administracion/clientes/')
+		else:
+			print "No paso"
+	else:
+		form=RegistrarClienteForm()
+	return render(request, 'inicio/cliente_create.html', {'form': form})
+
+def editar_cliente(request, pk):
+	if request.method=="POST":
+		form = RegistrarClienteForm(request.POST)
+		if form.is_valid():
+			try:
+				Clientes.objects.filter(id=int(pk)).update(
+															nombre 	= form.cleaned_data['nombre'],
+															siglas	= form.cleaned_data['siglas'],
+															)
+
+				return HttpResponseRedirect('/administracion/clientes/')
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "El cliente no pudo ser actualizado"
+		else:
+			print "No paso"
+	else:
+		cliente = Clientes.objects.get(id=int(pk))
+		form=RegistrarClienteForm(model_to_dict(cliente))
+	return render(request, 'inicio/cliente_edit.html', {'form': form})	
+
+def eliminar_cliente(request):
+	import json
+
+	if not request.is_ajax():
+		raise Http404
+
+	pk = request.POST.get('pk')
+
+	try:
+		cliente = Clientes.objects.filter(id=pk).update(habilitado=False)
+	except Exception, e:
+		print "Error: ", e
+		mensaje = {'mensaje': "Fallo la operación", 'error': True}
+	else:
+		mensaje = {'mensaje': "Operación exitosa", 'error': False}
+
+	content = json.dumps(mensaje)
+	http_response = HttpResponse(content, content_type="application/json")
+
+	return http_response
+#
+#==================OPERACIONES DE ENTIDADES========================
+#
+
+def entidades(request):
+	entidades_list = Entidades.objects.filter(habilitado=True).order_by('-fecha_creacion')
+
+	paginator = Paginator(entidades_list, 9)
+	page = request.GET.get('page', 1)
+
+	try:
+		entidades = paginator.page(page)
+	except PageNotAnInteger:
+		entidades = paginator.page(1)
+	except EmptyPage:
+		entidades = paginator.page(paginator.num_pages)
+
+	return render(request, 'inicio/entidades.html', {'entidades':entidades}, context_instance=RequestContext(request))
+
+class EntidadDetailView(DetailView):
+	
+	template_name = "inicio/entidad_detail.html"
+	model = Entidades
+
+	def get_object(self):
+		object = super(EntidadDetailView, self).get_object()
+		return object
+
+def crear_entidad(request):
+	if request.method=="POST":
+		form = RegistrarEntidadForm(request.POST)
+		if form.is_valid():
+			entidad = Entidades.objects.create(
+												nombre 	= form.cleaned_data['nombre'],
+												siglas 	= form.cleaned_data['siglas'], 
+												tipo 	= form.cleaned_data['tipo'],
+												)
+
+			mensaje = "La entidad ha sido creada exitosamente"
+			return HttpResponseRedirect('/administracion/entidades/')
+		else:
+			print "No paso"
+	else:
+		form=RegistrarEntidadForm()
+	return render(request, 'inicio/entidad_create.html', {'form': form})
+
+def editar_entidad(request, pk):
+	if request.method=="POST":
+		form = RegistrarEntidadForm(request.POST)
+		if form.is_valid():
+			try:
+				Entidades.objects.filter(id=int(pk)).update(
+															nombre 	= form.cleaned_data['nombre'],
+															siglas 	= form.cleaned_data['siglas'], 
+															tipo 	= form.cleaned_data['tipo'],
+															)
+
+				return HttpResponseRedirect('/administracion/entidades/')
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "La entidad no pudo ser actualizada"
+		else:
+			print "No paso"
+	else:
+		entidad = Entidades.objects.get(id=int(pk))
+		form=RegistrarEntidadForm(model_to_dict(entidad))
+	return render(request, 'inicio/entidad_edit.html', {'form': form})	
+
+def eliminar_entidad(request):
+	import json
+
+	if not request.is_ajax():
+		raise Http404
+
+	pk = request.POST.get('pk')
+
+	try:
+		entidad = Entidades.objects.filter(id=pk).update(habilitado=False)
+	except Exception, e:
+		print "Error: ", e
+		mensaje = {'mensaje': "Fallo la operación", 'error': True}
+	else:
+		mensaje = {'mensaje': "Operación exitosa", 'error': False}
+
+	content = json.dumps(mensaje)
+	http_response = HttpResponse(content, content_type="application/json")
+
+	return http_response
+
+#
+#==================OPERACIONES DE ENTREGABLES========================
+#
+
+def entregables(request):
+	entregables_list = Entregables.objects.filter(habilitado=True).order_by('-proyecto__fecha_inicio')
+
+	paginator = Paginator(entregables_list, 9)
+	page = request.GET.get('page', 1)
+
+	try:
+		entregables = paginator.page(page)
+	except PageNotAnInteger:
+		entregables = paginator.page(1)
+	except EmptyPage:
+		entregables = paginator.page(paginator.num_pages)
+
+	return render(request, 'inicio/entregables.html', {'entregables':entregables}, context_instance=RequestContext(request))
+
+class EntregableDetailView(DetailView):
+	
+	template_name = "inicio/entregable_detail.html"
+	model = Entregables
+
+	def get_object(self):
+		object = super(EntregableDetailView, self).get_object()
+		return object
+
+def crear_entregable(request):
+	if request.method=="POST":
+		form = RegistrarEntregableForm(request.POST)
+		if form.is_valid():
+			entregable = Entregables.objects.create(
+													proyecto 	= form.cleaned_data['proyecto'],
+													responsable = form.cleaned_data['responsable'],
+													total 		= form.cleaned_data['total'],
+													)
+
+			mensaje = "El entregable ha sido creado exitosamente"
+			return HttpResponseRedirect('/administracion/entregables/')
+		else:
+			print "No paso"
+	else:
+		form=RegistrarEntregableForm()
+	return render(request, 'inicio/entregable_create.html', {'form': form})
+
+def editar_entregable(request, pk):
+	if request.method=="POST":
+		form = RegistrarEntregableForm(request.POST)
+		if form.is_valid():
+			try:
+				Entregables.objects.filter(id=int(pk)).update(
+															proyecto 	= form.cleaned_data['proyecto'],
+															responsable = form.cleaned_data['responsable'],
+															total 		= form.cleaned_data['total'],
+															)
+
+				return HttpResponseRedirect('/administracion/entregables/')
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "El entregable no pudo ser actualizado"
+		else:
+			print "No paso"
+	else:
+		entregable = Entregables.objects.get(id=int(pk))
+		form=RegistrarEntregableForm(model_to_dict(entregable))
+	return render(request, 'inicio/entregable_edit.html', {'form': form})	
+
+def eliminar_entregable(request):
+	import json
+
+	if not request.is_ajax():
+		raise Http404
+
+	pk = request.POST.get('pk')
+
+	try:
+		entregable = Entregables.objects.filter(id=pk).update(habilitado=False)
+	except Exception, e:
+		print "Error: ", e
+		mensaje = {'mensaje': "Fallo la operación", 'error': True}
+	else:
+		mensaje = {'mensaje': "Operación exitosa", 'error': False}
+
+	content = json.dumps(mensaje)
+	http_response = HttpResponse(content, content_type="application/json")
+
+	return http_response

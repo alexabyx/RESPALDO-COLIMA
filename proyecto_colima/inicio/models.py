@@ -8,10 +8,6 @@ from inicio.helpers import get_upload_path
 
 import datetime
 
-#esta clase se encarga de representar en el sistema los atributos de la clase EMPRESAS
-class Empresas(models.Model):
-	nombre=models.CharField(max_length=45)
-
 #esta clase se encarga de representar en el sistema los atributos de la clase PERSONAL 
 class Personal(models.Model):
 	REPOSITORIO 	= settings.PERSONAL
@@ -42,9 +38,19 @@ class Personal(models.Model):
 	fecha_baja 					= models.DateField()
 	motivo_baja 				= models.CharField(max_length=150)
 	habilitado 					= models.BooleanField(default=True)
+
 	def __unicode__(self):
 		return "%s-%s" % (self.rfc, self.nombre)
+	
+	@property
+	def genero_genero(self):
+		return dict(self.SEXO_OPCIONES).get(self.genero, '---')
 
+	def plaza_plaza(self):
+		return dict(self.TIPO_PLAZA).get(self.tipo_plaza, '---')
+
+	def pago_pago(self):
+		return dict(self.TIPO_PAGO).get(self.tipo_pago, '---')
 
 # Aqui se modelan los atributos multivaluados de la clase PAGOEMPLEADO (de uno a muchos)
 class DetallePagoEmpleado(models.Model):
@@ -89,9 +95,6 @@ class Proyectos(models.Model):
 	#
 	# Relacion uno a muchas Empresas(49, 46) 
 	#
-	# fecha_fin
-	# comentario
-	# fecha_cambio #Una fecha de reprogramacion
 
 	def __unicode__(self):
 		return "%s-%s" % (self.nombre, self.siglas)
@@ -121,6 +124,10 @@ class AnexosTecnicos(models.Model):
 	def __unicode__(self):
 		return "%s-%s" % (self.numero_oficio, self.nombre)
 
+	@property
+	def status_status(self):
+		return dict(self.STATUS).get(self.status, '---')
+
 #esta clase se encarga de representar en el sistema los atributos de la clase CONVENIOS
 class Convenios (models.Model):
 	REPOSITORIO 		= settings.CONVENIOS
@@ -129,12 +136,12 @@ class Convenios (models.Model):
 	numero 				= models.CharField(max_length=150)
 	proyecto 			= models.ForeignKey(Proyectos)
 
-
 	archivo 			= models.FileField(upload_to=get_upload_path, blank=True)
 	fecha_creacion 		= models.DateField(default=datetime.datetime.now().date())
 
 	encargado = models.ForeignKey(Personal)
 	habilitado 		= models.BooleanField(default=True)
+
 	def __unicode__(self):
 		return "%s-%s" % (self.rfc, self.nombre)
 
@@ -213,8 +220,7 @@ class Facturas(models.Model):
 
 	@property
 	def tipo_tipo(self):
-		TIPOS_DICT = dict(self.TIPOS)
-		return TIPOS_DICT[self.tipo]
+		return  dict(self.TIPOS).get(self.tipo, '---')
 
 #Aqui se modelan los atributos multivaluados de la clase FACTURA (de uno a muchos)
 class DetallesFacturas(models.Model):
@@ -224,13 +230,12 @@ class DetallesFacturas(models.Model):
 
 #esta clase se encarga de representar en el sistema los atributos de la clase PROPUESTAS
 class Propuestas(models.Model):
-	TIPOS 			= (('E1', 'Empresa 46%'), ('E2', 'Empresa 49%'), ('U1', 'Universidad'))
-
 	numero_oficio 	= models.CharField(max_length=150)
 	proyecto 		= models.ForeignKey(Proyectos)
 	responsable 	= models.ForeignKey(Personal)
 	fecha_creacion 	= models.DateField(default=datetime.datetime.now().date())
 	habilitado 		= models.BooleanField(default=True)
+
 #esta clase se encarga de representar en el sistema los atributos de la claseDOCUMENTOS GENERALES
 class DocumentosGenerales(models.Model):
 	TIPOS 			= (('D1', 'Dependencia'), ('E', 'Empresa'), ('U1', 'Universidad'))
@@ -261,6 +266,12 @@ class Entidades(models.Model):
 	fecha_creacion 		= models.DateField(default=datetime.datetime.now().date())
 	habilitado 			= models.BooleanField(default=True)
 
+	def __unicode__(self):
+		return "%s | %s" % (self.nombre, self.tipo)
+		
+	@property
+	def tipo_tipo(self):
+		return dict(self.TIPOS).get(self.tipo, '---')
 
 class Entidad_proyecto(models.Model):
 	TIPOS 					= ( (46, '46%'), (49, '49%'))
@@ -268,3 +279,6 @@ class Entidad_proyecto(models.Model):
 	documentos_generales 	= models.ForeignKey(Entidades)
 	proyectos 				= models.ForeignKey(Proyectos)
 	porcentaje				= models.IntegerField(choices=TIPOS)
+
+	def porcentaje_porcenataje(self):
+		return dict(self.TIPOS).get(self.porcentaje, '0%')

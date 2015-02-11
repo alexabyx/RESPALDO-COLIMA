@@ -1,7 +1,7 @@
 {% extends "inicio/base_colima.html" %}
 {% load i18n %}
 {% load staticfiles %}
-	{% block title %}Facturas{% endblock %}
+	{% block titulo %}Facturas{% endblock %}
 	{% block extrascript %}
     <script>
      function detalle(factura_id){
@@ -66,7 +66,7 @@
 			</thead>
 			{% for factura in facturas %}
 			<tr>
-				<td>{{ factura.tipo }}</td>
+				<td>{{ factura.tipo_tipo }}</td>
 				<td>{{ factura.nombre }}</td>
 				<td>{{ factura.numero_factura }}</td>
 				<td>{{ factura.fecha_factura }}</td>

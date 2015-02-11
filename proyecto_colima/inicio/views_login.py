@@ -1,16 +1,16 @@
 #! -*- coding:utf-8 -*-
 # Create your views here.
 
-from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login, logout
-from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger, InvalidPage
+from django.contrib.auth import authenticate, login, logout
+from django.forms.models import model_to_dict
 from django.shortcuts import render, render_to_response, get_object_or_404
+from django.template import RequestContext
 from django.conf import settings
 from django.http import HttpResponseRedirect, Http404
-from django.template import RequestContext
-from django.forms.models import model_to_dict
 
 from inicio.forms import (	AuthForm, 
 						 )

@@ -1,12 +1,12 @@
 {% extends "inicio/base_colima.html" %}
 {% load i18n %}
 {% load staticfiles %}
-	{% block titulo %}Proyectos{% endblock %}
+	{% block titulo %}Empleados{% endblock %}
 	{% block extrascript %}
     <script>
-     function detalle(proyecto_id){
+     function detalle(personal_id){
      	$.fancybox.showActivity();
-		$.get('/administracion/detalle_proyecto/'+proyecto_id+'/', {}, function(data){ 
+		$.get('/administracion/detalle_personal/'+personal_id+'/', {}, function(data){ 
 			$.fancybox({'content': data,
 						'transitionIn'	: 'elastic',
 						'transitionOut'	: 'elastic',
@@ -16,16 +16,16 @@
 		});   	
      }
 
-     function aviso(proyecto_id){
+     function aviso(personal_id){
      	$.fancybox.showActivity();
-     	var data = {mensaje: "¿Está seguro de querer eliminar este proyecto?"}
+     	var data = {mensaje: "¿Está seguro de querer eliminar este empleado?"}
      	$.get('/administracion/modal_aviso/', data, function(response){
      		$.fancybox({'content': response,
      					'onComplete':function(){
      						$('#aceptar').click(function(){
      								$(this).attr("disabled", "disabled");
 									//$.fancybox.close();
-									eliminar(proyecto_id);
+									eliminar(personal_id);
      						});
 
      						$("#cancelar").click(function(){
@@ -37,13 +37,13 @@
      	});
      }
 
-     function eliminar(proyecto_id){
+     function eliminar(personal_id){
      	$.fancybox.showActivity();
 
      	var csrfmiddlewaretoken = $("input[name='csrfmiddlewaretoken']").val();
-     	var data = {'pk': proyecto_id, 'csrfmiddlewaretoken': csrfmiddlewaretoken}
+     	var data = {'pk': personal_id, 'csrfmiddlewaretoken': csrfmiddlewaretoken}
 
-     	$.post('/administracion/eliminar_proyecto/', data, function(response){
+     	$.post('/administracion/eliminar_personal/', data, function(response){
      		if(response.error){
      			$.get('/administracion/modal_error/', {}, function(_response){ 
 					$.fancybox({'content': _response,
@@ -97,9 +97,9 @@
 	<div class="panel panel-primary">
 	  <!-- Default panel contents -->
 	  <div class="panel-heading">
-	  	  	Listado de proyectos
+	  	  	Listado de empleados
 	  <div>
-	  	<a title="Agregar nuevo" href="{% url 'administracion:crear-proyecto' %}">
+	  	<a title="Agregar nuevo" href="{% url 'administracion:crear-personal' %}">
 	  		<img class="agregar" src="{% static "icons/agregar.png" %}">
 	  		<!-- <button type="button" class="btn btn-default agregar" />Agregar nuevo</button>-->
 	  	</a>
@@ -110,28 +110,28 @@
 		<table class="table table-striped">
 			<thead>
 				<tr>
-					<th>Nombre</th>
-					<th>Fecha de inicio</th>
-					<th>Avance</th>
+					<th>Nombre Competo</th>
+					<th>Sexo</th>
+					<th>Ingreso</th>
+					<th>Puesto</th>
 					<th>Acciones</th>
 				</tr>
 			</thead>
-			{% for proyecto in proyectos %}
+			{% for personal1 in personal %}
 			<tr>
-				<td>
-					{{ proyecto.nombre }}
-				</td>
-				<td>{{ proyecto.fecha_inicio }}</td>
-				<td>{% if proyecto.avance %} {{ proyecto.avance }}% {% else %}0%{% endif %}</td>
+				<td>{{ personal1.nombre }} {{ personal1.apellido_paterno }} {{ personal1.apellido_materno }}</td>
+				<td>{{ personal1.genero_genero }}</td>
+				<td>{{ personal1.fecha_ingreso }}</td>
+				<td>{{ personal1.puesto }}</td>
 				<td>
 					{% csrf_token %}
-					<a onClick="detalle({{proyecto.id}});" title="Consultar">
+					<a onClick="detalle({{personal1.id}});" title="Consultar">
 						<img src="{% static "icons/consultar.png" %}">
 					</a>&nbsp; &nbsp;
-					<a href="{% url 'administracion:editar-proyecto' proyecto.id %}" title="Editar" >
+					<a href="{% url 'administracion:editar-personal' personal1.id %}" title="Editar" >
 						<img src="{% static "icons/editar.png" %}"> 
 					</a>&nbsp; &nbsp;
-					<a onClick="aviso({{ proyecto.id }});" title="Eliminar">
+					<a onClick="aviso({{ personal1.id }});" title="Eliminar">
 						<img src="{% static "icons/eliminar.png" %}"> 
 					</a>
 			</tr>
@@ -141,12 +141,12 @@
 	<div>
 		<nav>
 		  <ul class="pager">
-		    {% if proyectos.has_previous %}
-	           <li><a href="?page={{ proyectos.previous_page_number }}">Anterior</a></li> 
+		    {% if personal.has_previous %}
+	           <li><a href="?page={{ personal.previous_page_number }}">Anterior</a></li> 
 		    {% endif %}                                    
-			Página {{ proyectos.number }} de {{ proyectos.paginator.num_pages }}
-		    {% if proyectos.has_next %}
-	    		<li><a href="?page={{ proyectos.next_page_number }}">Siguiente</a></li>
+			Página {{ personal.number }} de {{ personal.paginator.num_pages }}
+		    {% if personal.has_next %}
+	    		<li><a href="?page={{ personal.next_page_number }}">Siguiente</a></li>
 		    {% endif %}
 		  </ul>
 		</nav>	

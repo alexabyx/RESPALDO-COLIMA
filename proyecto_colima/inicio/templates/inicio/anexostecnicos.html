@@ -1,12 +1,12 @@
 {% extends "inicio/base_colima.html" %}
 {% load i18n %}
 {% load staticfiles %}
-	{% block title %}Proyectos{% endblock %}
+	{% block titulo %}Anexos tecnicos{% endblock %}
 	{% block extrascript %}
     <script>
-     function detalle(proyecto_id){
+     function detalle(anexo_id){
      	$.fancybox.showActivity();
-		$.get('/administracion/detalle_proyecto/'+proyecto_id+'/', {}, function(data){ 
+		$.get('/administracion/detalle_anexotecnico/'+anexo_id+'/', {}, function(data){ 
 			$.fancybox({'content': data,
 						'transitionIn'	: 'elastic',
 						'transitionOut'	: 'elastic',
@@ -16,16 +16,16 @@
 		});   	
      }
 
-     function aviso(proyecto_id){
+     function aviso(anexo_id){
      	$.fancybox.showActivity();
-     	var data = {mensaje: "¿Está seguro de querer eliminar este proyecto?"}
+     	var data = {mensaje: "¿Está seguro de querer eliminar este anexo tecnico?"}
      	$.get('/administracion/modal_aviso/', data, function(response){
      		$.fancybox({'content': response,
      					'onComplete':function(){
      						$('#aceptar').click(function(){
      								$(this).attr("disabled", "disabled");
 									//$.fancybox.close();
-									eliminar(proyecto_id);
+									eliminar(anexo_id);
      						});
 
      						$("#cancelar").click(function(){
@@ -37,13 +37,13 @@
      	});
      }
 
-     function eliminar(proyecto_id){
+     function eliminar(anexo_id){
      	$.fancybox.showActivity();
 
      	var csrfmiddlewaretoken = $("input[name='csrfmiddlewaretoken']").val();
-     	var data = {'pk': proyecto_id, 'csrfmiddlewaretoken': csrfmiddlewaretoken}
+     	var data = {'pk': anexo_id, 'csrfmiddlewaretoken': csrfmiddlewaretoken}
 
-     	$.post('/administracion/eliminar_proyecto/', data, function(response){
+     	$.post('/administracion/eliminar_anexotecnico/', data, function(response){
      		if(response.error){
      			$.get('/administracion/modal_error/', {}, function(_response){ 
 					$.fancybox({'content': _response,
@@ -99,7 +99,7 @@
 	  <div class="panel-heading">
 	  	  	Listado de anexos tecnicos
 	  <div>
-	  	<a title="Agregar nuevo" href="{% url 'administracion:crear-proyecto' %}">
+	  	<a title="Agregar nuevo" href="{% url 'administracion:crear-anexotecnico' %}">
 	  		<img class="agregar" src="{% static "icons/agregar.png" %}">
 	  		<!-- <button type="button" class="btn btn-default agregar" />Agregar nuevo</button>-->
 	  	</a>
@@ -110,19 +110,19 @@
 		<table class="table table-striped">
 			<thead>
 				<tr>
+					<th>No. Oficio</th>
 					<th>Nombre</th>
-					<th>Fecha de inicio</th>
-					<th>Avance</th>
+					<th>Status</th>
+					<th>Fecha de creación</th>
 					<th>Acciones</th>
 				</tr>
 			</thead>
 			{% for anexotecnico in anexostecnicos %}
 			<tr>
-				<td>
-					{{ anexotecnico.nombre }}
-				</td>
-				<td>{{ anexotecnico.fecha_inicio }}</td>
-				<td>{% if anexotecnico.avance %} {{ anexotecnico.avance }}% {% else %}0%{% endif %}</td>
+				<td>#{{ anexotecnico.numero_oficio }}</td>
+				<td>{{ anexotecnico.nombre }}</td>
+				<td>{{ anexotecnico.status_status }}</td>
+				<td>{{ anexotecnico.fecha_creacion }}</td>
 				<td>
 					{% csrf_token %}
 					<a onClick="detalle({{anexotecnico.id}});" title="Consultar">

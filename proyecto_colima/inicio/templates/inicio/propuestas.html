@@ -1,30 +1,154 @@
-{% extends "admin/base_site.html" %}
-{% load i18n admin_static %}
+{% extends "inicio/base_colima.html" %}
+{% load i18n %}
+{% load staticfiles %}
+	{% block titulo %}Propuestas{% endblock %}
+	{% block extrascript %}
+    <script>
+     function detalle(propuesta_id){
+     	$.fancybox.showActivity();
+		$.get('/administracion/detalle_propuesta/'+propuesta_id+'/', {}, function(data){ 
+			$.fancybox({'content': data,
+						'transitionIn'	: 'elastic',
+						'transitionOut'	: 'elastic',
+						'onComplete': function(){ $('#fancybox-content').css("width", $('#fancybox-outer').width());},
+						'onClosed':function(){ window.location.reload();},
+					   });
+		});   	
+     }
 
+     function aviso(propuesta_id){
+     	$.fancybox.showActivity();
+     	var data = {mensaje: "¿Está seguro de querer eliminar esta propuesta?"}
+     	$.get('/administracion/modal_aviso/', data, function(response){
+     		$.fancybox({'content': response,
+     					'onComplete':function(){
+     						$('#aceptar').click(function(){
+     								$(this).attr("disabled", "disabled");
+									//$.fancybox.close();
+									eliminar(propuesta_id);
+     						});
 
-{% block content %}
-<div id="content-main">
-		<a href="{% url 'inicio:agregar-propuesta' %}"><button>Agregar nuevo</button></a>
-		<input type="button" onclick="javascript:window.history.go(-1);" value="Regresar">
-		<!--historicos son los concluidos o cancelado
-		cerrar--> 
-		<ul>
+     						$("#cancelar").click(function(){
+									$.fancybox.close();
+     						});
+     					},
+     					});
+
+     	});
+     }
+
+     function eliminar(propuesta_id){
+     	$.fancybox.showActivity();
+
+     	var csrfmiddlewaretoken = $("input[name='csrfmiddlewaretoken']").val();
+     	var data = {'pk': propuesta_id, 'csrfmiddlewaretoken': csrfmiddlewaretoken}
+
+     	$.post('/administracion/eliminar_propuesta/', data, function(response){
+     		if(response.error){
+     			$.get('/administracion/modal_error/', {}, function(_response){ 
+					$.fancybox({'content': _response,
+							'transitionIn'	: 'elastic',
+							'transitionOut'	: 'elastic',
+							'onComplete': function(){ $('#fancybox-content').css("width", $('#fancybox-outer').width());},
+							'onClosed':function(){ window.location.reload();},
+								});
+     			});
+     		}
+     		else{
+     			$.fancybox.showActivity();
+     			$.get('/administracion/modal_ok/', {}, function(_response){
+					$.fancybox({'content': _response,
+							'transitionIn'	: 'elastic',
+							'transitionOut'	: 'elastic',
+							'onComplete': function(){ $('#fancybox-content').css("width", $('#fancybox-outer').width());},
+							'onClosed':function(){ window.location.reload();},
+							});
+     			});
+
+     		}
+
+     	});
+     } 
+    </script>
+    {% endblock %}
+
+    {% block extrastyle %}
+    <style>
+    .bienvenida{
+    	padding-right: 15px;
+    }
+    .menu{
+    	padding-left: 15px;
+    	width: 15%;
+    }
+    .panel{
+    	width: 80%;
+    	margin-left: 10%;
+    	margin-right: 10%;
+    }
+    .agregar{
+	    margin-left: 98%;
+	    margin-top: -20px    	
+    }
+    </style>
+    {% endblock %}
+
+    {% block contenido %}
+	<div class="panel panel-primary">
+	  <!-- Default panel contents -->
+	  <div class="panel-heading">
+	  	  	Listado de anexos propuestas
+	  <div>
+	  	<a title="Agregar nuevo" href="{% url 'administracion:crear-propuesta' %}">
+	  		<img class="agregar" src="{% static "icons/agregar.png" %}">
+	  		<!-- <button type="button" class="btn btn-default agregar" />Agregar nuevo</button>-->
+	  	</a>
+	  </div>
+	  </div>
+
+	  <!-- Table -->
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th>Número</th>
+					<th>Proyecto</th>
+					<th>Responsable</th>
+					<th>Fecha de creación</th>
+					<th>Acciones</th>
+				</tr>
+			</thead>
 			{% for propuesta in propuestas %}
-				<li>{{propuesta.numero_oficio}}-{{propuesta.proyecto}} - {{propuesta.responsable}}
-					<a href="{% url 'inicio:editar-propuesta' propuesta.id %}"><button>Editar</button></a>
-					<a href="{% url 'inicio:eliminar-propuesta' propuesta.id %}"><button>Eliminar</button></a>
-					<a href="{% url 'inicio:consultar-propuesta' propuesta.id %}"><button>Consultar</button></a>
-				</li>
-			{% endfor %}
-		</ul>
-
-    {% if propuestas.has_previous %}
-            <a href="?page={{ propuestas.previous_page_number }}">Anterior &nbsp;&nbsp;</a>
-    {% endif %}                                    
-    {% if propuestas.has_next %}
-            <a href="?page={{ propuestas.next_page_number }}">Siguiente</a>
-    {% endif %}
-
-	<h5> Página {{ propuestas.number }} de {{ propuestas.paginator.num_pages }}</h5>     
-</div>
-{% endblock %}
+			<tr>
+				<td>#{{ propuesta.numero_oficio }}</td>
+				<td>{{ propuesta.proyecto }}</td>
+				<td>{{ propuesta.responsable }}</td>
+				<td>{{ propuesta.fecha_creacion }}</td>
+				<td>
+					{% csrf_token %}
+					<a onClick="detalle({{propuesta.id}});" title="Consultar">
+						<img src="{% static "icons/consultar.png" %}">
+					</a>&nbsp; &nbsp;
+					<a href="{% url 'administracion:editar-propuesta' propuesta.id %}" title="Editar" >
+						<img src="{% static "icons/editar.png" %}"> 
+					</a>&nbsp; &nbsp;
+					<a onClick="aviso({{ propuesta.id }});" title="Eliminar">
+						<img src="{% static "icons/eliminar.png" %}"> 
+					</a>
+			</tr>
+			{% endfor %}			
+		</table>
+	</div>	
+	<div>
+		<nav>
+		  <ul class="pager">
+		    {% if propuestas.has_previous %}
+	           <li><a href="?page={{ propuestas.previous_page_number }}">Anterior</a></li> 
+		    {% endif %}                                    
+			Página {{ propuestas.number }} de {{ propuestas.paginator.num_pages }}
+		    {% if propuestas.has_next %}
+	    		<li><a href="?page={{ propuestas.next_page_number }}">Siguiente</a></li>
+		    {% endif %}
+		  </ul>
+		</nav>	
+	</div>
+	{% endblock %}	
