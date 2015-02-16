@@ -5,23 +5,23 @@
 	{% block extrascript %}
     <script>
      function detalle(proyecto_id){
-     	$.fancybox.showActivity();
+     	$.fancybox.showLoading();
 		$.get('/administracion/detalle_proyecto/'+proyecto_id+'/', {}, function(data){ 
 			$.fancybox({'content': data,
-						'transitionIn'	: 'elastic',
-						'transitionOut'	: 'elastic',
-						'onComplete': function(){ $('#fancybox-content').css("width", $('#fancybox-outer').width());},
-						'onClosed':function(){ window.location.reload();},
+						'openEffect': 'elastic',
+						'closeEffect': 'elastic',
 					   });
 		});   	
      }
 
      function aviso(proyecto_id){
-     	$.fancybox.showActivity();
+     	$.fancybox.showLoading();
      	var data = {mensaje: "¿Está seguro de querer eliminar este proyecto?"}
      	$.get('/administracion/modal_aviso/', data, function(response){
      		$.fancybox({'content': response,
-     					'onComplete':function(){
+     					'openEffect': 'elastic',
+						'closeEffect': 'elastic',
+     					'afterShow':function(){
      						$('#aceptar').click(function(){
      								$(this).attr("disabled", "disabled");
 									//$.fancybox.close();
@@ -38,7 +38,7 @@
      }
 
      function eliminar(proyecto_id){
-     	$.fancybox.showActivity();
+     	$.fancybox.showLoading();
 
      	var csrfmiddlewaretoken = $("input[name='csrfmiddlewaretoken']").val();
      	var data = {'pk': proyecto_id, 'csrfmiddlewaretoken': csrfmiddlewaretoken}
@@ -47,21 +47,17 @@
      		if(response.error){
      			$.get('/administracion/modal_error/', {}, function(_response){ 
 					$.fancybox({'content': _response,
-							'transitionIn'	: 'elastic',
-							'transitionOut'	: 'elastic',
-							'onComplete': function(){ $('#fancybox-content').css("width", $('#fancybox-outer').width());},
-							'onClosed':function(){ window.location.reload();},
+							//'afterShow': function(){ $('#fancybox-content').css("width", $('#fancybox-outer').width());},
+							'afterClose':function(){ window.location.reload();},
 								});
      			});
      		}
      		else{
-     			$.fancybox.showActivity();
+     			$.fancybox.showLoading();
      			$.get('/administracion/modal_ok/', {}, function(_response){
 					$.fancybox({'content': _response,
-							'transitionIn'	: 'elastic',
-							'transitionOut'	: 'elastic',
-							'onComplete': function(){ $('#fancybox-content').css("width", $('#fancybox-outer').width());},
-							'onClosed':function(){ window.location.reload();},
+							//'afterShow': function(){ $('#fancybox-content').css("width", $('#fancybox-outer').width());},
+							'afterClose':function(){ window.location.reload();},
 							});
      			});
 

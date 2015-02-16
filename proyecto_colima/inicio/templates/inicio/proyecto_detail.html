@@ -1,3 +1,25 @@
+{% load i18n %}
+{% load staticfiles %}
+<script>
+
+$(document).ready(function(){
+	$(".editar").height(20);
+
+  $(".ocultar").click(function(){
+    $(this).attr("hidden", true);
+    $(this).parent().next().attr("hidden", true);
+    $($(this).siblings()[0]).attr("hidden", false)
+  });
+  $(".mostrar").click(function(){
+    $(this).attr("hidden", true);
+    $(this).parent().next().attr("hidden", false);
+    $($(this).siblings()[0]).attr("hidden", false);
+  });
+
+});
+
+
+</script>
 <style>
 .input-group-addon{
   width:40%;
@@ -56,8 +78,29 @@
 	</div>
 </div>
 
+<div class="modal-body">
+	<h4 class="modal-title">Entregables
+		<img class="mostrar" title="mostrar" src="{% static "icons/mostrar.png" %}"> 
+		<img class="ocultar" title="ocultar" hidden="hidden" src="{% static "icons/ocultar.png" %}">
+	</h4>
+	<div hidden="hidden">
+	{% for entregable in entregables %}
+		<div class="input-group">
+			<input type="text" class="form-control" readonly="readonly" value="{{entregable}}" aria-describedby="basic-addon2">
+			<span class="input-group-addon" id="basic-addon2">
+				<a href="{% url 'administracion:editar-entregable' entregable.id %}">
+					<img class="editar" title="editar" src="{% static "icons/editar.png" %}">
+				</a>
+			</span>
+		</div>
+	{% endfor %}
+	</div>
+</div>
+
 <div class="modal-footer">
 	<center>
-<button type="button" class="btn btn-default" data-dismiss="modal" onclick="javascript: $.fancybox.close()">Aceptar</button>
+		<button type="button" class="btn btn-default" data-dismiss="modal" onclick="javascript: $.fancybox.close()">
+			Aceptar
+		</button>
 	</center>
-  	
+</div>

@@ -48,7 +48,9 @@
         </div>
       <div class="contenido_form">
         <div class="form-group">
-          <label for="exampleInputEmail1">Nombre<span class="error">*</span></label> 
+          <label  for="exampleInputEmail1">
+            Nombre
+            <span class="error">{% if form.nombre.errors %}{{ form.nombre.errors }}{% endif %}</span></label> 
                 {{ form.nombre }}
           <span id="helpBlock" class="help-block">{{ form.nombre.help_text }}</span>
         </div>

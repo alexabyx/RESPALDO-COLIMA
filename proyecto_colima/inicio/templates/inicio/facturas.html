@@ -5,13 +5,10 @@
 	{% block extrascript %}
     <script>
      function detalle(factura_id){
-     	$.fancybox.showActivity();
+     	$.fancybox.showLoading();
 		$.get('/administracion/detalle_factura/'+factura_id+'/', {}, function(data){ 
 			$.fancybox({'content': data,
-						'transitionIn'	: 'elastic',
-						'transitionOut'	: 'elastic',
-						'onComplete': function(){ $('#fancybox-content').css("width", $('#fancybox-outer').width());},
-						'onClosed':function(){ window.location.reload();},
+						'afterClose':function(){ window.location.reload();},
 					   });
 		});   	
      }

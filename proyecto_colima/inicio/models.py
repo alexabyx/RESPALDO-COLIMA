@@ -81,16 +81,16 @@ class Clientes(models.Model):
 #esta clase se encarga de representar en el sistema los atributos de la clase PROYECTOS
 class Proyectos(models.Model):
 
-	nombre 			= models.CharField(max_length=150)
-	siglas 			= models.CharField(max_length=150)
-	responsable 	= models.ManyToManyField(Personal)
-	fecha_inicio 	= models.DateField(default=datetime.datetime.now().date())
-	fecha_fin 		= models.DateField(default=datetime.datetime.now().date())
+	nombre 			= models.CharField(max_length=150, null=False)
+	siglas 			= models.CharField(max_length=150, null=False)
+	responsable 	= models.ManyToManyField(Personal, null=False)
+	fecha_inicio 	= models.DateField(default=datetime.datetime.now().date(), null=False)
+	fecha_fin 		= models.DateField(default=datetime.datetime.now().date(), null=True)
 	
-	avance 			= models.CharField(max_length=150)
-	comentario 		= models.CharField(max_length=500)
+	avance 			= models.CharField(max_length=150, null=True)
+	comentario 		= models.CharField(max_length=500, null=True)
 	fecha_cambio 	= models.DateField(auto_now=True)
-	cliente			= models.ForeignKey(Clientes)
+	cliente			= models.ForeignKey(Clientes, null=False)
 	habilitado 		= models.BooleanField(default=True)
 	#
 	# Relacion uno a muchas Empresas(49, 46) 
@@ -139,11 +139,11 @@ class Convenios (models.Model):
 	archivo 			= models.FileField(upload_to=get_upload_path, blank=True)
 	fecha_creacion 		= models.DateField(default=datetime.datetime.now().date())
 
-	encargado = models.ForeignKey(Personal)
-	habilitado 		= models.BooleanField(default=True)
+	encargado 			= models.ForeignKey(Personal)
+	habilitado 			= models.BooleanField(default=True)
 
 	def __unicode__(self):
-		return "%s-%s" % (self.rfc, self.nombre)
+		return "%s" % (self.numero)
 
 
 #esta clase se encarga de representar en el sistema los atributos de la clase CONTRATOS
@@ -273,12 +273,12 @@ class Entidades(models.Model):
 	def tipo_tipo(self):
 		return dict(self.TIPOS).get(self.tipo, '---')
 
-class Entidad_proyecto(models.Model):
-	TIPOS 					= ( (46, '46%'), (49, '49%'))
+class EntidadProyecto(models.Model):
+	TIPOS 		= ( (46, '46%'), (49, '49%'))
 
-	documentos_generales 	= models.ForeignKey(Entidades)
-	proyectos 				= models.ForeignKey(Proyectos)
-	porcentaje				= models.IntegerField(choices=TIPOS)
+	entidad 	= models.ForeignKey(Entidades)
+	proyecto 	= models.ForeignKey(Proyectos)
+	porcentaje  = models.IntegerField(choices=TIPOS)
 
 	def porcentaje_porcenataje(self):
 		return dict(self.TIPOS).get(self.porcentaje, '0%')

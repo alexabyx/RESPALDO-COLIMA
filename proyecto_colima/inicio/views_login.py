@@ -49,7 +49,7 @@ def login_web(request):
 		url_redirect = request.GET.get('next')		
 	return render(request, 'inicio/login.html', {'form': form, 'next': url_redirect }, context_instance=RequestContext(request))
 
-@login_required()
+@login_required(login_url='/')
 def logout_web(request):
     logout(request)
     return HttpResponseRedirect('/')
