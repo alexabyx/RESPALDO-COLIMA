@@ -37,7 +37,13 @@
       }
     </style>
   {% endblock %}
-
+{% block breadcrumbs %}
+<ol class="breadcrumb" style="margin-top:-20px">
+  <li><a href="{% url 'administracion:index' %}">Inicio</a></li>
+  <li><a href="{% url 'administracion:detalles-doc-responsiva' %}">Detalles de Doc. de responsiva</a></li>
+  <li class="active">Editar detalle de doc. de responsiva</li>
+</ol>
+{% endblock %}
   {% block contenido %}
     <form class="agregar_form" action="." method="POST" enctype="multipart/form-data"> {% csrf_token %}
         <div class="form-group">

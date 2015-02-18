@@ -61,7 +61,14 @@
       }
     </style>
   {% endblock %}
-
+{% block breadcrumbs %}
+<ol class="breadcrumb" style="margin-top:-20px">
+  <li><a href="{% url 'administracion:index' %}">Inicio</a></li>
+  <li><a href="{% url 'administracion:entidades'%}">Entidades</a></li>
+  <li class="active">Editar entidad</li>
+</ol>
+{% endblock %}
+  {% block contenido
   {% block contenido %}
   <div id="main_content">
     <div id="agregar_form_izq">

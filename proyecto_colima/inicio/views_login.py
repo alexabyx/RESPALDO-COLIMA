@@ -3,7 +3,7 @@
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse_lazy
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger, InvalidPage
 from django.contrib.auth import authenticate, login, logout
 from django.forms.models import model_to_dict
@@ -21,7 +21,7 @@ def login_web(request):
 		if form.is_valid():
 			username = form.cleaned_data['username']
 			password = form.cleaned_data['password']
-			url_redirect = request.POST.get('next', None)
+			url_redirect = request.POST.get('next', reverse_lazy('administracion:index'))
 
 			try:
 				usuario = authenticate(username = username, password=password)
@@ -35,7 +35,7 @@ def login_web(request):
 					if url_redirect:
 						return HttpResponseRedirect(url_redirect)						
 					else:
-						return HttpResponseRedirect('/administracion/')
+						return HttpResponseRedirect(reverse_lazy('index'))
 				else:
 					mensaje = "Usuario inactivo"
 					return render(request, 'inicio/login.html', {'form': form, 'mensaje': mensaje}, context_instance=RequestContext(request))					

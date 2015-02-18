@@ -37,7 +37,13 @@
       }
     </style>
   {% endblock %}
-
+{% block breadcrumbs %}
+<ol class="breadcrumb" style="margin-top:-20px">
+  <li><a href="{% url 'administracion:index' %}">Inicio</a></li>
+  <li><a href="{% url 'administracion:propuestas'%}">Propuestas</a></li>
+  <li class="active">Editar propuesta</li>
+</ol>
+{% endblock %}
   {% block contenido %}
     <form class="agregar_form" action="." method="POST">{% csrf_token %}
       <div class="contenido_form">

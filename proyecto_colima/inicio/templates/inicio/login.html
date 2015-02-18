@@ -59,7 +59,10 @@
             <button type="submit" class="btn btn-default">Iniciar sesión</button>
           </div>
         </div>
-        <input type="text" value="{{next}}" hidden="hidden" name="next"/>
+          {% if next %}
+          <input type="text" name="next" value="{{ next }}" hidden >
+          {% else %}
+          {% endif %}
       </div>
       </form>
     {% endblock %}

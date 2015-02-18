@@ -35,7 +35,12 @@
     }
     </style>
     {% endblock %}
-
+{% block breadcrumbs %}
+<ol class="breadcrumb" style="margin-top:-20px">
+	<li><a href="{% url 'administracion:index' %}">Inicio</a></li>
+	<li class="active">Entidades-proyecto</li>
+</ol>
+{% endblock %}
     {% block contenido %}
 	<div class="panel panel-primary">
 	  <!-- Default panel contents -->

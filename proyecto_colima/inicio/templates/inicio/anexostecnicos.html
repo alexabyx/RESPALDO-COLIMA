@@ -69,7 +69,12 @@
      } 
     </script>
     {% endblock %}
-
+{% block breadcrumbs %}
+<ol class="breadcrumb" style="margin-top:-20px">
+	<li><a href="{% url 'administracion:index' %}">Inicio</a></li>
+	<li class="active">Anexos técnicos</li>
+</ol>
+{% endblock %}
     {% block extrastyle %}
     <style>
     .bienvenida{

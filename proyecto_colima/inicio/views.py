@@ -88,7 +88,7 @@ class ProyectoDetailView(DetailView):
 
 		return context
 
-
+@login_required(login_url='/')
 def editar_proyecto(request, pk):
 	proyecto = Proyectos.objects.get(id=pk)
 	if request.method=="POST":
@@ -138,6 +138,7 @@ def editar_proyecto(request, pk):
 														 'propuestas': propuestas,
 														 'doc_generales': doc_generales})
 
+@login_required(login_url='/')
 def editar_proyecto_1(request, pk):
 	proyecto = Proyectos.objects.get(id=pk)
 
@@ -176,6 +177,7 @@ def editar_proyecto_1(request, pk):
 
 	return render(request, 'inicio/proyecto_edit_1.html', {'form': form,'id':proyecto.id, 'mensaje':mensaje})
 
+@login_required(login_url='/')
 def crear_proyecto(request):
 	if request.method=="POST":
 		form = RegistrarProyectoForm(request.POST)
@@ -202,6 +204,7 @@ def crear_proyecto(request):
 		form=RegistrarProyectoForm()
 	return render(request, 'inicio/proyecto_create.html', {'form': form})
 
+@login_required(login_url='/')
 def eliminar_proyecto(request):
 	import json
 
@@ -226,6 +229,7 @@ def eliminar_proyecto(request):
 #
 #==================OPERACIONES DE FACTURAS========================
 #
+@login_required(login_url='/')
 def facturas(request):
 	facturas_list = Facturas.objects.all()
 
@@ -241,6 +245,7 @@ def facturas(request):
 
 	return render(request, 'inicio/facturas.html', {'facturas': facturas}, context_instance=RequestContext(request))
 
+
 class FacturaDetailView(DetailView):
 	
 	template_name = "inicio/factura_detail.html"
@@ -250,6 +255,7 @@ class FacturaDetailView(DetailView):
 		object = super(FacturaDetailView, self).get_object()
 		return object
 
+@login_required(login_url='/')
 def editar_factura(request, pk):
 	factura = Facturas.objects.get(id=int(pk))
 
@@ -288,7 +294,7 @@ def editar_factura(request, pk):
 	detalle_facturas = DetallesFacturas.objects.filter(factura=factura)
 	return render(request, 'inicio/factura_edit.html', {'form': form,
 														'detalle_facturas': detalle_facturas})
-
+@login_required(login_url='/')
 def editar_factura_1(request, pk):
 	factura = Facturas.objects.get(id=int(pk))
 	if request.method=="POST":
@@ -325,6 +331,7 @@ def editar_factura_1(request, pk):
 		form=RegistrarFacturaForm(model_to_dict(factura))
 	return render(request, 'inicio/factura_edit_1.html', {'form': form, 'id': factura.id, 'mensaje': mensaje})
 
+@login_required(login_url='/')
 def crear_factura(request):
 	if request.method=="POST":
 		form = RegistrarFacturaForm(request.POST, request.FILES)
@@ -362,6 +369,7 @@ def crear_factura(request):
 #
 #==================OPERACIONES DE DETALLES DE FACTURAS========================
 #
+@login_required(login_url='/')
 def detalle_facturas(request):
 	detalle_facturas_list = DetallesFacturas.objects.all()
 
@@ -386,6 +394,7 @@ class DetalleFacturaDetailView(DetailView):
 		object = super(DetalleFacturaDetailView, self).get_object()
 		return object
 
+@login_required(login_url='/')
 def editar_detalle_factura(request, pk):
 	if request.method=="POST":
 		form = RegistrarDetalleFacturaForm(request.POST, request.FILES)
@@ -408,6 +417,8 @@ def editar_detalle_factura(request, pk):
 		form=RegistrarDetalleFacturaForm(model_to_dict(detalle_factura))
 	return render(request, 'inicio/detalle_factura_edit.html', {'form': form})
 
+
+@login_required(login_url='/')
 def editar_detalle_factura_1(request, pk):
 	detalle_factura = DetallesFacturas.objects.get(id=int(pk))
 	if request.method=="POST":
@@ -430,6 +441,8 @@ def editar_detalle_factura_1(request, pk):
 		form=RegistrarDetalleFacturaForm(model_to_dict(detalle_factura))
 	return render(request, 'inicio/detalle_factura_edit_1.html', {'form': form, 'id': detalle_factura.id, 'mensaje': mensaje})
 
+
+@login_required(login_url='/')
 def crear_detalle_factura(request):
 	if request.method=="POST":
 		form = RegistrarDetalleFacturaForm(request.POST, request.FILES)
@@ -452,6 +465,8 @@ def crear_detalle_factura(request):
 #
 #==================OPERACIONES DE ANEXOSTECNICOS========================
 #
+
+@login_required(login_url='/')
 def anexostecnicos(request):
 	anexostecnicos_list = AnexosTecnicos.objects.filter(habilitado=True).order_by('-fecha_creacion')
 
@@ -467,6 +482,8 @@ def anexostecnicos(request):
 
 	return render(request, 'inicio/anexostecnicos.html', {'anexostecnicos':anexostecnicos}, context_instance=RequestContext(request))
 
+
+@login_required(login_url='/')
 def crear_anexotecnico(request):
 	if request.method=="POST":
 		form = RegistrarAnexotecnicoForm(request.POST, request.FILES)
@@ -488,6 +505,8 @@ def crear_anexotecnico(request):
 		form=RegistrarAnexotecnicoForm()
 	return render(request, 'inicio/anexotecnico_create.html', {'form': form})
 
+
+@login_required(login_url='/')
 def editar_anexotecnico(request, pk):
 	if request.method=="POST":
 		form = RegistrarAnexotecnicoForm(request.POST, request.FILES)
@@ -513,6 +532,8 @@ def editar_anexotecnico(request, pk):
 		form=RegistrarAnexotecnicoForm(model_to_dict(anexotecnico))
 	return render(request, 'inicio/anexotecnico_edit.html', {'form': form})
 
+
+@login_required(login_url='/')
 def editar_anexotecnico_1(request, pk):
 	anexotecnico = AnexosTecnicos.objects.get(id=int(pk))
 	if request.method=="POST":
@@ -548,6 +569,7 @@ class AnexotecnicoDetailView(DetailView):
 		object = super(AnexotecnicoDetailView, self).get_object()
 		return object
 
+@login_required(login_url='/')
 def eliminar_anexotecnico(request):
 	import json
 
@@ -573,6 +595,8 @@ def eliminar_anexotecnico(request):
 #==================OPERACIONES DE CONTATOS========================
 #
 
+
+@login_required(login_url='/')
 def contratos(request):
 	contratos_list = Contratos.objects.filter(habilitado=True).order_by('-fecha_creacion')
 
@@ -597,6 +621,7 @@ class ContratoDetailView(DetailView):
 		object = super(ContratoDetailView, self).get_object()
 		return object
 
+@login_required(login_url='/')
 def crear_contrato(request):
 	if request.method=="POST":
 		form = RegistrarContratoForm(request.POST, request.FILES)
@@ -616,6 +641,7 @@ def crear_contrato(request):
 		form=RegistrarContratoForm()
 	return render(request, 'inicio/contrato_create.html', {'form': form})
 
+@login_required(login_url='/')
 def editar_contrato(request, pk):
 	if request.method=="POST":
 		form = RegistrarContratoForm(request.POST, request.FILES)
@@ -640,7 +666,7 @@ def editar_contrato(request, pk):
 	facturas = Facturas.objects.filter(contrato=contrato).order_by('numero_factura', '-fecha_factura')
 	return render(request, 'inicio/contrato_edit.html', {'form': form,
 														 'facturas':facturas})
-
+@login_required(login_url='/')
 def editar_contrato_1(request, pk):
 	contrato = Contratos.objects.get(id=int(pk))
 	if request.method=="POST":
@@ -666,7 +692,7 @@ def editar_contrato_1(request, pk):
 
 	return render(request, 'inicio/contrato_edit_1.html', {'form': form, 'id': contrato.id, 'mensaje':mensaje})
 
-
+@login_required(login_url='/')
 def eliminar_contrato(request):
 	import json
 
@@ -691,6 +717,7 @@ def eliminar_contrato(request):
 #
 #==================OPERACIONES DE CONVENIOS========================
 #
+@login_required(login_url='/')
 def convenios(request):
 	convenios_list = Convenios.objects.filter(habilitado=True).order_by('-fecha_creacion')
 
@@ -715,6 +742,7 @@ class ConvenioDetailView(DetailView):
 		object = super(ConvenioDetailView, self).get_object()
 		return object
 
+@login_required(login_url='/')
 def crear_convenio(request):
 	if request.method=="POST":
 		form = RegistrarConvenioForm(request.POST, request.FILES)
@@ -734,6 +762,7 @@ def crear_convenio(request):
 		form=RegistrarConvenioForm()
 	return render(request, 'inicio/convenio_create.html', {'form': form})
 
+@login_required(login_url='/')
 def editar_convenio(request, pk):
 	if request.method=="POST":
 		form = RegistrarConvenioForm(request.POST, request.FILES)
@@ -757,6 +786,7 @@ def editar_convenio(request, pk):
 		form=RegistrarConvenioForm(model_to_dict(convenio))
 	return render(request, 'inicio/convenio_edit.html', {'form': form})
 
+@login_required(login_url='/')
 def editar_convenio_1(request, pk):
 	convenio = Convenios.objects.get(id=int(pk))
 	if request.method=="POST":
@@ -782,6 +812,7 @@ def editar_convenio_1(request, pk):
 	return render(request, 'inicio/convenio_edit_1.html', {'form': form, 'id': convenio.id, 'mensaje':mensaje})
 
 
+@login_required(login_url='/')
 def eliminar_convenio(request):
 	import json
 
@@ -806,6 +837,7 @@ def eliminar_convenio(request):
 #
 #==================OPERACIONES DE PROPUESTAS========================
 #
+@login_required(login_url='/')
 def propuestas(request):
 	propuestas_list = Propuestas.objects.filter(habilitado=True).order_by('-fecha_creacion')
 
@@ -830,6 +862,7 @@ class PropuestaDetailView(DetailView):
 		object = super(PropuestaDetailView, self).get_object()
 		return object
 
+@login_required(login_url='/')
 def crear_propuesta(request):
 	if request.method=="POST":
 		form = RegistrarPropuestaForm(request.POST)
@@ -848,6 +881,7 @@ def crear_propuesta(request):
 		form=RegistrarPropuestaForm()
 	return render(request, 'inicio/propuesta_create.html', {'form': form})
 
+@login_required(login_url='/')
 def editar_propuesta(request, pk):
 	if request.method=="POST":
 		form = RegistrarPropuestaForm(request.POST)
@@ -870,6 +904,7 @@ def editar_propuesta(request, pk):
 		form=RegistrarPropuestaForm(model_to_dict(propuesta))
 	return render(request, 'inicio/propuesta_edit.html', {'form': form})
 
+@login_required(login_url='/')
 def editar_propuesta_1(request, pk):
 	propuesta = Propuestas.objects.get(id=int(pk))
 
@@ -895,6 +930,7 @@ def editar_propuesta_1(request, pk):
 
 	return render(request, 'inicio/propuesta_edit_1.html', {'form': form, 'id': propuesta.id, 'mensaje': mensaje})	
 
+@login_required(login_url='/')
 def eliminar_propuesta(request):
 	import json
 
@@ -919,6 +955,7 @@ def eliminar_propuesta(request):
 #
 #==================OPERACIONES DE PERSONAL========================
 #
+@login_required(login_url='/')
 def personal(request):
 	personal_list = Personal.objects.filter(habilitado=True).order_by('-fecha_ingreso')
 
@@ -943,6 +980,7 @@ class PersonalDetailView(DetailView):
 		object = super(PersonalDetailView, self).get_object()
 		return object
 
+@login_required(login_url='/')
 def crear_personal(request):
 	if request.method=="POST":
 		form = RegistrarPersonalForm(request.POST, request.FILES)
@@ -979,6 +1017,7 @@ def crear_personal(request):
 		form=RegistrarPersonalForm()
 	return render(request, 'inicio/personal_create.html', {'form': form})
 
+@login_required(login_url='/')
 def editar_personal(request, pk):
 	personal = Personal.objects.get(id=int(pk))
 
@@ -1038,6 +1077,7 @@ def editar_personal(request, pk):
 														 'facturas': facturas})
 	
 
+@login_required(login_url='/')
 def eliminar_personal(request):
 	import json
 
@@ -1062,7 +1102,7 @@ def eliminar_personal(request):
 #
 #==================OPERACIONES DE CLIENTES========================
 #
-
+@login_required(login_url='/')
 def clientes(request):
 	clientes_list = Clientes.objects.filter(habilitado=True).order_by('-fecha_creacion')
 
@@ -1087,6 +1127,7 @@ class ClienteDetailView(DetailView):
 		object = super(ClienteDetailView, self).get_object()
 		return object
 
+@login_required(login_url='/')
 def crear_cliente(request):
 	if request.method=="POST":
 		form = RegistrarClienteForm(request.POST)
@@ -1104,6 +1145,7 @@ def crear_cliente(request):
 		form=RegistrarClienteForm()
 	return render(request, 'inicio/cliente_create.html', {'form': form})
 
+@login_required(login_url='/')
 def editar_cliente(request, pk):
 	if request.method=="POST":
 		form = RegistrarClienteForm(request.POST)
@@ -1128,6 +1170,7 @@ def editar_cliente(request, pk):
 	return render(request, 'inicio/cliente_edit.html', {'form': form,
 														'proyectos': proyectos})	
 
+@login_required(login_url='/')
 def eliminar_cliente(request):
 	import json
 
@@ -1152,6 +1195,7 @@ def eliminar_cliente(request):
 #==================OPERACIONES DE ENTIDADES========================
 #
 
+@login_required(login_url='/')
 def entidades(request):
 	entidades_list = Entidades.objects.filter(habilitado=True).order_by('-fecha_creacion')
 
@@ -1176,6 +1220,7 @@ class EntidadDetailView(DetailView):
 		object = super(EntidadDetailView, self).get_object()
 		return object
 
+@login_required(login_url='/')
 def crear_entidad(request):
 	if request.method=="POST":
 		form = RegistrarEntidadForm(request.POST)
@@ -1194,6 +1239,7 @@ def crear_entidad(request):
 		form=RegistrarEntidadForm()
 	return render(request, 'inicio/entidad_create.html', {'form': form})
 
+@login_required(login_url='/')
 def editar_entidad(request, pk):
 	entidad = Entidades.objects.get(id=int(pk))
 	if request.method=="POST":
@@ -1217,6 +1263,7 @@ def editar_entidad(request, pk):
 	entidades_proyectos = EntidadProyecto.objects.filter(entidad=entidad)
 	return render(request, 'inicio/entidad_edit.html', {'form': form, 'entidades_proyectos': entidades_proyectos})	
 
+@login_required(login_url='/')
 def eliminar_entidad(request):
 	import json
 
@@ -1241,7 +1288,7 @@ def eliminar_entidad(request):
 #
 #==================OPERACIONES DE ENTIDADES PRYECTO========================
 #
-
+@login_required(login_url='/')
 def entidades_proyecto(request):
 	entidades_proyecto_list = EntidadProyecto.objects.all()
 	
@@ -1266,6 +1313,7 @@ class EntidadProyectoDetailView(DetailView):
 		object = super(EntidadProyectoDetailView, self).get_object()
 		return object
 
+@login_required(login_url='/')
 def crear_entidad_proyecto(request):
 	if request.method=="POST":
 		form = RegistrarEntidadProyectoForm(request.POST)
@@ -1284,6 +1332,7 @@ def crear_entidad_proyecto(request):
 		form=RegistrarEntidadProyectoForm()
 	return render(request, 'inicio/entidad_proyecto_create.html', {'form': form})
 
+@login_required(login_url='/')
 def editar_entidad_proyecto(request, pk):
 	if request.method=="POST":
 		form = RegistrarEntidadProyectoForm(request.POST)
@@ -1306,6 +1355,7 @@ def editar_entidad_proyecto(request, pk):
 		form=RegistrarEntidadProyectoForm(model_to_dict(entidad_proyecto))
 	return render(request, 'inicio/entidad_proyecto_edit.html', {'form': form})	
 
+@login_required(login_url='/')
 def editar_entidad_proyecto_1(request, pk):
 	entidad_proyecto = EntidadProyecto.objects.get(id=int(pk))
 	if request.method=="POST":
@@ -1332,7 +1382,7 @@ def editar_entidad_proyecto_1(request, pk):
 #
 #==================OPERACIONES DE ENTREGABLES========================
 #
-
+@login_required(login_url='/')
 def entregables(request):
 	entregables_list = Entregables.objects.filter(habilitado=True).order_by('-proyecto__fecha_inicio')
 
@@ -1357,6 +1407,7 @@ class EntregableDetailView(DetailView):
 		object = super(EntregableDetailView, self).get_object()
 		return object
 
+@login_required(login_url='/')
 def crear_entregable(request):
 	if request.method=="POST":
 		form = RegistrarEntregableForm(request.POST)
@@ -1375,6 +1426,8 @@ def crear_entregable(request):
 		form=RegistrarEntregableForm()
 	return render(request, 'inicio/entregable_create.html', {'form': form})
 
+
+@login_required(login_url='/')
 def editar_entregable(request, pk):
 	entregable = Entregables.objects.get(id=int(pk))	
 	if request.method=="POST":
@@ -1400,6 +1453,8 @@ def editar_entregable(request, pk):
 	detalles_entregables = DetallesEntregables.objects.filter(entregable=entregable)
 	return render(request, 'inicio/entregable_edit.html', {'form': form, 'detalles_entregables': detalles_entregables})
 
+
+@login_required(login_url='/')
 def editar_entregable_1(request, pk):
 	# if not request.is_ajax():
 	# 	raise Http404
@@ -1429,6 +1484,8 @@ def editar_entregable_1(request, pk):
 		mensaje = None
 	return render(request, 'inicio/entregable_edit_1.html', {'form': form, 'id': entregable.id, 'mensaje':mensaje})	
 
+
+@login_required(login_url='/')
 def eliminar_entregable(request):
 	import json
 
@@ -1454,6 +1511,7 @@ def eliminar_entregable(request):
 #==================OPERACIONES DE DETALLE DE ENTREGABLES========================
 #
 
+@login_required(login_url='/')
 def detalle_entregables(request):
 	detalles_entregables_list = DetallesEntregables.objects.all().order_by('-fecha_creacion')
 
@@ -1478,6 +1536,7 @@ class DetalleEntregableDetailView(DetailView):
 		object = super(DetalleEntregableDetailView, self).get_object()
 		return object
 
+@login_required(login_url='/')
 def crear_detalle_entregable(request):
 	if request.method=="POST":
 		form = RegistrarDetalleEntregableForm(request.POST,request.FILES)
@@ -1499,6 +1558,7 @@ def crear_detalle_entregable(request):
 		form=RegistrarDetalleEntregableForm()
 	return render(request, 'inicio/detalle_entregable_create.html', {'form': form})
 
+@login_required(login_url='/')
 def editar_detalle_entregable(request, pk):
 	if request.method=="POST":
 		form = RegistrarDetalleEntregableForm(request.POST, request.FILES)
@@ -1524,6 +1584,7 @@ def editar_detalle_entregable(request, pk):
 		form=RegistrarDetalleEntregableForm(model_to_dict(detalle_entregable))
 	return render(request, 'inicio/detalle_entregable_edit.html', {'form': form})
 
+@login_required(login_url='/')
 def editar_detalle_entregable_1(request, pk):
 	detalle_entregable = DetallesEntregables.objects.get(id=int(pk))
 
@@ -1557,7 +1618,7 @@ def editar_detalle_entregable_1(request, pk):
 #
 #==================OPERACIONES DE DOCS GENERALES========================
 #
-
+@login_required(login_url='/')
 def docs_generales(request):
 	docs_generales_list = DocumentosGenerales.objects.all().order_by('-fecha_creacion')
 
@@ -1582,6 +1643,7 @@ class DocsGeneralesDetailView(DetailView):
 		object = super(DocsGeneralesDetailView, self).get_object()
 		return object
 
+@login_required(login_url='/')
 def crear_doc_general(request):
 	if request.method=="POST":
 		form = RegistrarDocGeneralForm(request.POST)
@@ -1599,6 +1661,7 @@ def crear_doc_general(request):
 		form=RegistrarDocGeneralForm()
 	return render(request, 'inicio/doc_general_create.html', {'form': form})
 
+@login_required(login_url='/')
 def editar_doc_general(request, pk):
 	if request.method=="POST":
 		form = RegistrarDocGeneralForm(request.POST)
@@ -1620,6 +1683,7 @@ def editar_doc_general(request, pk):
 		form=RegistrarDocGeneralForm(model_to_dict(doc_general))
 	return render(request, 'inicio/doc_general_edit.html', {'form': form})
 
+@login_required(login_url='/')
 def editar_doc_general_1(request, pk):
 	# if not request.is_ajax():
 	# 	raise Http404
@@ -1649,7 +1713,7 @@ def editar_doc_general_1(request, pk):
 #
 #==================OPERACIONES DE DETALLES DE DOCUMENTOS GENERALES========================
 #
-
+@login_required(login_url='/')
 def detalle_docs_generales(request):
 	detalle_docs_generales_list = DetallesDocumentosGenerales.objects.all().order_by('-fecha_creacion')
 
@@ -1674,6 +1738,7 @@ class DetalleDocsGeneralesDetailView(DetailView):
 		object = super(DetalleDocsGeneralesDetailView, self).get_object()
 		return object
 
+@login_required(login_url='/')
 def crear_detalle_doc_general(request):
 	if request.method=="POST":
 		form = RegistrarDetalleDocGeneralForm(request.POST, request.FILES)
@@ -1695,6 +1760,7 @@ def crear_detalle_doc_general(request):
 		form=RegistrarDetalleDocGeneralForm()
 	return render(request, 'inicio/detalle_doc_general_create.html', {'form': form})
 
+@login_required(login_url='/')
 def editar_detalle_doc_general(request, pk):
 	if request.method=="POST":
 		form = RegistrarDetalleDocGeneralForm(request.POST, request.FILES)
@@ -1720,6 +1786,7 @@ def editar_detalle_doc_general(request, pk):
 		form=RegistrarDetalleDocGeneralForm(model_to_dict(detalle_doc_general))
 	return render(request, 'inicio/detalle_doc_general_edit.html', {'form': form})
 
+@login_required(login_url='/')
 def editar_detalle_doc_general_1(request, pk):
 	detalle_doc_general = DetallesDocumentosGenerales.objects.get(id=int(pk))
 	if request.method=="POST":
@@ -1749,6 +1816,7 @@ def editar_detalle_doc_general_1(request, pk):
 #==================OPERACIONES DE DETALLES DE DOCUMENTOS RESPONSIVA========================
 #
 
+@login_required(login_url='/')
 def detalle_doc_responsiva(request):
 	detalle_doc_responsiva_list = DetalleDocumentoResponsiva.objects.all()
 
@@ -1773,6 +1841,7 @@ class DetalleDocsResponsivaDetailView(DetailView):
 		object = super(DetalleDocsResponsivaDetailView, self).get_object()
 		return object
 
+@login_required(login_url='/')
 def crear_detalle_doc_responsiva(request):
 	if request.method=="POST":
 		form = RegistrarDetalleDocResponsivaForm(request.POST, request.FILES)
@@ -1790,6 +1859,7 @@ def crear_detalle_doc_responsiva(request):
 		form=RegistrarDetalleDocResponsivaForm()
 	return render(request, 'inicio/detalle_doc_responsiva_create.html', {'form': form})
 
+@login_required(login_url='/')
 def editar_detalle_doc_responsiva(request, pk):
 	if request.method=="POST":
 		form = RegistrarDetalleDocResponsivaForm(request.POST, request.FILES)
@@ -1811,6 +1881,7 @@ def editar_detalle_doc_responsiva(request, pk):
 		form=RegistrarDetalleDocResponsivaForm(model_to_dict(detalle_doc_general))
 	return render(request, 'inicio/detalle_doc_responsiva_edit.html', {'form': form})
 
+@login_required(login_url='/')
 def editar_detalle_doc_responsiva_1(request, pk):
 	detalle_doc_responsiva = DetalleDocumentoResponsiva.objects.get(id=int(pk))
 	if request.method=="POST":
@@ -1836,7 +1907,7 @@ def editar_detalle_doc_responsiva_1(request, pk):
 #
 #==================OPERACIONES DE DETALLE DE PAGO EMPLEADO========================
 #
-
+@login_required(login_url='/')
 def detalles_pago_empleado(request):
 	detalles_pago_empleado_list = DetallePagoEmpleado.objects.all()
 
@@ -1861,6 +1932,7 @@ class DetallePagoEmpleadoDetailView(DetailView):
 		object = super(DetallePagoEmpleadoDetailView, self).get_object()
 		return object
 
+@login_required(login_url='/')
 def crear_detalle_pago_empleado(request):
 	if request.method=="POST":
 		form = RegistrarPagoEmpleadoForm(request.POST, request.FILES)
@@ -1879,6 +1951,7 @@ def crear_detalle_pago_empleado(request):
 		form=RegistrarPagoEmpleadoForm()
 	return render(request, 'inicio/detalle_pago_empleado_create.html', {'form': form})
 
+@login_required(login_url='/')
 def editar_detalle_pago_empleado(request, pk):
 	if request.method=="POST":
 		form = RegistrarPagoEmpleadoForm(request.POST, request.FILES)
@@ -1901,6 +1974,7 @@ def editar_detalle_pago_empleado(request, pk):
 		form=RegistrarPagoEmpleadoForm(model_to_dict(detalle_pago_empleado))
 	return render(request, 'inicio/detalle_pago_empleado_edit.html', {'form': form})
 
+@login_required(login_url='/')
 def editar_detalle_pago_empleado_1(request, pk):
 	detalle_pago_empleado = DetallePagoEmpleado.objects.get(id=int(pk))
 	if request.method=="POST":

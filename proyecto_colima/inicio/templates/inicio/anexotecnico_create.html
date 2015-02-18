@@ -38,7 +38,13 @@
       }
     </style>
   {% endblock %}
-
+{% block breadcrumbs %}
+<ol class="breadcrumb" style="margin-top:-20px">
+  <li><a href="{% url 'administracion:index' %}">Inicio</a></li>
+  <li><a href="{% url 'administracion:anexostecnicos' %}">Anexos técnicos</a></li>
+  <li class="active">Crear anexo técnico</li>
+</ol>
+{% endblock %}
   {% block contenido %}    
     <form class="agregar_form" action="." method="POST" enctype="multipart/form-data">{% csrf_token %}
       <div class="contenido_form">

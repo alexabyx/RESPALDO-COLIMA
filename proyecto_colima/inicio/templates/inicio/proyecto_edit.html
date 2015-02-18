@@ -52,6 +52,13 @@
     }
     </style>
   {% endblock %}
+  {% block breadcrumbs %}
+  <ol class="breadcrumb" style="margin-top:-20px">
+    <li><a href="{% url 'administracion:index' %}">Inicio</a> </li>
+    <li><a href="{% url 'administracion:proyectos' %}">Proyectos</a></li>
+    <li class="active">Editar Proyecto</li>
+  </ol>
+  {% endblock %}
 
   {% block contenido %}
 <div id="main_content">

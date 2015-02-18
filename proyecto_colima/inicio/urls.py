@@ -52,7 +52,7 @@ urlpatterns = patterns('proyecto_colima.inicio',
     url(r'^editar_factura_1/(?P<pk>\d+)/$', editar_factura_1, name="editar-factura-1"),
     url(r'^crear_factura/$', crear_factura, name="crear-factura"),
 
-    #FACTURAS
+    #DETALLES DE FACTURAS
     url(r'^detalle_facturas/$', detalle_facturas, name="detalle-facturas"),
     url(r'^detalle_detalle_factura/(?P<pk>\d+)/$', DetalleFacturaDetailView.as_view(), name="detalle-detalle-factura"),
     url(r'^editar_detalle_factura/(?P<pk>\d+)/$', editar_detalle_factura, name="editar-detalle-factura"),

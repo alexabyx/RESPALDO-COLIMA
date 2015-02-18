@@ -38,7 +38,13 @@
       }
     </style>
   {% endblock %}
-
+{% block breadcrumbs %}
+<ol class="breadcrumb" style="margin-top:-20px">
+  <li><a href="{% url 'administracion:index' %}">Inicio</a></li>
+  <li><a href="{% url 'administracion:detalle-facturas' %}">Detalles de facturas</a></li>
+  <li class="active">Crear detalle de factura</li>
+</ol>
+{% endblock %}
   {% block contenido %}    
     <form class="agregar_form" action="." method="POST" enctype="multipart/form-data">{% csrf_token %}
         <div class="form-group">

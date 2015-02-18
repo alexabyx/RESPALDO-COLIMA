@@ -38,7 +38,13 @@
       }
     </style>
   {% endblock %}
-
+{% block breadcrumbs %}
+<ol class="breadcrumb" style="margin-top:-20px">
+  <li><a href="{% url 'administracion:index' %}">Inicio</a></li>
+  <li><a href="{% url 'administracion:detalle-entregables' %}">Detalles de entregables</a></li>
+  <li class="active">Crear detalle de entregable</li>
+</ol>
+{% endblock %}
   {% block contenido %}    
     <form class="agregar_form" action="." method="POST" enctype="miltipart/form-data">{% csrf_token %}
 
