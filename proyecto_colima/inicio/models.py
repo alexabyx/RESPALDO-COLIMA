@@ -172,6 +172,9 @@ class Entregables(models.Model):
 	responsable 	= models.ForeignKey(Personal)
 	habilitado 		= models.BooleanField(default=True)
 	total 			= models.IntegerField()
+
+	def __unicode__(self):
+		return '%s | %s' % (self.proyecto.nombre,self.responsable)
 	
 	#Total de entregables ---UNO/N----
 
@@ -186,6 +189,9 @@ class DetallesEntregables(models.Model):
 	siglas 			= models.CharField(max_length=150)
 	fecha_creacion 	= models.DateField(default=datetime.datetime.now())
 	archivo 		= models.FileField(upload_to=get_upload_path, blank=True)
+
+	def __unicode__(self):
+		return '%s ' % (self.entregable)
 
 #esta clase se encarga de representar en el sistema los atributos de la clase FACTURAS
 class Facturas(models.Model):
@@ -207,9 +213,9 @@ class Facturas(models.Model):
 	rfc 				= models.CharField(max_length=150, help_text="RFC persona fisica/moral")
 	direccion 			= models.CharField(max_length=150, help_text=u"dirección persona fisica/moral")
 
-	subtotal 			= models.IntegerField()
-	iva 				= models.IntegerField()
-	total_con_numero 	= models.IntegerField()
+	subtotal 			= models.FloatField()
+	iva 				= models.FloatField()
+	total_con_numero 	= models.FloatField()
 	total_con_letra 	= models.CharField(max_length=150)
 	pagada 				= models.BooleanField(default=False)
 	archivo_xml 		= models.FileField(upload_to=get_upload_path, blank=True) #Archivo en XML
@@ -243,6 +249,9 @@ class DocumentosGenerales(models.Model):
 	proyecto 		= models.ForeignKey(Proyectos)
 	clave 			= models.CharField(max_length=150)
 	fecha_creacion 	= models.DateField(default=datetime.datetime.now().date())
+
+	def __unicode__(self):
+		return '%s| %s' % (self.clave,self.proyecto)
 
 #Aqui se modelan los atributos multivaluados de la clase Documentos Generales (de uno a muchos)
 class DetallesDocumentosGenerales(models.Model):
@@ -282,3 +291,9 @@ class EntidadProyecto(models.Model):
 
 	def porcentaje_porcenataje(self):
 		return dict(self.TIPOS).get(self.porcentaje, '0%')
+
+
+
+class Pagos (models.Model):
+
+	 
