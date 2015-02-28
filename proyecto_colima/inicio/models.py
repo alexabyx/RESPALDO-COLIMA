@@ -294,7 +294,7 @@ class EntidadProyecto(models.Model):
 
 
 
-class Pagos (models.Model):
+#class Pagos (models.Model):
 
 	 proyecto 				= models.ForeignKey(Proyectos)
 	 monto_total 			= FloatField()
