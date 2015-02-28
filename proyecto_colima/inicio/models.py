@@ -294,10 +294,10 @@ class EntidadProyecto(models.Model):
 
 
 
-#class Pagos (models.Model):
+class Pagos (models.Model):
 
 	 proyecto 				= models.ForeignKey(Proyectos)
-	 monto_total 			= FloatField()
+	 monto_total 			= models.FloatField()
 	 fecha_pago				= models.DateField(default=datetime.datetime.now().date())
 
 
@@ -316,7 +316,7 @@ class Detalle_Pagos (models.Model):
 	 siglas_pago_destino	= models.CharField(max_length=150)
 	 fecha_pago				= models.DateField(default=datetime.datetime.now().date())
 	 monto 					= models.FloatField()
-	 porcentaje_de_pago		= FloatField()
+	 porcentaje_de_pago		= models.FloatField()
 	 tipo_de_pago			= models.CharField(max_length=2, choices=TIPOS_DE_PAGO)
 	 documento_deposito		= models.FileField(upload_to=get_upload_path, blank=True)
 	 Responsable 			= models.ForeignKey(Personal)
