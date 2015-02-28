@@ -246,7 +246,7 @@ class Propuestas(models.Model):
 class DocumentosGenerales(models.Model):
 	TIPOS 			= (('D1', 'Dependencia'), ('E', 'Empresa'), ('U1', 'Universidad'))
 
-	proyecto 		= models.ForeignKey(Proyectos)
+	entidad 		= models.ForeignKey(Entidades)
 	clave 			= models.CharField(max_length=150)
 	fecha_creacion 	= models.DateField(default=datetime.datetime.now().date())
 
