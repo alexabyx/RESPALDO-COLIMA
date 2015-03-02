@@ -47,7 +47,7 @@
 					$.fancybox({'content': _response,
 								'openEffect': 'elastic',
 								'closeEffect': 'elastic',
-								'afterShow': function(){ window.location.reload();},
+								'afterClose': function(){window.location.reload();},
 								});
      			});
      		}
@@ -57,7 +57,7 @@
 					$.fancybox({'content': _response,
 								'openEffect': 'elastic',
 								'closeEffect': 'elastic',
-								'afterClose':function(){ window.location.reload();},
+								'afterClose': function(){window.location.reload();},
 							});
      			});
 
@@ -69,31 +69,14 @@
     {% endblock %}
 
     {% block extrastyle %}
-    <style>
-    .bienvenida{
-    	padding-right: 15px;
-    }
-    .menu{
-    	padding-left: 15px;
-    	width: 15%;
-    }
-    .panel{
-    	width: 80%;
-    	margin-left: 10%;
-    	margin-right: 10%;
-    }
-    .agregar{
-	    margin-left: 98%;
-	    margin-top: -20px    	
-    }
-    </style>
+    <link rel="stylesheet" type="text/css" href="{% static "css/list_views.css"%}" media="screen">
     {% endblock %}
-{% block breadcrumbs %}
-<ol class="breadcrumb" style="margin-top:-20px">
-	<li><a href="{% url 'administracion:index' %}">Inicio</a></li>
-	<li class="active">Entregables</li>
-</ol>
-{% endblock %}
+	{% block breadcrumbs %}
+	<ol class="breadcrumb" style="margin-top:-20px">
+		<li><a href="{% url 'administracion:index' %}">Inicio</a></li>
+		<li class="active">Entregables</li>
+	</ol>
+	{% endblock %}
     {% block contenido %}
 	<div class="panel panel-primary">
 	  <!-- Default panel contents -->

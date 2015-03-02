@@ -65,45 +65,90 @@
 
      	});
      } 
+
+    function aviso_historico(proyecto_id, historico){
+     	$.fancybox.showLoading();
+     	if(historico == 2){
+	     	var data = {mensaje: "¿Está seguro de querer enviar a historico este proyecto?"};     		
+     	}
+	    else{
+	     	var data = {mensaje: "¿Está seguro de querer cancelar este proyecto?"};     		    	
+	    }
+     	$.get('/administracion/modal_aviso/', data, function(response){
+     		$.fancybox({'content': response,
+     					'openEffect': 'elastic',
+						'closeEffect': 'elastic',
+     					'afterShow':function(){
+     						$('#aceptar').click(function(){
+     								$(this).attr("disabled", "disabled");
+									//$.fancybox.close();
+									enviar_historico(proyecto_id, historico);
+     						});
+
+     						$("#cancelar").click(function(){
+									$.fancybox.close();
+     						});
+     					},
+     					});
+
+     	});
+     }
+     function enviar_historico(proyecto_id, historico){
+     	$.fancybox.showLoading();
+
+     	var csrfmiddlewaretoken = $("input[name='csrfmiddlewaretoken']").val();
+     	var data = {'pk': proyecto_id, 'historico': historico, 'csrfmiddlewaretoken': csrfmiddlewaretoken}
+
+     	$.post('/administracion/historico_proyecto/', data, function(response){
+     		if(response.error){
+     			$.get('/administracion/modal_error/', {}, function(_response){ 
+					$.fancybox({'content': _response,
+							//'afterShow': function(){ $('#fancybox-content').css("width", $('#fancybox-outer').width());},
+							'afterClose':function(){ window.location.reload();},
+								});
+     			});
+     		}
+     		else{
+     			$.fancybox.showLoading();
+     			$.get('/administracion/modal_ok/', {}, function(_response){
+					$.fancybox({'content': _response,
+							//'afterShow': function(){ $('#fancybox-content').css("width", $('#fancybox-outer').width());},
+							'afterClose':function(){ window.location.reload();},
+							});
+     			});
+
+     		}
+
+     	});
+     }
     </script>
     {% endblock %}
 
     {% block extrastyle %}
-    <style>
-    .bienvenida{
-    	padding-right: 15px;
-    }
-    .menu{
-    	padding-left: 15px;
-    	width: 15%;
-    }
-    .panel{
-    	width: 80%;
-    	margin-left: 10%;
-    	margin-right: 10%;
-    }
-    .agregar{
-	    margin-left: 98%;
-	    margin-top: -20px    	
-    }
-    </style>
+    <link rel="stylesheet" type="text/css" href="{% static "css/list_views.css"%}" media="screen">
     {% endblock %}
 
-{% block breadcrumbs %}
-<ol class="breadcrumb" style="margin-top:-20px">
-	<li><a href="{% url 'administracion:index' %}">Inicio</a></li>
-	<li class="active">Proyectos</li>
-</ol>
-{% endblock %}
+	{% block breadcrumbs %}
+	<ol class="breadcrumb" style="margin-top:-20px">
+		<li><a href="{% url 'administracion:index' %}">Inicio</a></li>
+		<li class="active">Proyectos</li>
+	</ol>
+	{% endblock %}
 
     {% block contenido %}
 	<div class="panel panel-primary">
 	  <!-- Default panel contents -->
 	  <div class="panel-heading">
 	  	  	Listado de proyectos
-	  <div>
+	  <div class="agregar">
+	  	{% if not historico %}
 	  	<a title="Agregar nuevo" href="{% url 'administracion:crear-proyecto' %}">
-	  		<img class="agregar" src="{% static "icons/agregar.png" %}">
+	  		<img  src="{% static "icons/agregar.png" %}">Agregar nuevo
+	  		<!-- <button type="button" class="btn btn-default agregar" />Agregar nuevo</button>-->
+	  	</a>&nbsp;
+	  	{% endif %}
+	   	<a title="Ver historico" href="{% url 'administracion:proyectos' %}?historico={% if historico %}{% else %}1{% endif %}">
+	  		<img  src="{% static "icons/historico.png" %}">{% if historico %}Ver activos{% else %}Ver historico{% endif %}
 	  		<!-- <button type="button" class="btn btn-default agregar" />Agregar nuevo</button>-->
 	  	</a>
 	  </div>
@@ -130,13 +175,21 @@
 					{% csrf_token %}
 					<a onClick="detalle({{proyecto.id}});" title="Consultar">
 						<img src="{% static "icons/consultar.png" %}">
-					</a>&nbsp; &nbsp;
+					</a>&nbsp;
+					{% if not proyecto.en_historico %}
 					<a href="{% url 'administracion:editar-proyecto' proyecto.id %}" title="Editar" >
 						<img src="{% static "icons/editar.png" %}"> 
-					</a>&nbsp; &nbsp;
+					</a>&nbsp;
 					<a onClick="aviso({{ proyecto.id }});" title="Eliminar">
 						<img src="{% static "icons/eliminar.png" %}"> 
 					</a>
+					<a onClick="aviso_historico({{ proyecto.id }}, 2);" title="Histórico">&nbsp;
+						<img src="{% static "icons/enviar_historico.png" %}">
+					</a>
+					<a onClick="aviso_historico({{ proyecto.id }}, 3);" title="Carcelar">&nbsp;
+						<img src="{% static "icons/cancelar.png" %}">
+					</a>
+					{% endif %}
 			</tr>
 			{% endfor %}			
 		</table>

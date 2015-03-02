@@ -8,41 +8,22 @@
      	$.fancybox.showLoading();
 		$.get('/administracion/detalle_factura/'+factura_id+'/', {}, function(data){ 
 			$.fancybox({'content': data,
-						'afterClose':function(){ window.location.reload();},
+						'openEffect': 'elastic',
+						'closeEffect': 'elastic',
 					   });
 		});   	
      }
- 
     </script>
     {% endblock %}
-
     {% block extrastyle %}
-    <style>
-    .bienvenida{
-    	padding-right: 15px;
-    }
-    .menu{
-    	padding-left: 15px;
-    	width: 15%;
-    }
-    .panel{
-    	width: 80%;
-    	margin-left: 10%;
-    	margin-right: 10%;
-    }
-    .agregar{
-	    margin-left: 98%;
-	    margin-top: -20px    	
-    }
-    </style>
+	<link rel="stylesheet" type="text/css" href="{% static "css/list_views.css"%}" media="screen">
     {% endblock %}
-{% block breadcrumbs %}
-<ol class="breadcrumb" style="margin-top:-20px">
-	<li><a href="{% url 'administracion:index' %}">Inicio</a></li>
-	<li class="active">Facturas</li>
-</ol>
-{% endblock %}
-
+	{% block breadcrumbs %}
+	<ol class="breadcrumb" style="margin-top:-20px">
+		<li><a href="{% url 'administracion:index' %}">Inicio</a></li>
+		<li class="active">Facturas</li>
+	</ol>
+	{% endblock %}
     {% block contenido %}
 	<div class="panel panel-primary">
 	  <!-- Default panel contents -->
@@ -60,19 +41,19 @@
 		<table class="table table-striped">
 			<thead>
 				<tr>
-					<th>Tipo</th>
-					<th>Nombre</th>
-					<th>No. factura</th>
-					<th>Fecha</th>
+					<th>Contrato</th>
+					<th>Responsable</th>
+					<th>Número de factura</th>
+					<th>Folio de venta</th>
 					<th>Acciones</th>
 				</tr>
 			</thead>
 			{% for factura in facturas %}
 			<tr>
-				<td>{{ factura.tipo_tipo }}</td>
-				<td>{{ factura.nombre }}</td>
+				<td>{{ factura.contrato }}</td>
+				<td>{{ factura.responsable }}</td>
 				<td>{{ factura.numero_factura }}</td>
-				<td>{{ factura.fecha_factura }}</td>
+				<td>{{ factura.folio_venta }}</td>
 				<td>
 					{% csrf_token %}
 					<a onClick="detalle({{factura.id}});" title="Consultar">

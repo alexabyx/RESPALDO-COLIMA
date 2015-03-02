@@ -14,86 +14,18 @@
 					   });
 		});   	
      }
-
-     function aviso(detalle_doc_general_id){
-     	$.fancybox.showLoading();
-     	var data = {mensaje: "¿Está seguro de querer eliminar este documento?"}
-     	$.get('/administracion/modal_aviso/', data, function(response){
-     		$.fancybox({'content': response,
-     					'afterShow':function(){
-     						$('#aceptar').click(function(){
-     								$(this).attr("disabled", "disabled");
-									//$.fancybox.close();
-									eliminar(detalle_doc_general_id);
-     						});
-
-     						$("#cancelar").click(function(){
-									$.fancybox.close();
-     						});
-     					},
-     					});
-
-     	});
-     }
-
-     function eliminar(detalle_doc_general_id){
-     	$.fancybox.showLoading();
-
-     	var csrfmiddlewaretoken = $("input[name='csrfmiddlewaretoken']").val();
-     	var data = {'pk': detalle_doc_general_id, 'csrfmiddlewaretoken': csrfmiddlewaretoken}
-
-     	$.post('/administracion/eliminar_detalle_doc_general/', data, function(response){
-     		if(response.error){
-     			$.get('/administracion/modal_error/', {}, function(_response){ 
-					$.fancybox({'content': _response,
-	     					'openEffect': 'elastic',
-							'closeEffect': 'elastic',
-							'afterClose':function(){ window.location.reload();},
-								});
-     			});
-     		}
-     		else{
-     			$.fancybox.showLoading();
-     			$.get('/administracion/modal_ok/', {}, function(_response){
-					$.fancybox({'content': _response,
-	     					'openEffect': 'elastic',
-							'closeEffect': 'elastic',
-							'afterClose':function(){ window.location.reload();},
-							});
-     			});
-     		}
-
-     	});
-     } 
     </script>
     {% endblock %}
 
     {% block extrastyle %}
-    <style>
-    .bienvenida{
-    	padding-right: 15px;
-    }
-    .menu{
-    	padding-left: 15px;
-    	width: 15%;
-    }
-    .panel{
-    	width: 80%;
-    	margin-left: 10%;
-    	margin-right: 10%;
-    }
-    .agregar{
-	    margin-left: 98%;
-	    margin-top: -20px    	
-    }
-    </style>
+	<link rel="stylesheet" type="text/css" href="{% static "css/list_views.css"%}" media="screen">
     {% endblock %}
-{% block breadcrumbs %}
-<ol class="breadcrumb" style="margin-top:-20px">
-	<li><a href="{% url 'administracion:index' %}">Inicio</a></li>
-	<li class="active">Detalles de Doc. Generales</li>
-</ol>
-{% endblock %}
+	{% block breadcrumbs %}
+	<ol class="breadcrumb" style="margin-top:-20px">
+		<li><a href="{% url 'administracion:index' %}">Inicio</a></li>
+		<li class="active">Detalles de Doc. Generales</li>
+	</ol>
+	{% endblock %}
     {% block contenido %}
 	<div class="panel panel-primary">
 	  <!-- Default panel contents -->
@@ -111,16 +43,16 @@
 			<thead>
 				<tr>
 					<th>Documento general</th>
-					<th>No.</th>
-					<th>Nombre</th>
-					<th>Creación</th>
+					<th>Responsable</th>
+					<th>Nombre del documento</th>
+					<th>Fecha de creación</th>
 					<th>Acciones</th>
 				</tr>
 			</thead>
 			{% for detalle in detalle_docs_generales %}
 			<tr>
 				<td>{{ detalle.documentos_generales }}</td>
-				<td>{{ detalle.numero }}</td>
+				<td>{{ detalle.responsable }}</td>
 				<td>{{ detalle.nombre }}</td>
 				<td>{{ detalle.fecha_creacion }}</td>
 				<td>

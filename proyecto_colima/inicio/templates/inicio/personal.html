@@ -19,7 +19,7 @@
      	var data = {mensaje: "¿Está seguro de querer eliminar este empleado?"}
      	$.get('/administracion/modal_aviso/', data, function(response){
      		$.fancybox({'content': response,
-     					'afterClose':function(){
+     					'afterShow':function(){
      						$('#aceptar').click(function(){
      								$(this).attr("disabled", "disabled");
 									//$.fancybox.close();
@@ -57,7 +57,7 @@
 					$.fancybox({'content': _response,
 								'openEffect': 'elastic',
 								'closeEffect': 'elastic',
-								'afterClosed':function(){ window.location.reload();},
+								'afterClose':function(){ window.location.reload();},
 							});
      			});
 
@@ -69,31 +69,15 @@
     {% endblock %}
 
     {% block extrastyle %}
-    <style>
-    .bienvenida{
-    	padding-right: 15px;
-    }
-    .menu{
-    	padding-left: 15px;
-    	width: 15%;
-    }
-    .panel{
-    	width: 80%;
-    	margin-left: 10%;
-    	margin-right: 10%;
-    }
-    .agregar{
-	    margin-left: 98%;
-	    margin-top: -20px    	
-    }
-    </style>
+    <link rel="stylesheet" type="text/css" href="{% static "css/list_views.css"%}" media="screen">
     {% endblock %}
-{% block breadcrumbs %}
-<ol class="breadcrumb" style="margin-top:-20px">
-	<li><a href="{% url 'administracion:index' %}">Inicio</a></li>
-	<li class="active">Personal</li>
-</ol>
-{% endblock %}
+
+	{% block breadcrumbs %}
+	<ol class="breadcrumb" style="margin-top:-20px">
+		<li><a href="{% url 'administracion:index' %}">Inicio</a></li>
+		<li class="active">Personal</li>
+	</ol>
+	{% endblock %}
 
     {% block contenido %}
 	<div class="panel panel-primary">
@@ -114,7 +98,7 @@
 				<tr>
 					<th>Nombre Competo</th>
 					<th>Sexo</th>
-					<th>Ingreso</th>
+					<th>Fecha de ingreso</th>
 					<th>Puesto</th>
 					<th>Acciones</th>
 				</tr>

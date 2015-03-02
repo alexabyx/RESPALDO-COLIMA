@@ -1,6 +1,6 @@
 <style>
 .input-group-addon{
-  width:40%;
+  width:50%;
 }
 </style>
 
@@ -10,8 +10,8 @@
 
 <div class="modal-body">
 	<div class="input-group">
-	  <span class="input-group-addon" id="basic-addon1">Proyectyo</span>
-	  <input type="text" class="form-control" readonly="readonly" value="{{object.proyecto}}" aria-describedby="basic-addon1"><br>
+	  <span class="input-group-addon" id="basic-addon1">Entidad</span>
+	  <input type="text" class="form-control" readonly="readonly" value="{{object.entidad}}" aria-describedby="basic-addon1"><br>
 	</div>
 
 	<div class="input-group">
@@ -19,15 +19,13 @@
 	  <input type="text" class="form-control" readonly="readonly" value="{{object.clave}}" aria-describedby="basic-addon1"><br>
 	</div>
 	<div class="input-group">
-	  <span class="input-group-addon" id="basic-addon1">Creación</span>
+	  <span class="input-group-addon" id="basic-addon1">Fecha de creación</span>
 	  <input type="text" class="form-control" readonly="readonly" value="{{object.fecha_creacion}}" aria-describedby="basic-addon1"><br>
 	</div>
-
-
 </div>
 
 <div class="modal-footer">
 	<center>
-<button type="button" class="btn btn-default" data-dismiss="modal" onclick="javascript: $.fancybox.close()">Aceptar</button>
+		<button type="button" class="btn btn-primary" data-dismiss="modal" onclick="javascript: $.fancybox.close()">Aceptar</button>
 	</center>
-  	
+</div>

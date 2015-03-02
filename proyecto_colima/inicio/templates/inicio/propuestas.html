@@ -19,7 +19,7 @@
      	var data = {mensaje: "¿Está seguro de querer eliminar esta propuesta?"}
      	$.get('/administracion/modal_aviso/', data, function(response){
      		$.fancybox({'content': response,
-     					'afterClose':function(){
+     					'afterShow':function(){
      						$('#aceptar').click(function(){
      								$(this).attr("disabled", "disabled");
 									//$.fancybox.close();
@@ -69,32 +69,15 @@
     {% endblock %}
 
     {% block extrastyle %}
-    <style>
-    .bienvenida{
-    	padding-right: 15px;
-    }
-    .menu{
-    	padding-left: 15px;
-    	width: 15%;
-    }
-    .panel{
-    	width: 80%;
-    	margin-left: 10%;
-    	margin-right: 10%;
-    }
-    .agregar{
-	    margin-left: 98%;
-	    margin-top: -20px    	
-    }
-    </style>
+	<link rel="stylesheet" type="text/css" href="{% static "css/list_views.css"%}" media="screen">
     {% endblock %}
 
-{% block breadcrumbs %}
-<ol class="breadcrumb" style="margin-top:-20px">
-	<li><a href="{% url 'administracion:index' %}">Inicio</a></li>
-	<li class="active">Propuestas</li>
-</ol>
-{% endblock %}
+	{% block breadcrumbs %}
+	<ol class="breadcrumb" style="margin-top:-20px">
+		<li><a href="{% url 'administracion:index' %}">Inicio</a></li>
+		<li class="active">Propuestas</li>
+	</ol>
+	{% endblock %}
 
     {% block contenido %}
 	<div class="panel panel-primary">
@@ -113,7 +96,7 @@
 		<table class="table table-striped">
 			<thead>
 				<tr>
-					<th>Número</th>
+					<th>Número de oficio</th>
 					<th>Proyecto</th>
 					<th>Responsable</th>
 					<th>Fecha de creación</th>

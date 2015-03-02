@@ -3,15 +3,6 @@
 {% load staticfiles %}
 
 	{% block script %}
-	<!--
-	<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
-	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
-	<script type="text/javascript" src="{% static "fancybox/jquery.mousewheel-3.0.4.pack.js" %}"></script>
-	<script type="text/javascript" src="{% static "fancybox/jquery.fancybox-1.3.4.pack.js" %}"></script>
-	<script type="text/javascript" src="{% static "fancybox/jquery.fancybox-1.3.4.js" %}"></script>
-	<script type="text/javascript" src="{% static "fancybox/jquery.easing-1.3.pack.js" %}"></script>
-	<link rel="stylesheet" type="text/css" href="{% static "fancybox/jquery.fancybox-1.3.4.css" %}" media="screen" />
-	-->
 	<!-- Add mousewheel plugin (this is optional) -->
 	<script type="text/javascript" src="{% static "fancybox/lib/jquery.mousewheel-3.0.6.pack.js" %}"></script>
 
@@ -29,13 +20,7 @@
 	{% endblock %}
 
 	{% block style %}
-	
-	<style type="text/css">
-	.nav{
-		margin-top: -1%;
-		margin-left: 10%;
-	}
-	</style>
+	<link rel="stylesheet" type="text/css" href="{% static "css/header.css" %}" media="screen">
 	{% endblock %}
 
 	{% block titulo %}Oficina de Administración de Proyectos{% endblock %}
@@ -53,7 +38,7 @@
 		<nav class="navbar navbar-default">
 		  <div class="container-fluid">
 				<a class="navbar-brand" href="{% url 'administracion:index' %}">
-				Sistema de Oficiona de Administración de Proyectos
+				Sistema de Oficina de Administración de Proyectos
 				</a>
 	            {% if user.is_authenticated %}
 	            	<p class="navbar-text navbar-right bienvenida">Bienvenido/a, {{ user.first_name }} {{ user.last_name }}. <a class="navbar-link" href="{% url 'administracion:logout-web' %}">Cerrar sesión</a> </p>
@@ -72,17 +57,84 @@
   	<ul class="nav nav-pills">
 	  <li role="presentation" class="dropdown">
 	    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-expanded="false">
-	       Empleados<span class="caret"></span>
+	       Proyectos<span class="caret"></span>
 	    </a>
 	    <ul class="dropdown-menu" role="menu">
 			<li>
-				<a href="{% url 'administracion:clientes' %}">
-					Clientes
+				<a href="{% url 'administracion:proyectos' %}">
+					Proyectos
 				</a>
 			</li>
 			<li>
+				<a href="{% url 'administracion:anexostecnicos' %}">
+					Anexos Técnicos
+				</a>
+			</li>
+			<li>
+				<a href="{% url 'administracion:convenios'%}">
+					Convenios
+				</a>
+			</li>
+			<li>
+				<a href="{% url 'administracion:contratos' %}">
+					Contratos
+				</a>
+			</li>
+			<li>
+				<a href="{% url 'administracion:propuestas' %}">
+					Propuestas
+				</a>
+			</li>
+
+			<li>
+				<a href="{% url 'administracion:entregables' %}">
+					Entregables
+				</a>
+			</li>
+			<li>
+				<a href="{% url 'administracion:detalle-entregables' %}">
+					Detalles Entregables
+				</a>
+			</li>
+			<li>
+				<a href="{% url 'administracion:doc-generales' %}">
+					Documentos Generales
+				</a>
+			</li>
+			<li>
+				<a href="{% url 'administracion:detalle-doc-generales' %}">
+					Detalle de Documentos Generales
+				</a>
+			</li>
+
+	    </ul>
+	  </li>
+
+
+	  <li role="presentation" class="dropdown">
+	    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-expanded="false">
+	       Personas<span class="caret"></span>
+	    </a>
+	    <ul class="dropdown-menu" role="menu">
+			<li>
 				<a href="{% url 'administracion:personal' %}">
 					Personal
+				</a>
+			</li>
+			<li>
+				<a href="{% url 'administracion:detalles-pago-empleado' %}">
+					Detalle de Pagos a Empleados
+				</a>
+			</li>
+			<li>
+				<a href="{% url 'administracion:detalles-doc-responsiva' %}">
+					Detalle de Documentos Responsiva
+				</a>
+			</li>
+
+			<li>
+				<a href="{% url 'administracion:clientes' %}">
+					Clientes
 				</a>
 			</li>
 			<li>
@@ -100,14 +152,9 @@
 
 	  <li role="presentation" class="dropdown">
 	    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-expanded="false">
-	       Menú<span class="caret"></span>
+	       Finanzas<span class="caret"></span>
 	    </a>
 	    <ul class="dropdown-menu" role="menu">
-			<li role="presentation">
-				<a href="{% url 'administracion:proyectos' %}">
-					Proyectos
-				</a>
-			</li>
 			<li>
 				<a href="{% url 'administracion:facturas' %}">
 					Facturas
@@ -119,56 +166,15 @@
 				</a>
 			</li>
 			<li>
-				<a href="{% url 'administracion:anexostecnicos' %}">
-					Anexos técnicos
+				<a href="{% url 'administracion:pagos' %}">
+					Pagos
 				</a>
 			</li>
 			<li>
-				<a href="{% url 'administracion:contratos' %}">
-					Contratos
+				<a href="{% url 'administracion:detalle-pagos' %}">
+					Detalle Pagos
 				</a>
 			</li>
-			<li>
-				<a href="{% url 'administracion:convenios'%}">
-					Convenios
-				</a>
-			</li>
-			<li>
-				<a href="{% url 'administracion:propuestas' %}">
-					Propuestas
-				</a>
-			</li>
-			<li>
-				<a href="{% url 'administracion:entregables' %}">
-					Entregables
-				</a>
-			</li>
-			<li>
-				<a href="{% url 'administracion:detalle-entregables' %}">
-					Detalles Entregables
-				</a>
-			</li>			
-			<li>
-				<a href="{% url 'administracion:doc-generales' %}">
-					Documentos Generales
-				</a>
-			</li>
-			<li>
-				<a href="{% url 'administracion:detalle-doc-generales' %}">
-					Detalle de Documentos Generales
-				</a>
-			</li>
-			<li>
-				<a href="{% url 'administracion:detalles-doc-responsiva' %}">
-					Detalle de Documentos Responsiva
-				</a>
-			</li>
-			<li>
-				<a href="{% url 'administracion:detalles-pago-empleado' %}">
-					Detalle de Pagos a Empleados
-				</a>
-			</li>
-
 			<li>
 				<a href="#">Histórico</a>
 			</li>

@@ -21,14 +21,59 @@ urlpatterns = patterns('proyecto_colima.inicio',
     url(r'^eliminar_personal/$', eliminar_personal, name='eliminar-personal'),
     url(r'^crear_personal/$', crear_personal, name="crear-personal"),
 
+    #DETALLES PAGO EMPLEADO
+    url(r'^detalles_pago_empleado/$', detalles_pago_empleado, name="detalles-pago-empleado"),
+    url(r'^detalle_detalle_pago_empleado/(?P<pk>\d+)/$', DetallePagoEmpleadoDetailView.as_view(), name="detalle-detalle-pago-empleado"),
+    url(r'^editar_detalle_pago_empleado/(?P<pk>\d+)/$', editar_detalle_pago_empleado, name="editar-detalle-pago-empleado"),
+    url(r'^editar_detalle_pago_empleado_1/(?P<pk>\d+)/$', editar_detalle_pago_empleado_1, name="editar-detalle-pago-empleado-1"),
+    url(r'^crear_detalle_pago_empleado/$', crear_detalle_pago_empleado, name="crear-detalle-pago-empleado"),
+
+    #DETALLES DOCUMENTOS RESPONSIVA
+    url(r'^detalles_doc_responsiva/$', detalle_doc_responsiva, name="detalles-doc-responsiva"),
+    url(r'^detalle_detalle_doc_responsiva/(?P<pk>\d+)/$', DetalleDocsResponsivaDetailView.as_view(), name="detalle-detalle-doc-responsiva"),
+    url(r'^editar_detalle_doc_responsiva/(?P<pk>\d+)/$', editar_detalle_doc_responsiva, name="editar-detalle-doc-responsiva"),
+    url(r'^editar_detalle_doc_responsiva_1/(?P<pk>\d+)/$', editar_detalle_doc_responsiva_1, name="editar-detalle-doc-responsiva-1"),
+    url(r'^crear_detalle_doc_responsiva/$', crear_detalle_doc_responsiva, name="crear-detalle-doc-responsiva"),
+
+    #CLIENTES
+    url(r'^clientes/$', clientes, name="clientes"),
+    url(r'^detalle_cliente/(?P<pk>\d+)/$', ClienteDetailView.as_view(), name="detalle-cliente"),
+    url(r'^editar_cliente/(?P<pk>\d+)/$', editar_cliente, name="editar-cliente"),
+    url(r'^eliminar_cliente/$', eliminar_cliente, name='eliminar-cliente'),
+    url(r'^crear_cliente/$', crear_cliente, name="crear-cliente"),
+
     #PROYECTOS
     url(r'^proyectos/$', proyectos, name="proyectos"),
     url(r'^detalle_proyecto/(?P<pk>\d+)/$', ProyectoDetailView.as_view(), name="detalle-proyecto"),
     url(r'^editar_proyecto/(?P<pk>\d+)/$', editar_proyecto, name="editar-proyecto"),
     url(r'^editar_proyecto_1/(?P<pk>\d+)/$', editar_proyecto_1, name="editar-proyecto-1"),
     url(r'^eliminar_proyecto/$', eliminar_proyecto, name='eliminar-proyecto'),
+    url(r'^historico_proyecto/$', historico_proyecto, name='historico-proyecto'),
     url(r'^crear_proyecto/$', crear_proyecto, name="crear-proyecto"),
 
+    #ANEXOS TECNICOS
+    url(r'^anexostecnicos/$', anexostecnicos, name = "anexostecnicos"),
+    url(r'^detalle_anexotecnico/(?P<pk>\d+)/$', AnexotecnicoDetailView.as_view(), name="detalle-anexotecnico"),
+    url(r'^editar_anexotecnico/(?P<pk>\d+)/$', editar_anexotecnico, name="editar-anexotecnico"),
+    url(r'^editar_anexotecnico_1/(?P<pk>\d+)/$', editar_anexotecnico_1, name="editar-anexotecnico-1"),
+    url(r'^eliminar_anexotecnico/$', eliminar_anexotecnico, name='eliminar-anexotecnico'),
+    url(r'^crear_anexotecnico/$', crear_anexotecnico, name="crear-anexotecnico"),
+
+    #CONVENIOS
+    url(r'^convenios/$', convenios, name="convenios"),
+    url(r'^detalle_convenio/(?P<pk>\d+)/$', ConvenioDetailView.as_view(), name="detalle-convenio"),
+    url(r'^editar_convenio/(?P<pk>\d+)/$', editar_convenio, name="editar-convenio"),
+    url(r'^editar_convenio_1/(?P<pk>\d+)/$', editar_convenio_1, name="editar-convenio-1"),
+    url(r'^eliminar_convenio/$', eliminar_convenio, name='eliminar-convenio'),
+    url(r'^crear_convenio/$', crear_convenio, name="crear-convenio"),
+
+    #CONTRATOS
+    url(r'^contratos/$', contratos, name="contratos"),
+    url(r'^detalle_contrato/(?P<pk>\d+)/$', ContratoDetailView.as_view(), name="detalle-contrato"),
+    url(r'^editar_contrato/(?P<pk>\d+)/$', editar_contrato, name="editar-contrato"),
+    url(r'^editar_contrato_1/(?P<pk>\d+)/$', editar_contrato_1, name="editar-contrato-1"),
+    url(r'^eliminar_contrato/$', eliminar_contrato, name='eliminar-contrato'),
+    url(r'^crear_contrato/$', crear_contrato, name="crear-contrato"),
 
     #ENTREGABLES
     url(r'^entregables/$', entregables, name="entregables"),
@@ -59,30 +104,6 @@ urlpatterns = patterns('proyecto_colima.inicio',
     url(r'^editar_detalle_factura_1/(?P<pk>\d+)/$', editar_detalle_factura_1, name="editar-detalle-factura-1"),
     url(r'^crear_detalle_factura/$', crear_detalle_factura, name="crear-detalle-factura"),
 
-    #ANEXOS TECNICOS
-    url(r'^anexostecnicos/$', anexostecnicos, name = "anexostecnicos"),
-    url(r'^detalle_anexotecnico/(?P<pk>\d+)/$', AnexotecnicoDetailView.as_view(), name="detalle-anexotecnico"),
-    url(r'^editar_anexotecnico/(?P<pk>\d+)/$', editar_anexotecnico, name="editar-anexotecnico"),
-    url(r'^editar_anexotecnico_1/(?P<pk>\d+)/$', editar_anexotecnico_1, name="editar-anexotecnico-1"),
-    url(r'^eliminar_anexotecnico/$', eliminar_anexotecnico, name='eliminar-anexotecnico'),
-    url(r'^crear_anexotecnico/$', crear_anexotecnico, name="crear-anexotecnico"),
-
-    #CONTRATOS
-    url(r'^contratos/$', contratos, name="contratos"),
-    url(r'^detalle_contrato/(?P<pk>\d+)/$', ContratoDetailView.as_view(), name="detalle-contrato"),
-    url(r'^editar_contrato/(?P<pk>\d+)/$', editar_contrato, name="editar-contrato"),
-    url(r'^editar_contrato_1/(?P<pk>\d+)/$', editar_contrato_1, name="editar-contrato-1"),
-    url(r'^eliminar_contrato/$', eliminar_contrato, name='eliminar-contrato'),
-    url(r'^crear_contrato/$', crear_contrato, name="crear-contrato"),
-
-    #CONVENIOS
-    url(r'^convenios/$', convenios, name="convenios"),
-    url(r'^detalle_convenio/(?P<pk>\d+)/$', ConvenioDetailView.as_view(), name="detalle-convenio"),
-    url(r'^editar_convenio/(?P<pk>\d+)/$', editar_convenio, name="editar-convenio"),
-    url(r'^editar_convenio_1/(?P<pk>\d+)/$', editar_convenio_1, name="editar-convenio-1"),
-    url(r'^eliminar_convenio/$', eliminar_convenio, name='eliminar-convenio'),
-    url(r'^crear_convenio/$', crear_convenio, name="crear-convenio"),
-
     #PROPUESTAS
     url(r'^propuestas/$', propuestas, name = "propuestas"),
     url(r'^detalle_propuesta/(?P<pk>\d+)/$', PropuestaDetailView.as_view(), name="detalle-propuesta"),
@@ -90,27 +111,6 @@ urlpatterns = patterns('proyecto_colima.inicio',
     url(r'^editar_propuesta_1/(?P<pk>\d+)/$', editar_propuesta_1, name="editar-propuesta-1"),
     url(r'^eliminar_propuesta/$', eliminar_propuesta, name='eliminar-propuesta'),
     url(r'^crear_propuesta/$', crear_propuesta, name="crear-propuesta"),
-
-    #CLIENTES
-    url(r'^clientes/$', clientes, name="clientes"),
-    url(r'^detalle_cliente/(?P<pk>\d+)/$', ClienteDetailView.as_view(), name="detalle-cliente"),
-    url(r'^editar_cliente/(?P<pk>\d+)/$', editar_cliente, name="editar-cliente"),
-    url(r'^eliminar_cliente/$', eliminar_cliente, name='eliminar-cliente'),
-    url(r'^crear_cliente/$', crear_cliente, name="crear-cliente"),
-
-    #ENTIDADES
-    url(r'^entidades/$', entidades, name="entidades"),
-    url(r'^detalle_entidad/(?P<pk>\d+)/$', EntidadDetailView.as_view(), name="detalle-entidad"),
-    url(r'^editar_entidad/(?P<pk>\d+)/$', editar_entidad, name="editar-entidad"),
-    url(r'^eliminar_entidad/$', eliminar_entidad, name='eliminar-entidad'),
-    url(r'^crear_entidad/$', crear_entidad, name="crear-entidad"),
-
-    #ENTIDAD PROYECTO
-    url(r'^entidades_proyecto/$', entidades_proyecto, name="entidades-proyecto"),
-    url(r'^detalle_entidad_proyecto/(?P<pk>\d+)/$', EntidadProyectoDetailView.as_view(), name="detalle-entidad-proyecto"),
-    url(r'^editar_entidad_proyecto/(?P<pk>\d+)/$', editar_entidad_proyecto, name="editar-entidad-proyecto"),
-    url(r'^editar_entidad_proyecto_1/(?P<pk>\d+)/$', editar_entidad_proyecto_1, name="editar-entidad-proyecto-1"),
-    url(r'^crear_entidad_proyecto/$', crear_entidad_proyecto, name="crear-entidad-proyecto"),
 
     #DOCUMENTOS GENERALES
     url(r'^doc_generales/$', docs_generales, name="doc-generales"),
@@ -126,17 +126,31 @@ urlpatterns = patterns('proyecto_colima.inicio',
     url(r'^editar_detalle_doc_general_1/(?P<pk>\d+)/$', editar_detalle_doc_general_1, name="editar-detalle-doc-general-1"),
     url(r'^crear_detalle_doc_general/$', crear_detalle_doc_general, name="crear-detalle-doc-general"),
 
-    #DETALLES DOCUMENTOS RESPONSIVA
-    url(r'^detalles_doc_responsiva/$', detalle_doc_responsiva, name="detalles-doc-responsiva"),
-    url(r'^detalle_detalle_doc_responsiva/(?P<pk>\d+)/$', DetalleDocsResponsivaDetailView.as_view(), name="detalle-detalle-doc-responsiva"),
-    url(r'^editar_detalle_doc_responsiva/(?P<pk>\d+)/$', editar_detalle_doc_responsiva, name="editar-detalle-doc-responsiva"),
-    url(r'^editar_detalle_doc_responsiva_1/(?P<pk>\d+)/$', editar_detalle_doc_responsiva_1, name="editar-detalle-doc-responsiva-1"),
-    url(r'^crear_detalle_doc_responsiva/$', crear_detalle_doc_responsiva, name="crear-detalle-doc-responsiva"),
+    #ENTIDADES
+    url(r'^entidades/$', entidades, name="entidades"),
+    url(r'^detalle_entidad/(?P<pk>\d+)/$', EntidadDetailView.as_view(), name="detalle-entidad"),
+    url(r'^editar_entidad/(?P<pk>\d+)/$', editar_entidad, name="editar-entidad"),
+    url(r'^eliminar_entidad/$', eliminar_entidad, name='eliminar-entidad'),
+    url(r'^crear_entidad/$', crear_entidad, name="crear-entidad"),
 
-    #DETALLES PAGO EMPLEADO
-    url(r'^detalles_pago_empleado/$', detalles_pago_empleado, name="detalles-pago-empleado"),
-    url(r'^detalle_detalle_pago_empleado/(?P<pk>\d+)/$', DetallePagoEmpleadoDetailView.as_view(), name="detalle-detalle-pago-empleado"),
-    url(r'^editar_detalle_pago_empleado/(?P<pk>\d+)/$', editar_detalle_pago_empleado, name="editar-detalle-pago-empleado"),
-    url(r'^editar_detalle_pago_empleado_1/(?P<pk>\d+)/$', editar_detalle_pago_empleado_1, name="editar-detalle-pago-empleado-1"),
-    url(r'^crear_detalle_pago_empleado/$', crear_detalle_pago_empleado, name="crear-detalle-pago-empleado"),
+    #ENTIDADES-PROYECTO
+    url(r'^entidades_proyecto/$', entidades_proyecto, name="entidades-proyecto"),
+    url(r'^detalle_entidad_proyecto/(?P<pk>\d+)/$', EntidadProyectoDetailView.as_view(), name="detalle-entidad-proyecto"),
+    url(r'^editar_entidad_proyecto/(?P<pk>\d+)/$', editar_entidad_proyecto, name="editar-entidad-proyecto"),
+    url(r'^editar_entidad_proyecto_1/(?P<pk>\d+)/$', editar_entidad_proyecto_1, name="editar-entidad-proyecto-1"),
+    url(r'^crear_entidad_proyecto/$', crear_entidad_proyecto, name="crear-entidad-proyecto"),
+
+    #PAGOS
+    url(r'^pagos/$', pagos, name="pagos"),
+    url(r'^detalle_pago/(?P<pk>\d+)/$', PagoDetailView.as_view(), name="detalle-pago"),
+    url(r'^editar_pago/(?P<pk>\d+)/$', editar_pago, name="editar-pago"),
+    url(r'^editar_pago_1/(?P<pk>\d+)/$', editar_pago_1, name="editar-pago-1"),    
+    url(r'^crear_pago/$', crear_pago, name="crear-pago"),
+
+    #DETALLES DE PAGOS
+    url(r'^detalle_pagos/$', detalle_pagos, name="detalle-pagos"),
+    url(r'^detalle_detalle_pago/(?P<pk>\d+)/$', DetallePagosDetailView.as_view(), name="detalle-detalle-pago"),
+    url(r'^editar_detalle_pago/(?P<pk>\d+)/$', editar_detalle_pago, name="editar-detalle-pago"),
+    url(r'^editar_detalle_pago_1/(?P<pk>\d+)/$', editar_detalle_pago_1, name="editar-detalle-pago-1"),
+    url(r'^crear_detalle_pago/$', crear_detalle_pago, name="crear-detalle-pago"),    
     )

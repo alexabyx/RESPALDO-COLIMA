@@ -1,6 +1,6 @@
 <style>
 .input-group-addon{
-  width:40%;
+  width:50%;
 }
 </style>
 
@@ -15,13 +15,19 @@
 	</div>
 
 	<div class="input-group">
-	  <span class="input-group-addon" id="basic-addon1">Docuemento</span>
+	  <span class="input-group-addon" id="basic-addon1">Docuemento de responsiva</span>
+	  {% if object.archivo_documento_responsiva %}
+	  	<a target="_blank" href="{{object.archivo_documento_responsiva_liga}}">
+		<input type="text" class="form-control" readonly="readonly" value="{{object.archivo_documento_responsiva}}" aria-describedby="basic-addon1"><br>
+	  	</a>
+	  {% else %}
 	  <input type="text" class="form-control" readonly="readonly" value="{{object.archivo_documento_responsiva}}" aria-describedby="basic-addon1"><br>
+	  {% endif%} 
 	</div>
 </div>
 
 <div class="modal-footer">
 	<center>
-<button type="button" class="btn btn-default" data-dismiss="modal" onclick="javascript: $.fancybox.close()">Aceptar</button>
+		<button type="button" class="btn btn-primary" data-dismiss="modal" onclick="javascript: $.fancybox.close()">Aceptar</button>
 	</center>
-  	
+</div>

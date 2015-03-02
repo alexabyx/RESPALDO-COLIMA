@@ -1,0 +1,12 @@
+/* CSS de encabezados */
+.bienvenida{
+	padding-right: 15px;
+}
+.menu{
+	padding-left: 15px;
+	width: 15%;
+}
+.nav{
+        margin-top: -1%;
+        margin-left: 10%;
+    }

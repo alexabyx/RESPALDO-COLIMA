@@ -32,6 +32,8 @@ from inicio.models import ( Proyectos,
 							DetallesEntregables,
 							DetallesFacturas,
 							EntidadProyecto,
+							Pagos,
+							DetallePagos,
 						  )
 
 from inicio.forms import (	RegistrarProyectoForm,
@@ -51,15 +53,519 @@ from inicio.forms import (	RegistrarProyectoForm,
 							RegistrarDetalleEntregableForm,
 							RegistrarDetalleFacturaForm,
 							RegistrarEntidadProyectoForm,
+							RegistrarPagoForm,
+							RegistrarDetallePagoForm,
 						  )
+
+import os
+
+#
+#==================OPERACIONES DE PERSONAL========================
+#
+@login_required(login_url='/')
+def personal(request):
+	personal_list = Personal.objects.filter(habilitado=True).order_by('-fecha_ingreso')
+
+	paginator = Paginator(personal_list, 9)
+	page = request.GET.get('page', 1)
+
+	try:
+		personal = paginator.page(page)
+	except PageNotAnInteger:
+		personal = paginator.page(1)
+	except EmptyPage:
+		personal = paginator.page(paginator.num_pages)
+
+	return render(request, 'inicio/personal.html', {'personal':personal}, context_instance=RequestContext(request))
+
+class PersonalDetailView(DetailView):
+	
+	template_name = "inicio/personal_detail.html"
+	model = Personal
+
+	def get_object(self):
+		object = super(PersonalDetailView, self).get_object()
+		return object
+
+@login_required(login_url='/')
+def crear_personal(request):
+	if request.method=="POST":
+		form = RegistrarPersonalForm(request.POST, request.FILES)
+		if form.is_valid():
+			try:
+				personal = Personal.objects.create(	
+													rfc 						= form.cleaned_data['rfc'],
+													nombre 						= form.cleaned_data['nombre'],
+													apellido_paterno 			= form.cleaned_data['apellido_paterno'],
+													apellido_materno 			= form.cleaned_data['apellido_materno'],
+													siglas_nombre 				= form.cleaned_data['siglas_nombre'],
+													genero 						= form.cleaned_data['genero'],
+													direccion 					= form.cleaned_data['direccion'],
+													telefono 					= form.cleaned_data['telefono'],
+													no_seguro 					= form.cleaned_data['no_seguro'],
+													fecha_ingreso 				= form.cleaned_data['fecha_ingreso'],
+													puesto 						= form.cleaned_data['puesto'],
+													turno 						= form.cleaned_data['turno'],
+													tipo_plaza 					= form.cleaned_data['tipo_plaza'],
+													especificacion 				= form.cleaned_data['especificacion'],
+													tipo_pago 					= form.cleaned_data['tipo_pago'],
+													monto 						= form.cleaned_data['monto'],
+													dias_trabajo_al_mes 		= form.cleaned_data['dias_trabajo_al_mes'],
+													fecha_vencimiento_contrato 	= form.cleaned_data['fecha_vencimiento_contrato'],
+													fecha_baja 					= form.cleaned_data['fecha_baja'],
+													motivo_baja 				= form.cleaned_data['motivo_baja'],
+													)
+
+				credencial_elector = form.cleaned_data['credencial_elector']
+				if credencial_elector:
+					personal.credencial_elector = credencial_elector
+					personal.save()
+
+			except Exception as e:
+				mensaje = "Algo fallo al guardar el registro, favor de reportarlo al area de sistemas."
+			else:
+				mensaje = "El empleado ha sido creado exitosamente."
+				return HttpResponseRedirect('/administracion/editar_personal/'+str(personal.id)+'/')
+		else:
+			mensaje = "Por favor, proporcione los datos correctos."
+	else:
+		mensaje = ""
+		form=RegistrarPersonalForm()
+	return render(request, 'inicio/personal_create.html', {'form': form, 'mensaje': mensaje})
+
+@login_required(login_url='/')
+def editar_personal(request, pk):
+	personal = Personal.objects.get(id=int(pk))
+
+	if request.method=="POST":
+		print request.FILES
+		form = RegistrarPersonalForm(request.POST, request.FILES)
+		if form.is_valid():
+			try:
+				Personal.objects.filter(id=int(pk)).update(
+															rfc 						= form.cleaned_data['rfc'],
+															nombre 						= form.cleaned_data['nombre'],
+															apellido_paterno 			= form.cleaned_data['apellido_paterno'],
+															apellido_materno 			= form.cleaned_data['apellido_materno'],
+															siglas_nombre 				= form.cleaned_data['siglas_nombre'],
+															genero 						= form.cleaned_data['genero'],
+															direccion 					= form.cleaned_data['direccion'],
+															telefono 					= form.cleaned_data['telefono'],
+															no_seguro 					= form.cleaned_data['no_seguro'],
+															fecha_ingreso 				= form.cleaned_data['fecha_ingreso'],
+															puesto 						= form.cleaned_data['puesto'],
+															turno 						= form.cleaned_data['turno'],
+															tipo_plaza 					= form.cleaned_data['tipo_plaza'],
+															especificacion 				= form.cleaned_data['especificacion'],
+															tipo_pago 					= form.cleaned_data['tipo_pago'],
+															monto 						= form.cleaned_data['monto'],
+															dias_trabajo_al_mes 		= form.cleaned_data['dias_trabajo_al_mes'],
+															fecha_vencimiento_contrato 	= form.cleaned_data['fecha_vencimiento_contrato'],
+															fecha_baja 					= form.cleaned_data['fecha_baja'],
+															motivo_baja 				= form.cleaned_data['motivo_baja'],
+															)
+				
+				credencial_elector = request.FILES.get('credencial_elector', None)
+				if credencial_elector:
+					if personal.credencial_elector and os.path.isfile(personal.credencial_elector.path):
+						os.remove(personal.credencial_elector.path)
+					personal.credencial_elector = credencial_elector
+					personal.save()
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "Los datos no pudieron ser actualizados"
+			else:
+				mensaje = "Datos actualizados correctamente"
+		else:
+			mensaje = "Proporcione los datos correctos"
+	else:
+		mensaje = ""
+		data = model_to_dict(personal)
+		form=RegistrarPersonalForm(data)
+
+	convenios = Convenios.objects.filter(encargado=personal, habilitado=True).order_by('-fecha_creacion')
+	contratos = Contratos.objects.filter(encargado=personal, habilitado=True).order_by('-fecha_creacion')
+	entregables = Entregables.objects.filter(responsable=personal, habilitado=True).order_by('total')
+	propuestas = Propuestas.objects.filter(responsable=personal, habilitado=True).order_by('-fecha_creacion')
+	detalles_doc_generales = DetallesDocumentosGenerales.objects.filter(responsable=personal).order_by('-fecha_creacion')
+	detalles_doc_responsiva = DetalleDocumentoResponsiva.objects.filter(personal=personal)
+	detalles_pago_empleado = DetallePagoEmpleado.objects.filter(personal=personal)
+	facturas = Facturas.objects.filter(responsable=personal).order_by('-fecha_factura')
+	return render(request, 'inicio/personal_edit.html', {'mensaje':mensaje,
+														 'personal': personal,
+														 'form': form,
+														 'entregables': entregables, 
+														 'convenios': convenios,
+														 'contratos': contratos,
+														 'propuestas': propuestas,
+														 'detalles_doc_generales':detalles_doc_generales,
+														 'detalles_doc_responsiva':detalles_doc_responsiva,
+														 'detalles_pago_empleado':detalles_pago_empleado,
+														 'facturas': facturas})
+	
+
+@login_required(login_url='/')
+def eliminar_personal(request):
+	import json
+
+	if not request.is_ajax():
+		raise Http404
+
+	pk = request.POST.get('pk')
+
+	try:
+		personal = Personal.objects.filter(id=pk).update(habilitado=False)
+	except Exception, e:
+		print "Error: ", e
+		mensaje = {'mensaje': "Fallo la operación", 'error': True}
+	else:
+		mensaje = {'mensaje': "Operación exitosa", 'error': False}
+
+	content = json.dumps(mensaje)
+	http_response = HttpResponse(content, content_type="application/json")
+
+	return http_response
+
+#
+#==================OPERACIONES DE DETALLE DE PAGO EMPLEADO========================
+#
+@login_required(login_url='/')
+def detalles_pago_empleado(request):
+	detalles_pago_empleado_list = DetallePagoEmpleado.objects.all()
+
+	paginator = Paginator(detalles_pago_empleado_list, 9)
+	page = request.GET.get('page', 1)
+
+	try:
+		detalles_pago_empleado = paginator.page(page)
+	except PageNotAnInteger:
+		detalles_pago_empleado = paginator.page(1)
+	except EmptyPage:
+		detalles_pago_empleado = paginator.page(paginator.num_pages)
+
+	return render(request, 'inicio/detalles_pago_empleado.html', {'detalles_pago_empleado':detalles_pago_empleado}, context_instance=RequestContext(request))
+
+class DetallePagoEmpleadoDetailView(DetailView):
+	
+	template_name = "inicio/detalle_pago_empleado_detail.html"
+	model = DetallePagoEmpleado
+
+	def get_object(self):
+		object = super(DetallePagoEmpleadoDetailView, self).get_object()
+		return object
+
+@login_required(login_url='/')
+def crear_detalle_pago_empleado(request):
+	if request.method=="POST":
+		form = RegistrarPagoEmpleadoForm(request.POST, request.FILES)
+		if form.is_valid():
+			try:
+				detalle_pago_empleado = DetallePagoEmpleado.objects.create(
+																		personal 	= form.cleaned_data['personal'],
+																		responsable = form.cleaned_data['responsable'],
+																		)
+
+				archivo_documento_de_pago = form.cleaned_data['archivo_documento_de_pago']
+
+				if archivo_documento_de_pago:
+					detalle_pago_empleado.archivo_documento_de_pago = archivo_documento_de_pago
+					detalle_pago_empleado.save()
+
+			except Exception, e:
+				print "Error: ", e
+				mensaje = "Algo fallo al guardar el registro, favor de reportarlo al area de sistemas."
+			else:
+				mensaje = "El detalle ha sido creado exitosamente"
+				return HttpResponseRedirect('/administracion/editar_detalle_pago_empleado/'+str(detalle_pago_empleado.id)+'/')
+		else:
+			mensaje = "Por favor, proporcione los datos correctos."
+	else:
+		mensaje = ""
+		form=RegistrarPagoEmpleadoForm()
+	return render(request, 'inicio/detalle_pago_empleado_create.html', {'form': form, 'mensaje':mensaje})
+
+@login_required(login_url='/')
+def editar_detalle_pago_empleado(request, pk):
+	detalle_pago_empleado = DetallePagoEmpleado.objects.get(id=int(pk))
+	
+	if request.method=="POST":
+		form = RegistrarPagoEmpleadoForm(request.POST, request.FILES)
+
+		if form.is_valid():
+			try:
+				DetallePagoEmpleado.objects.filter(id=int(pk)).update(
+																	personal 					= form.cleaned_data['personal'],
+																	responsable 				= form.cleaned_data['responsable'],
+																	)
+
+				archivo_documento_de_pago = form.cleaned_data['archivo_documento_de_pago']
+				if archivo_documento_de_pago:
+					if detalle_pago_empleado.archivo_documento_de_pago and os.path.isfile(detalle_pago_empleado.archivo_documento_de_pago.path):
+						os.remove(detalle_pago_empleado.archivo_documento_de_pago.path)
+					detalle_pago_empleado.archivo_documento_de_pago = archivo_documento_de_pago
+					detalle_pago_empleado.save()
+
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "Los datos no pudieron ser actualizados"
+			else:
+				mensaje = "Datos actualizados correctamente"
+		else:
+			mensaje = "Por favor, proporcione los datos correctos"
+	else:
+		mensaje = ""
+		form=RegistrarPagoEmpleadoForm(model_to_dict(detalle_pago_empleado))
+
+	return render(request, 'inicio/detalle_pago_empleado_edit.html', {'form': form, 'detalle_pago_empleado': detalle_pago_empleado, 'mensaje':mensaje})
+
+@login_required(login_url='/')
+def editar_detalle_pago_empleado_1(request, pk):
+	detalle_pago_empleado = DetallePagoEmpleado.objects.get(id=int(pk))
+	if request.method=="POST":
+		form = RegistrarPagoEmpleadoForm(request.POST, request.FILES)
+		if form.is_valid():
+			try:
+				DetallePagoEmpleado.objects.filter(id=int(pk)).update(
+																	personal 					= form.cleaned_data['personal'],
+																	responsable 				= form.cleaned_data['responsable'],
+																	archivo_documento_de_pago 	= form.cleaned_data['archivo_documento_de_pago'],
+																	)
+				return render(request, "inicio/modal_ok.html", {'cabecera':"Operación exitosa", 'mensaje':"Los campos fueron actualizados correctamente"})
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "El detalle no pudo ser actualizado"
+		else:
+			mensaje = "Los datos son invalidos"
+	else:
+		mensaje = ""
+		form=RegistrarPagoEmpleadoForm(model_to_dict(detalle_pago_empleado))
+	return render(request, 'inicio/detalle_pago_empleado_edit_1.html', {'form': form, 'id': detalle_pago_empleado.id, 'mensaje': mensaje})
+
+#
+#==================OPERACIONES DE DETALLES DE DOCUMENTOS RESPONSIVA========================
+#
+
+@login_required(login_url='/')
+def detalle_doc_responsiva(request):
+	detalle_doc_responsiva_list = DetalleDocumentoResponsiva.objects.all()
+
+	paginator = Paginator(detalle_doc_responsiva_list, 9)
+	page = request.GET.get('page', 1)
+
+	try:
+		detalles_doc_responsiva = paginator.page(page)
+	except PageNotAnInteger:
+		detalles_doc_responsiva = paginator.page(1)
+	except EmptyPage:
+		detalles_doc_responsiva = paginator.page(paginator.num_pages)
+
+	return render(request, 'inicio/detalles_doc_responsiva.html', {'detalles_doc_responsiva':detalles_doc_responsiva}, context_instance=RequestContext(request))
+
+class DetalleDocsResponsivaDetailView(DetailView):
+	
+	template_name = "inicio/detalle_doc_responsiva_detail.html"
+	model = DetalleDocumentoResponsiva
+
+	def get_object(self):
+		object = super(DetalleDocsResponsivaDetailView, self).get_object()
+		return object
+
+@login_required(login_url='/')
+def crear_detalle_doc_responsiva(request):
+	if request.method=="POST":
+		form = RegistrarDetalleDocResponsivaForm(request.POST, request.FILES)
+		#import ipdb; ipdb.set_trace()
+		if form.is_valid():
+			try:
+				detalle_doc_responsiva = DetalleDocumentoResponsiva.objects.create(
+																				personal = form.cleaned_data['personal'],
+																				)
+
+				archivo_documento_responsiva = form.cleaned_data['archivo_documento_responsiva']
+				if archivo_documento_responsiva:
+					detalle_doc_responsiva.archivo_documento_responsiva = archivo_documento_responsiva
+					detalle_doc_responsiva.save()
+
+			except Exception as e:
+				print "Error: ", e
+				mensaje = "Algo fallo al guardar el registro, favor de reportarlo al area de sistemas."
+			else:
+				mensaje = "El registro fue creado exitosamente."
+				return HttpResponseRedirect('/administracion/editar_detalle_doc_responsiva/'+str(detalle_doc_responsiva.id)+'/')
+		else:
+			mensaje = "Por favor, proporcione los datos correctos."
+	else:
+		mensaje=""
+		form=RegistrarDetalleDocResponsivaForm()
+	return render(request, 'inicio/detalle_doc_responsiva_create.html', {'form': form, 'mensaje':mensaje})
+
+@login_required(login_url='/')
+def editar_detalle_doc_responsiva(request, pk):
+	detalle_doc_responsiva = DetalleDocumentoResponsiva.objects.get(id=int(pk))
+	if request.method=="POST":
+		form = RegistrarDetalleDocResponsivaForm(request.POST, request.FILES)
+		if form.is_valid():
+			try:
+				DetalleDocumentoResponsiva.objects.filter(id=int(pk)).update(
+																			personal = form.cleaned_data['personal'],
+																			)
+
+				archivo_documento_responsiva = form.cleaned_data['archivo_documento_responsiva']
+
+				if archivo_documento_responsiva:
+					if detalle_doc_responsiva.archivo_documento_responsiva and os.path.isfile(detalle_doc_responsiva.archivo_documento_responsiva.path):
+						os.remove(detalle_doc_responsiva.archivo_documento_responsiva.path)
+					detalle_doc_responsiva.archivo_documento_responsiva = archivo_documento_responsiva
+					detalle_doc_responsiva.save()
+
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "Los datos no pudieron ser actualizados."
+			else:
+				mensaje = "Datos actualizados correctamente."
+		else:
+			mensaje = "Por favor, proporcione los datos correctos."
+	else:
+		mensaje = ""
+		form=RegistrarDetalleDocResponsivaForm(model_to_dict(detalle_doc_responsiva))
+	return render(request, 'inicio/detalle_doc_responsiva_edit.html', {'form': form, 'detalle_doc_responsiva': detalle_doc_responsiva, 'mensaje':mensaje})
+
+@login_required(login_url='/')
+def editar_detalle_doc_responsiva_1(request, pk):
+	detalle_doc_responsiva = DetalleDocumentoResponsiva.objects.get(id=int(pk))
+	if request.method=="POST":
+		form = RegistrarDetalleDocResponsivaForm(request.POST, request.FILES)
+		if form.is_valid():
+			try:
+				DetalleDocumentoResponsiva.objects.filter(id=int(pk)).update(
+																			personal 						= form.cleaned_data['personal'],
+																			archivo_documento_responsiva 	= form.cleaned_data['archivo_documento_responsiva'],
+																			)
+				return render(request, "inicio/modal_ok.html", {'cabecera':"Operación exitosa", 'mensaje':"Los campos fueron actualizados correctamente"})
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "El detalle no pudo ser actualizado"
+		else:
+			mensaje = "Los datos son invalidos"
+	else:
+		mensaje = ""
+		form=RegistrarDetalleDocResponsivaForm(model_to_dict(detalle_doc_responsiva))
+	return render(request, 'inicio/detalle_doc_responsiva_edit_1.html', {'form': form, 'id': detalle_doc_responsiva.id, 'mensaje': mensaje})
+
+#
+#==================OPERACIONES DE CLIENTES========================
+#
+
+@login_required(login_url='/')
+def clientes(request):
+	clientes_list = Clientes.objects.filter(habilitado=True).order_by('-fecha_creacion')
+
+	paginator = Paginator(clientes_list, 9)
+	page = request.GET.get('page', 1)
+
+	try:
+		clientes = paginator.page(page)
+	except PageNotAnInteger:
+		clientes = paginator.page(1)
+	except EmptyPage:
+		clientes = paginator.page(paginator.num_pages)
+
+	return render(request, 'inicio/clientes.html', {'clientes':clientes}, context_instance=RequestContext(request))
+
+class ClienteDetailView(DetailView):
+	
+	template_name = "inicio/cliente_detail.html"
+	model = Clientes
+
+	def get_object(self):
+		object = super(ClienteDetailView, self).get_object()
+		return object
+
+@login_required(login_url='/')
+def crear_cliente(request):
+	if request.method=="POST":
+		form = RegistrarClienteForm(request.POST)
+		if form.is_valid():
+			try:
+				cliente = Clientes.objects.create(
+													nombre 	= form.cleaned_data['nombre'],
+													siglas	= form.cleaned_data['siglas'],
+													)
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "El cliente no pudo ser creado."
+			else:
+				mensaje = "El registro fue creado exitosamente."
+				return HttpResponseRedirect('/administracion/editar_cliente/'+str(cliente.id)+'/')
+		else:
+			mensaje = "Por favor, proporcione los datos correctos."
+	else:
+		mensaje = ""
+		form=RegistrarClienteForm()
+	return render(request, 'inicio/cliente_create.html', {'form': form, 'mensaje': mensaje})
+
+@login_required(login_url='/')
+def editar_cliente(request, pk):
+	cliente = Clientes.objects.get(id=int(pk))
+	if request.method=="POST":
+		form = RegistrarClienteForm(request.POST)
+		if form.is_valid():
+			try:
+				Clientes.objects.filter(id=int(pk)).update(
+															nombre 	= form.cleaned_data['nombre'],
+															siglas	= form.cleaned_data['siglas'],
+															)
+
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "Los datos no puedieron ser actualizados."
+			else:
+				mensaje = "Los datos fueron actualizados correctamente."
+		else:
+			mensaje = "Por favor, proporcione los datos correctos."
+	else:
+		mensaje = ""
+		form=RegistrarClienteForm(model_to_dict(cliente))
+	proyectos = Proyectos.objects.filter(cliente=cliente, habilitado=True).order_by('-fecha_inicio')
+
+	return render(request, 'inicio/cliente_edit.html', {'mensaje': mensaje,
+														'form': form,
+														'proyectos': proyectos})	
+
+@login_required(login_url='/')
+def eliminar_cliente(request):
+	import json
+
+	if not request.is_ajax():
+		raise Http404
+
+	pk = request.POST.get('pk')
+
+	try:
+		cliente = Clientes.objects.filter(id=pk).update(habilitado=False)
+	except Exception, e:
+		print "Error: ", e
+		mensaje = {'mensaje': "Fallo la operación", 'error': True}
+	else:
+		mensaje = {'mensaje': "Operación exitosa", 'error': False}
+
+	content = json.dumps(mensaje)
+	http_response = HttpResponse(content, content_type="application/json")
+
+	return http_response
+
 #
 #==================OPERACIONES DE PROYECTOS========================
 #
 
 @login_required(login_url='/')
 def proyectos(request):
-	proyectos_list = Proyectos.objects.filter(habilitado=True)
+	_historico = request.GET.get('historico', None)
+	historico = [2,3] if _historico else [1]
 
+	proyectos_list = Proyectos.objects.filter(habilitado=True, historico__in=historico)
+
+	print proyectos_list
 	paginator = Paginator(proyectos_list, 9)
 	page = request.GET.get('page', 1)
 
@@ -70,7 +576,7 @@ def proyectos(request):
 	except EmptyPage:
 		proyectos = paginator.page(paginator.num_pages)
 
-	return render(request, 'inicio/proyectos.html', {'proyectos': proyectos}, context_instance=RequestContext(request))
+	return render(request, 'inicio/proyectos.html', {'proyectos': proyectos, 'historico': _historico}, context_instance=RequestContext(request))
 
 class ProyectoDetailView(DetailView):
 	
@@ -81,62 +587,87 @@ class ProyectoDetailView(DetailView):
 		object = super(ProyectoDetailView, self).get_object()
 		return object
 
-	def get_context_data(self, **kwargs):
-		context = super(ProyectoDetailView, self).get_context_data(**kwargs)
+@login_required(login_url='/')
+def crear_proyecto(request):
+	if request.method=="POST":
+		form = RegistrarProyectoForm(request.POST)
+		if form.is_valid():
+			try:
+				proyecto = Proyectos.objects.create(
+													nombre = form.cleaned_data['nombre'],
+													siglas = form.cleaned_data['siglas'],
+													cliente = form.cleaned_data['cliente'],
+													fecha_inicio = form.cleaned_data['fecha_inicio'],
+													fecha_fin = form.cleaned_data['fecha_fin'],
+													avance = form.cleaned_data['avance'],
+													comentario = form.cleaned_data['comentario'],
+													)
 
-		context['entregables'] = Entregables.objects.filter(proyecto=self.get_object(), habilitado=True)
+				for responsable in form.cleaned_data['responsable']:
+					proyecto.responsable.add(responsable)
+				proyecto.save()
 
-		return context
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "El proyecto no pudo ser creado."
+			else:
+				mensaje = "El registro se creo correctamente."
+				return HttpResponseRedirect('/administracion/editar_proyecto/'+str(proyecto.id)+'/')
+		else:
+			mensaje = "Por favor, proporcione los datos correctos."
+	else:
+		mensaje = ""
+		form=RegistrarProyectoForm()
+	return render(request, 'inicio/proyecto_create.html', {'form': form, 'mensaje':mensaje})
 
 @login_required(login_url='/')
 def editar_proyecto(request, pk):
-	proyecto = Proyectos.objects.get(id=pk)
+	proyecto = Proyectos.objects.get(id=int(pk))
 	if request.method=="POST":
 		form = RegistrarProyectoForm(request.POST)
 		if form.is_valid():
 			try:
 				Proyectos.objects.filter(id=int(pk)).update( 
 															nombre = form.cleaned_data['nombre'],
-															siglas = form.cleaned_data['siglas'],
+															siglas = form.cleaned_data['siglas'],																														
+															cliente = form.cleaned_data['cliente'],								
 															fecha_inicio = form.cleaned_data['fecha_inicio'],
 															fecha_fin = form.cleaned_data['fecha_fin'],
 															avance = form.cleaned_data['avance'],
 															comentario = form.cleaned_data['comentario'],
-															cliente = form.cleaned_data['cliente'],								
 															)
-
-				proyecto = Proyectos.objects.get(id = int(pk))
-
 				proyecto.responsable.clear()			
-
 				for responsable in form.cleaned_data['responsable']:
-					personal = Personal.objects.get(id = int(responsable))
-					proyecto.responsable.add(personal)
+					proyecto.responsable.add(responsable)
 				proyecto.save()
-
-				return HttpResponseRedirect('/administracion/proyectos/')
-			except Exception, e:				
+			except Exception, e:					
 				print "Error: ", e
-				mensaje = "El proyecto no pudo ser actualizado"
+				mensaje = "Ocurrió un error a actualizar el proyecto."
+			else:
+				mensaje = "Los datos fueron actualizado correctamente."
 		else:
-			print "No paso Proyectos"
+			mensaje = "Por favor, proporcione los datos correctos."
 	else:
-
+		mensaje = ""
 		form=RegistrarProyectoForm(model_to_dict(proyecto))
-	entregables = Entregables.objects.filter(proyecto = proyecto, habilitado=True).order_by('total')
-	anexostecnicos = AnexosTecnicos.objects.filter(proyecto=proyecto, habilitado=True).order_by('-fecha_creacion')
-	convenios = Convenios.objects.filter(proyecto=proyecto, habilitado=True).order_by('-fecha_creacion')
-	contratos = Contratos.objects.filter(proyecto=proyecto, habilitado=True).order_by('-fecha_creacion')
-	propuestas = Propuestas.objects.filter(proyecto=proyecto, habilitado=True).order_by('-fecha_creacion')
-	doc_generales = DocumentosGenerales.objects.filter(proyecto=proyecto).order_by('-fecha_creacion')
 
-	return render(request, 'inicio/proyecto_edit.html', {'form': form,
+	entregables 	= Entregables.objects.filter(proyecto = proyecto, habilitado=True).order_by('total')
+	anexostecnicos 	= AnexosTecnicos.objects.filter(proyecto=proyecto, habilitado=True).order_by('-fecha_creacion')
+	convenios 		= Convenios.objects.filter(proyecto=proyecto, habilitado=True).order_by('-fecha_creacion')
+	contratos 		= Contratos.objects.filter(proyecto=proyecto, habilitado=True).order_by('-fecha_creacion')
+	propuestas 		= Propuestas.objects.filter(proyecto=proyecto, habilitado=True).order_by('-fecha_creacion')
+	doc_generales 	= DocumentosGenerales.objects.filter(proyecto=proyecto).order_by('-fecha_creacion')
+	pagos 			= Pagos.objects.filter(proyecto=proyecto).order_by('-fecha_pago')
+
+	return render(request, 'inicio/proyecto_edit.html', {'mensaje': mensaje,
+														 'form': form,
 														 'entregables': entregables, 
 														 'anexostecnicos': anexostecnicos, 
 														 'convenios': convenios,
 														 'contratos': contratos,
 														 'propuestas': propuestas,
-														 'doc_generales': doc_generales})
+														 'doc_generales': doc_generales,
+														 'pagos':pagos})
 
 @login_required(login_url='/')
 def editar_proyecto_1(request, pk):
@@ -178,33 +709,6 @@ def editar_proyecto_1(request, pk):
 	return render(request, 'inicio/proyecto_edit_1.html', {'form': form,'id':proyecto.id, 'mensaje':mensaje})
 
 @login_required(login_url='/')
-def crear_proyecto(request):
-	if request.method=="POST":
-		form = RegistrarProyectoForm(request.POST)
-		if form.is_valid():
-			proyecto = Proyectos.objects.create(
-												nombre = form.cleaned_data['nombre'],
-												siglas = form.cleaned_data['siglas'],
-												fecha_inicio = form.cleaned_data['fecha_inicio'],
-												fecha_fin = form.cleaned_data['fecha_fin'],
-												avance = form.cleaned_data['avance'],
-												comentario = form.cleaned_data['comentario'],
-												cliente = form.cleaned_data['cliente'],
-												)
-			print form.cleaned_data['responsable']
-			for responsable in form.cleaned_data['responsable']:
-				proyecto.responsable.add(responsable)
-			proyecto.save()
-
-			mensaje = "El proyecto ha sido creado exitosamente"
-			return HttpResponseRedirect('/administracion/proyectos/')
-		else:
-			print "No paso"
-	else:
-		form=RegistrarProyectoForm()
-	return render(request, 'inicio/proyecto_create.html', {'form': form})
-
-@login_required(login_url='/')
 def eliminar_proyecto(request):
 	import json
 
@@ -224,243 +728,31 @@ def eliminar_proyecto(request):
 	content = json.dumps(mensaje)
 	http_response = HttpResponse(content, content_type="application/json")
 
+	return http_response
+
+
+@login_required(login_url='/')
+def historico_proyecto(request):
+	import json
+
+	if not request.is_ajax():
+		raise Http404
+
+	pk = request.POST.get('pk')
+	historico = request.POST.get('historico')
+
+	try:
+		proyecto = Proyectos.objects.filter(id=pk).update(historico=historico)
+	except Exception as e:
+		print "Error: ", e
+		mensaje = {'mensaje': "Fallo la operación", 'error': True}
+	else:
+		mensaje = {'mensaje': "Operación exitosa", 'error': False}
+
+	content = json.dumps(mensaje)
+	http_response = HttpResponse(content, content_type="application/json")
+
 	return http_response	
-
-#
-#==================OPERACIONES DE FACTURAS========================
-#
-@login_required(login_url='/')
-def facturas(request):
-	facturas_list = Facturas.objects.all()
-
-	paginator = Paginator(facturas_list, 9)
-	page = request.GET.get('page', 1)
-
-	try:
-		facturas = paginator.page(page)
-	except PageNotAnInteger:
-		facturas = paginator.page(1)
-	except EmptyPage:
-		facturas = paginator.page(paginator.num_pages)
-
-	return render(request, 'inicio/facturas.html', {'facturas': facturas}, context_instance=RequestContext(request))
-
-
-class FacturaDetailView(DetailView):
-	
-	template_name = "inicio/factura_detail.html"
-	model = Facturas
-
-	def get_object(self):
-		object = super(FacturaDetailView, self).get_object()
-		return object
-
-@login_required(login_url='/')
-def editar_factura(request, pk):
-	factura = Facturas.objects.get(id=int(pk))
-
-	if request.method=="POST":
-		form = RegistrarFacturaForm(request.POST, request.FILES)
-		if form.is_valid():
-			try:
-				Facturas.objects.filter(id=int(pk)).update(
-															contrato 			= form.cleaned_data['contrato'],
-															responsable 		= form.cleaned_data['responsable'],
-															tipo 				= form.cleaned_data['tipo'],
-															nombre 				= form.cleaned_data['nombre'],
-															siglas 				= form.cleaned_data['siglas'],
-															numero_factura 		= form.cleaned_data['numero_factura'],
-															fecha_factura 		= form.cleaned_data['fecha_factura'],
-															folio_venta 		= form.cleaned_data['folio_venta'],
-															rfc 				= form.cleaned_data['rfc'],
-															direccion 			= form.cleaned_data['direccion'],
-															subtotal 			= form.cleaned_data['subtotal'],
-															iva 				= form.cleaned_data['iva'],
-															total_con_numero 	= form.cleaned_data['total_con_numero'],
-															total_con_letra 	= form.cleaned_data['total_con_letra'],
-															pagada 				= form.cleaned_data['pagada'],
-															archivo_xml 		= form.cleaned_data['archivo_xml'],
-															archivo_fisico 		= form.cleaned_data['archivo_fisico'],
-															)
-
-				return HttpResponseRedirect('/administracion/facturas/')
-			except Exception, e:				
-				print "Error: ", e
-				mensaje = "La factura no pudo ser actualizada"
-		else:
-			print "No paso"
-	else:
-		form=RegistrarFacturaForm(model_to_dict(factura))
-	detalle_facturas = DetallesFacturas.objects.filter(factura=factura)
-	return render(request, 'inicio/factura_edit.html', {'form': form,
-														'detalle_facturas': detalle_facturas})
-@login_required(login_url='/')
-def editar_factura_1(request, pk):
-	factura = Facturas.objects.get(id=int(pk))
-	if request.method=="POST":
-		form = RegistrarFacturaForm(request.POST, request.FILES)
-		if form.is_valid():
-			try:
-				Facturas.objects.filter(id=int(pk)).update(
-															contrato 			= form.cleaned_data['contrato'],
-															responsable 		= form.cleaned_data['responsable'],
-															tipo 				= form.cleaned_data['tipo'],
-															nombre 				= form.cleaned_data['nombre'],
-															siglas 				= form.cleaned_data['siglas'],
-															numero_factura 		= form.cleaned_data['numero_factura'],
-															fecha_factura 		= form.cleaned_data['fecha_factura'],
-															folio_venta 		= form.cleaned_data['folio_venta'],
-															rfc 				= form.cleaned_data['rfc'],
-															direccion 			= form.cleaned_data['direccion'],
-															subtotal 			= form.cleaned_data['subtotal'],
-															iva 				= form.cleaned_data['iva'],
-															total_con_numero 	= form.cleaned_data['total_con_numero'],
-															total_con_letra 	= form.cleaned_data['total_con_letra'],
-															pagada 				= form.cleaned_data['pagada'],
-															archivo_xml 		= form.cleaned_data['archivo_xml'],
-															archivo_fisico 		= form.cleaned_data['archivo_fisico'],
-															)
-				return render(request, "inicio/modal_ok.html", {'cabecera':"Operación exitosa", 'mensaje':"Los campos fueron actualizados correctamente"})
-			except Exception, e:				
-				print "Error: ", e
-				mensaje = "La factura no pudo ser actualizada"
-		else:
-			mensaje = "Los datos son invalidos"
-	else:
-		mensaje = ""
-		form=RegistrarFacturaForm(model_to_dict(factura))
-	return render(request, 'inicio/factura_edit_1.html', {'form': form, 'id': factura.id, 'mensaje': mensaje})
-
-@login_required(login_url='/')
-def crear_factura(request):
-	if request.method=="POST":
-		form = RegistrarFacturaForm(request.POST, request.FILES)
-		if form.is_valid():
-			factura = Facturas.objects.create(
-												contrato 			= form.cleaned_data['contrato'],
-												responsable 		= form.cleaned_data['responsable'],
-												tipo 				= form.cleaned_data['tipo'],
-												nombre 				= form.cleaned_data['nombre'],
-												siglas 				= form.cleaned_data['siglas'],
-												numero_factura 		= form.cleaned_data['numero_factura'],
-												fecha_factura 		= form.cleaned_data['fecha_factura'],
-												folio_venta 		= form.cleaned_data['folio_venta'],
-												rfc 				= form.cleaned_data['rfc'],
-												direccion 			= form.cleaned_data['direccion'],
-												subtotal 			= form.cleaned_data['subtotal'],
-												iva 				= form.cleaned_data['iva'],
-												total_con_numero 	= form.cleaned_data['total_con_numero'],
-												total_con_letra 	= form.cleaned_data['total_con_letra'],
-												pagada 				= form.cleaned_data['pagada'],
-												archivo_xml 		= form.cleaned_data['archivo_xml'],
-												archivo_fisico 		= form.cleaned_data['archivo_fisico'],
-												)
-
-			mensaje = "La factura ha sido creada exitosamente"
-			return HttpResponseRedirect('/administracion/facturas/')
-
-		else:
-			print "No paso"
-	else:
-		form=RegistrarFacturaForm()
-	return render(request, 'inicio/factura_create.html', {'form': form})
-
-
-#
-#==================OPERACIONES DE DETALLES DE FACTURAS========================
-#
-@login_required(login_url='/')
-def detalle_facturas(request):
-	detalle_facturas_list = DetallesFacturas.objects.all()
-
-	paginator = Paginator(detalle_facturas_list, 9)
-	page = request.GET.get('page', 1)
-
-	try:
-		detalle_facturas = paginator.page(page)
-	except PageNotAnInteger:
-		detalle_facturas = paginator.page(1)
-	except EmptyPage:
-		detalle_facturas = paginator.page(paginator.num_pages)
-
-	return render(request, 'inicio/detalle_facturas.html', {'detalle_facturas': detalle_facturas}, context_instance=RequestContext(request))
-
-class DetalleFacturaDetailView(DetailView):
-	
-	template_name = "inicio/detalle_factura_detail.html"
-	model = DetallesFacturas
-
-	def get_object(self):
-		object = super(DetalleFacturaDetailView, self).get_object()
-		return object
-
-@login_required(login_url='/')
-def editar_detalle_factura(request, pk):
-	if request.method=="POST":
-		form = RegistrarDetalleFacturaForm(request.POST, request.FILES)
-		if form.is_valid():
-			try:
-				DetallesFacturas.objects.filter(id=int(pk)).update(
-																factura 		= form.cleaned_data['factura'],
-																descripcion 	= form.cleaned_data['descripcion'],
-																cantidad 		= form.cleaned_data['cantidad'],
-																)
-
-				return HttpResponseRedirect('/administracion/detalle_facturas/')
-			except Exception, e:				
-				print "Error: ", e
-				mensaje = "La factura no pudo ser actualizada"
-		else:
-			print "No paso"
-	else:
-		detalle_factura = DetallesFacturas.objects.get(id=int(pk))
-		form=RegistrarDetalleFacturaForm(model_to_dict(detalle_factura))
-	return render(request, 'inicio/detalle_factura_edit.html', {'form': form})
-
-
-@login_required(login_url='/')
-def editar_detalle_factura_1(request, pk):
-	detalle_factura = DetallesFacturas.objects.get(id=int(pk))
-	if request.method=="POST":
-		form = RegistrarDetalleFacturaForm(request.POST, request.FILES)
-		if form.is_valid():
-			try:
-				DetallesFacturas.objects.filter(id=int(pk)).update(
-																factura 		= form.cleaned_data['factura'],
-																descripcion 	= form.cleaned_data['descripcion'],
-																cantidad 		= form.cleaned_data['cantidad'],
-																)
-				return render(request, "inicio/modal_ok.html", {'cabecera':"Operación exitosa", 'mensaje':"Los campos fueron actualizados correctamente"})
-			except Exception, e:				
-				print "Error: ", e
-				mensaje = "La factura no pudo ser actualizada"
-		else:
-			mensaje = "Los datos son invalidos"
-	else:
-		mensaje = ""
-		form=RegistrarDetalleFacturaForm(model_to_dict(detalle_factura))
-	return render(request, 'inicio/detalle_factura_edit_1.html', {'form': form, 'id': detalle_factura.id, 'mensaje': mensaje})
-
-
-@login_required(login_url='/')
-def crear_detalle_factura(request):
-	if request.method=="POST":
-		form = RegistrarDetalleFacturaForm(request.POST, request.FILES)
-		if form.is_valid():
-			detalle_factura = DetallesFacturas.objects.create(
-															factura 		= form.cleaned_data['factura'],
-															descripcion 	= form.cleaned_data['descripcion'],
-															cantidad 		= form.cleaned_data['cantidad'],
-															)
-
-			mensaje = "La factura ha sido creada exitosamente"
-			return HttpResponseRedirect('/administracion/detalle_facturas/')
-
-		else:
-			print "No paso"
-	else:
-		form=RegistrarDetalleFacturaForm()
-	return render(request, 'inicio/detalle_factura_create.html', {'form': form})
 
 #
 #==================OPERACIONES DE ANEXOSTECNICOS========================
@@ -488,26 +780,35 @@ def crear_anexotecnico(request):
 	if request.method=="POST":
 		form = RegistrarAnexotecnicoForm(request.POST, request.FILES)
 		if form.is_valid():
-			anexotecnico = AnexosTecnicos.objects.create(
-														numero_oficio 	= form.cleaned_data['numero_oficio'],	
-														proyecto 		= form.cleaned_data['proyecto'],
-														nombre 			= form.cleaned_data['nombre'],
-														siglas 			= form.cleaned_data['siglas'],
-														status 			= form.cleaned_data['status'],
-														archivo         = form.cleaned_data['archivo'],
-														)
+			try:
+				anexotecnico = AnexosTecnicos.objects.create(
+															numero_oficio 	= form.cleaned_data['numero_oficio'],	
+															proyecto 		= form.cleaned_data['proyecto'],
+															nombre 			= form.cleaned_data['nombre'],
+															siglas 			= form.cleaned_data['siglas'],
+															status 			= form.cleaned_data['status'],
+															)
+				archivo = form.cleaned_data['archivo']
+				if archivo:
+					anexotecnico = archivo
+					anexotecnico.save()
 
-			mensaje = "El anexotecnico ha sido creado exitosamente"
-			return HttpResponseRedirect('/administracion/anexostecnicos/')
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "El anexotecnico no pudo ser creado."
+			else:
+				mensaje = "El registro se creo correctamente."
+				return HttpResponseRedirect('/administracion/editar_anexotecnico/'+str(anexotecnico.id)+'/')
 		else:
-			print "No paso"
+			mensaje = "Por favor, proporcione los datos correctos."
 	else:
+		mensaje = ""
 		form=RegistrarAnexotecnicoForm()
-	return render(request, 'inicio/anexotecnico_create.html', {'form': form})
-
+	return render(request, 'inicio/anexotecnico_create.html', {'form': form, 'mensaje': mensaje})
 
 @login_required(login_url='/')
 def editar_anexotecnico(request, pk):
+	anexotecnico = AnexosTecnicos.objects.get(id=int(pk))
 	if request.method=="POST":
 		form = RegistrarAnexotecnicoForm(request.POST, request.FILES)
 		if form.is_valid():
@@ -518,20 +819,25 @@ def editar_anexotecnico(request, pk):
 																nombre 			= form.cleaned_data['nombre'],
 																siglas 			= form.cleaned_data['siglas'],
 																status 			= form.cleaned_data['status'],
-																archivo         = form.cleaned_data['archivo'],
 																)
+				archivo = form.cleaned_data['archivo']
+				if archivo:
+					if anexotecnico.archivo and os.path.isfile(anexotecnico.archivo.path):
+						os.remove(anexotecnico.archivo.path)
+					anexotecnico.archivo = archivo
+					anexotecnico.save()
 
-				return HttpResponseRedirect('/administracion/anexostecnicos/')
 			except Exception, e:				
 				print "Error: ", e
-				mensaje = "El anexotecnico no pudo ser actualizado"
+				mensaje = "El anexotecnico no pudo ser actualizado."
+			else:
+				mensaje = "Los campos fueron actualizados correctamente."
 		else:
-			print "No paso"
+			mensaje = "Por favor, proporcione los datos correctos."
 	else:
-		anexotecnico = AnexosTecnicos.objects.get(id=int(pk))
+		mensaje = ""
 		form=RegistrarAnexotecnicoForm(model_to_dict(anexotecnico))
-	return render(request, 'inicio/anexotecnico_edit.html', {'form': form})
-
+	return render(request, 'inicio/anexotecnico_edit.html', {'form': form, 'anexotecnico': anexotecnico, 'mensaje': mensaje})
 
 @login_required(login_url='/')
 def editar_anexotecnico_1(request, pk):
@@ -592,9 +898,144 @@ def eliminar_anexotecnico(request):
 	return http_response
 
 #
+#==================OPERACIONES DE CONVENIOS========================
+#
+@login_required(login_url='/')
+def convenios(request):
+	convenios_list = Convenios.objects.filter(habilitado=True).order_by('-fecha_creacion')
+
+	paginator = Paginator(convenios_list, 9)
+	page = request.GET.get('page', 1)
+
+	try:
+		convenios = paginator.page(page)
+	except PageNotAnInteger:
+		convenios = paginator.page(1)
+	except EmptyPage:
+		convenios = paginator.page(paginator.num_pages)
+
+	return render(request, 'inicio/convenios.html', {'convenios':convenios}, context_instance=RequestContext(request))
+
+class ConvenioDetailView(DetailView):
+	
+	template_name = "inicio/convenio_detail.html"
+	model = Convenios
+
+	def get_object(self):
+		object = super(ConvenioDetailView, self).get_object()
+		return object
+
+@login_required(login_url='/')
+def crear_convenio(request):
+	if request.method=="POST":
+		form = RegistrarConvenioForm(request.POST, request.FILES)
+		if form.is_valid():
+			try:
+				convenio = Convenios.objects.create(
+													numero 		= form.cleaned_data['numero'],
+													proyecto 	= form.cleaned_data['proyecto'],
+													encargado 	= form.cleaned_data['encargado'],
+													)
+
+				archivo = form.cleaned_data['archivo']
+				if archivo:
+					convenio.archivo = archivo
+					convenio.save()
+
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "Ocurrió un error al crear el convenio."
+			else:
+				mensaje = "El registro fue creado correctamente."
+				return HttpResponseRedirect('/administracion/editar_convenio/'+str(convenio.id)+'/')
+		else:
+			mensaje = "Por favor, proporcione los datos correctos."
+	else:
+		mensaje = ""
+		form=RegistrarConvenioForm()
+	return render(request, 'inicio/convenio_create.html', {'form': form, 'mensaje':mensaje})
+
+@login_required(login_url='/')
+def editar_convenio(request, pk):
+	convenio = Convenios.objects.get(id=int(pk))
+	if request.method=="POST":
+		form = RegistrarConvenioForm(request.POST, request.FILES)
+		if form.is_valid():
+			try:
+				Convenios.objects.filter(id=int(pk)).update(
+															numero 		= form.cleaned_data['numero'],
+															proyecto 	= form.cleaned_data['proyecto'],
+															encargado 	= form.cleaned_data['encargado'],
+															)
+				archivo = form.cleaned_data['archivo']	
+				if archivo:	
+					if convenio.archivo and os.path.isfile(convenio.archivo.path):
+						os.remove(convenio.archivo.path)
+					convenio.archivo = archivo
+					convenio.save()
+
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "Los datos no pudieron ser actualizados."
+			else:
+				mensaje = "Datos actualizados correctamente."
+		else:
+			mensaje = "Por favor, proporcione los datos correctos."
+	else:
+		mensaje = ""
+		form=RegistrarConvenioForm(model_to_dict(convenio))
+	return render(request, 'inicio/convenio_edit.html', {'form': form, 'convenio':convenio, 'mensaje':mensaje})
+
+@login_required(login_url='/')
+def editar_convenio_1(request, pk):
+	convenio = Convenios.objects.get(id=int(pk))
+	if request.method=="POST":
+		form = RegistrarConvenioForm(request.POST, request.FILES)
+		if form.is_valid():
+			try:
+				Convenios.objects.filter(id=int(pk)).update(
+															numero 		= form.cleaned_data['numero'],
+															proyecto 	= form.cleaned_data['proyecto'],
+															encargado 	= form.cleaned_data['encargado'],
+															archivo 	= form.cleaned_data['archivo'],					
+															)
+
+				return render(request, "inicio/modal_ok.html", {'cabecera':"Operación exitosa", 'mensaje':"Los campos fueron actualizados correctamente"})
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "El convenio no pudo ser actualizado."
+		else:
+			mensaje = "Los datos son incorrectos."
+	else:
+		mensaje = ''
+		form=RegistrarConvenioForm(model_to_dict(convenio))
+	return render(request, 'inicio/convenio_edit_1.html', {'form': form, 'id': convenio.id, 'mensaje':mensaje})
+
+@login_required(login_url='/')
+def eliminar_convenio(request):
+	import json
+
+	if not request.is_ajax():
+		raise Http404
+
+	pk = request.POST.get('pk')
+
+	try:
+		convenio = Convenios.objects.filter(id=pk).update(habilitado=False)
+	except Exception, e:
+		print "Error: ", e
+		mensaje = {'mensaje': "Fallo la operación", 'error': True}
+	else:
+		mensaje = {'mensaje': "Operación exitosa", 'error': False}
+
+	content = json.dumps(mensaje)
+	http_response = HttpResponse(content, content_type="application/json")
+
+	return http_response
+
+#
 #==================OPERACIONES DE CONTATOS========================
 #
-
 
 @login_required(login_url='/')
 def contratos(request):
@@ -626,23 +1067,34 @@ def crear_contrato(request):
 	if request.method=="POST":
 		form = RegistrarContratoForm(request.POST, request.FILES)
 		if form.is_valid():
-			contrato = Contratos.objects.create(
-												numero_oficio 	= form.cleaned_data['numero_oficio'],	
-												proyecto 		= form.cleaned_data['proyecto'],
-												encargado 		= form.cleaned_data['encargado'],
-												archivo         = form.cleaned_data['archivo'],
-												)
+			try:
+				contrato = Contratos.objects.create(
+													numero_oficio 	= form.cleaned_data['numero_oficio'],	
+													proyecto 		= form.cleaned_data['proyecto'],
+													encargado 		= form.cleaned_data['encargado'],
+													)
+				
+				archivo = form.cleaned_data['archivo']
+				if archivo:
+					contrato.archivo = archivo
+					contrato.save()
 
-			mensaje = "El contrato ha sido creado exitosamente"
-			return HttpResponseRedirect('/administracion/contratos/')
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "Ocurrió un error al crear el contrato."
+			else:
+				mensaje = "El contrato fue creado exitosamente."
+				return HttpResponseRedirect('/administracion/editar_contrato/'+str(contrato.id)+'/')
 		else:
-			print "No paso"
+			mensaje = "Por favor, proporcione los datos correctos."
 	else:
+		mensaje = ""
 		form=RegistrarContratoForm()
 	return render(request, 'inicio/contrato_create.html', {'form': form})
 
 @login_required(login_url='/')
 def editar_contrato(request, pk):
+	contrato = Contratos.objects.get(id=int(pk))
 	if request.method=="POST":
 		form = RegistrarContratoForm(request.POST, request.FILES)
 		if form.is_valid():
@@ -651,21 +1103,30 @@ def editar_contrato(request, pk):
 															numero_oficio 	= form.cleaned_data['numero_oficio'],	
 															proyecto 		= form.cleaned_data['proyecto'],
 															encargado 			= form.cleaned_data['encargado'],
-															archivo         = form.cleaned_data['archivo'],
 															)
-
-				return HttpResponseRedirect('/administracion/contratos/')
+				archivo = form.cleaned_data['archivo']
+				if archivo:
+					if contrato.archivo and os.path.isfile(contrato.archivo.path):
+						os.remove(contrato.archivo.path)
+					contrato.archivo = archivo
+					contrato.save()
+			
 			except Exception, e:				
 				print "Error: ", e
-				mensaje = "El contrato no pudo ser actualizado"
+				mensaje = "Los datos no pudieron ser actualizados."
+			else:
+				mensaje = "Datos actualizados correctamente."
 		else:
-			print "No paso"
+			mensaje = "Por favor, proporcione los datos correctos."
 	else:
-		contrato = Contratos.objects.get(id=int(pk))
+		mensaje = ""
 		form=RegistrarContratoForm(model_to_dict(contrato))
 	facturas = Facturas.objects.filter(contrato=contrato).order_by('numero_factura', '-fecha_factura')
-	return render(request, 'inicio/contrato_edit.html', {'form': form,
+	return render(request, 'inicio/contrato_edit.html', {'mensaje':mensaje,
+														 'contrato': contrato,
+														 'form': form,
 														 'facturas':facturas})
+
 @login_required(login_url='/')
 def editar_contrato_1(request, pk):
 	contrato = Contratos.objects.get(id=int(pk))
@@ -715,673 +1176,9 @@ def eliminar_contrato(request):
 	return http_response
 
 #
-#==================OPERACIONES DE CONVENIOS========================
-#
-@login_required(login_url='/')
-def convenios(request):
-	convenios_list = Convenios.objects.filter(habilitado=True).order_by('-fecha_creacion')
-
-	paginator = Paginator(convenios_list, 9)
-	page = request.GET.get('page', 1)
-
-	try:
-		convenios = paginator.page(page)
-	except PageNotAnInteger:
-		convenios = paginator.page(1)
-	except EmptyPage:
-		convenios = paginator.page(paginator.num_pages)
-
-	return render(request, 'inicio/convenios.html', {'convenios':convenios}, context_instance=RequestContext(request))
-
-class ConvenioDetailView(DetailView):
-	
-	template_name = "inicio/convenio_detail.html"
-	model = Convenios
-
-	def get_object(self):
-		object = super(ConvenioDetailView, self).get_object()
-		return object
-
-@login_required(login_url='/')
-def crear_convenio(request):
-	if request.method=="POST":
-		form = RegistrarConvenioForm(request.POST, request.FILES)
-		if form.is_valid():
-			convenio = Convenios.objects.create(
-												numero 		= form.cleaned_data['numero'],
-												proyecto 	= form.cleaned_data['proyecto'],
-												encargado 	= form.cleaned_data['encargado'],
-												archivo 	= form.cleaned_data['archivo'],
-												)
-
-			mensaje = "El convenio ha sido creado exitosamente"
-			return HttpResponseRedirect('/administracion/convenios/')
-		else:
-			print "No paso"
-	else:
-		form=RegistrarConvenioForm()
-	return render(request, 'inicio/convenio_create.html', {'form': form})
-
-@login_required(login_url='/')
-def editar_convenio(request, pk):
-	if request.method=="POST":
-		form = RegistrarConvenioForm(request.POST, request.FILES)
-		if form.is_valid():
-			try:
-				Convenios.objects.filter(id=int(pk)).update(
-															numero 		= form.cleaned_data['numero'],
-															proyecto 	= form.cleaned_data['proyecto'],
-															encargado 	= form.cleaned_data['encargado'],
-															archivo 	= form.cleaned_data['archivo'],					
-															)
-
-				return HttpResponseRedirect('/administracion/convenios/')
-			except Exception, e:				
-				print "Error: ", e
-				mensaje = "El convenio no pudo ser actualizado"
-		else:
-			print "No paso"
-	else:
-		convenio = Convenios.objects.get(id=int(pk))
-		form=RegistrarConvenioForm(model_to_dict(convenio))
-	return render(request, 'inicio/convenio_edit.html', {'form': form})
-
-@login_required(login_url='/')
-def editar_convenio_1(request, pk):
-	convenio = Convenios.objects.get(id=int(pk))
-	if request.method=="POST":
-		form = RegistrarConvenioForm(request.POST, request.FILES)
-		if form.is_valid():
-			try:
-				Convenios.objects.filter(id=int(pk)).update(
-															numero 		= form.cleaned_data['numero'],
-															proyecto 	= form.cleaned_data['proyecto'],
-															encargado 	= form.cleaned_data['encargado'],
-															archivo 	= form.cleaned_data['archivo'],					
-															)
-
-				return render(request, "inicio/modal_ok.html", {'cabecera':"Operación exitosa", 'mensaje':"Los campos fueron actualizados correctamente"})
-			except Exception, e:				
-				print "Error: ", e
-				mensaje = "El convenio no pudo ser actualizado."
-		else:
-			mensaje = "Los datos son incorrectos."
-	else:
-		mensaje = ''
-		form=RegistrarConvenioForm(model_to_dict(convenio))
-	return render(request, 'inicio/convenio_edit_1.html', {'form': form, 'id': convenio.id, 'mensaje':mensaje})
-
-
-@login_required(login_url='/')
-def eliminar_convenio(request):
-	import json
-
-	if not request.is_ajax():
-		raise Http404
-
-	pk = request.POST.get('pk')
-
-	try:
-		contrato = Convenios.objects.filter(id=pk).update(habilitado=False)
-	except Exception, e:
-		print "Error: ", e
-		mensaje = {'mensaje': "Fallo la operación", 'error': True}
-	else:
-		mensaje = {'mensaje': "Operación exitosa", 'error': False}
-
-	content = json.dumps(mensaje)
-	http_response = HttpResponse(content, content_type="application/json")
-
-	return http_response
-
-#
-#==================OPERACIONES DE PROPUESTAS========================
-#
-@login_required(login_url='/')
-def propuestas(request):
-	propuestas_list = Propuestas.objects.filter(habilitado=True).order_by('-fecha_creacion')
-
-	paginator = Paginator(propuestas_list, 9)
-	page = request.GET.get('page', 1)
-
-	try:
-		propuestas = paginator.page(page)
-	except PageNotAnInteger:
-		propuestas = paginator.page(1)
-	except EmptyPage:
-		propuestas = paginator.page(paginator.num_pages)
-
-	return render(request, 'inicio/propuestas.html', {'propuestas':propuestas}, context_instance=RequestContext(request))
-
-class PropuestaDetailView(DetailView):
-	
-	template_name = "inicio/propuesta_detail.html"
-	model = Propuestas
-
-	def get_object(self):
-		object = super(PropuestaDetailView, self).get_object()
-		return object
-
-@login_required(login_url='/')
-def crear_propuesta(request):
-	if request.method=="POST":
-		form = RegistrarPropuestaForm(request.POST)
-		if form.is_valid():
-			propuestas = Propuestas.objects.create(
-												numero_oficio 	= form.cleaned_data['numero_oficio'],
-												proyecto 		= form.cleaned_data['proyecto'],
-												responsable 	= form.cleaned_data['responsable'],
-												)
-
-			mensaje = "La propuesta ha sido creada exitosamente"
-			return HttpResponseRedirect('/administracion/propuestas/')
-		else:
-			print "No paso"
-	else:
-		form=RegistrarPropuestaForm()
-	return render(request, 'inicio/propuesta_create.html', {'form': form})
-
-@login_required(login_url='/')
-def editar_propuesta(request, pk):
-	if request.method=="POST":
-		form = RegistrarPropuestaForm(request.POST)
-		if form.is_valid():
-			try:
-				Propuestas.objects.filter(id=int(pk)).update(
-															numero_oficio 	= form.cleaned_data['numero_oficio'],
-															proyecto 		= form.cleaned_data['proyecto'],
-															responsable 	= form.cleaned_data['responsable'],
-															)
-
-				return HttpResponseRedirect('/administracion/propuestas/')
-			except Exception, e:				
-				print "Error: ", e
-				mensaje = "El convenio no pudo ser actualizado"
-		else:
-			print "No paso"
-	else:
-		propuesta = Propuestas.objects.get(id=int(pk))
-		form=RegistrarPropuestaForm(model_to_dict(propuesta))
-	return render(request, 'inicio/propuesta_edit.html', {'form': form})
-
-@login_required(login_url='/')
-def editar_propuesta_1(request, pk):
-	propuesta = Propuestas.objects.get(id=int(pk))
-
-	if request.method=="POST":
-		form = RegistrarPropuestaForm(request.POST)
-		if form.is_valid():
-			try:
-				Propuestas.objects.filter(id=int(pk)).update(
-															numero_oficio 	= form.cleaned_data['numero_oficio'],
-															proyecto 		= form.cleaned_data['proyecto'],
-															responsable 	= form.cleaned_data['responsable'],
-															)
-
-				return render(request, "inicio/modal_ok.html", {'cabecera':"Operación exitosa", 'mensaje':"Los campos fueron actualizados correctamente"})
-			except Exception, e:				
-				print "Error: ", e
-				mensaje = "El convenio no pudo ser actualizado"
-		else:
-			mensaje = "Los datos son invalidos"
-	else:
-		mensaje = ''
-		form=RegistrarPropuestaForm(model_to_dict(propuesta))
-
-	return render(request, 'inicio/propuesta_edit_1.html', {'form': form, 'id': propuesta.id, 'mensaje': mensaje})	
-
-@login_required(login_url='/')
-def eliminar_propuesta(request):
-	import json
-
-	if not request.is_ajax():
-		raise Http404
-
-	pk = request.POST.get('pk')
-
-	try:
-		propuesta = Propuestas.objects.filter(id=pk).update(habilitado=False)
-	except Exception, e:
-		print "Error: ", e
-		mensaje = {'mensaje': "Fallo la operación", 'error': True}
-	else:
-		mensaje = {'mensaje': "Operación exitosa", 'error': False}
-
-	content = json.dumps(mensaje)
-	http_response = HttpResponse(content, content_type="application/json")
-
-	return http_response
-
-#
-#==================OPERACIONES DE PERSONAL========================
-#
-@login_required(login_url='/')
-def personal(request):
-	personal_list = Personal.objects.filter(habilitado=True).order_by('-fecha_ingreso')
-
-	paginator = Paginator(personal_list, 9)
-	page = request.GET.get('page', 1)
-
-	try:
-		personal = paginator.page(page)
-	except PageNotAnInteger:
-		personal = paginator.page(1)
-	except EmptyPage:
-		personal = paginator.page(paginator.num_pages)
-
-	return render(request, 'inicio/personal.html', {'personal':personal}, context_instance=RequestContext(request))
-
-class PersonalDetailView(DetailView):
-	
-	template_name = "inicio/personal_detail.html"
-	model = Personal
-
-	def get_object(self):
-		object = super(PersonalDetailView, self).get_object()
-		return object
-
-@login_required(login_url='/')
-def crear_personal(request):
-	if request.method=="POST":
-		form = RegistrarPersonalForm(request.POST, request.FILES)
-		if form.is_valid():
-			personal = Personal.objects.create(	
-												rfc 						= form.cleaned_data['rfc'],
-												credencial_elector 			= form.cleaned_data['credencial_elector'],
-												nombre 						= form.cleaned_data['nombre'],
-												apellido_paterno 			= form.cleaned_data['apellido_paterno'],
-												apellido_materno 			= form.cleaned_data['apellido_materno'],
-												siglas_nombre 				= form.cleaned_data['siglas_nombre'],
-												genero 						= form.cleaned_data['genero'],
-												direccion 					= form.cleaned_data['direccion'],
-												telefono 					= form.cleaned_data['telefono'],
-												no_seguro 					= form.cleaned_data['no_seguro'],
-												fecha_ingreso 				= form.cleaned_data['fecha_ingreso'],
-												puesto 						= form.cleaned_data['puesto'],
-												turno 						= form.cleaned_data['turno'],
-												tipo_plaza 					= form.cleaned_data['tipo_plaza'],
-												especificacion 				= form.cleaned_data['especificacion'],
-												tipo_pago 					= form.cleaned_data['tipo_pago'],
-												monto 						= form.cleaned_data['monto'],
-												dias_trabajo_al_mes 		= form.cleaned_data['dias_trabajo_al_mes'],
-												fecha_vencimiento_contrato 	= form.cleaned_data['fecha_vencimiento_contrato'],
-												fecha_baja 					= form.cleaned_data['fecha_baja'],
-												motivo_baja 				= form.cleaned_data['motivo_baja'],
-												)
-
-			mensaje = "El empleado ha sido creada exitosamente"
-			return HttpResponseRedirect('/administracion/personal/')
-		else:
-			print "No paso"
-	else:
-		form=RegistrarPersonalForm()
-	return render(request, 'inicio/personal_create.html', {'form': form})
-
-@login_required(login_url='/')
-def editar_personal(request, pk):
-	personal = Personal.objects.get(id=int(pk))
-
-	if request.method=="POST":
-		form = RegistrarPersonalForm(request.POST, request.FILES)
-		if form.is_valid():
-			try:
-				Personal.objects.filter(id=int(pk)).update(
-															rfc 						= form.cleaned_data['rfc'],
-															credencial_elector 			= form.cleaned_data['credencial_elector'],
-															nombre 						= form.cleaned_data['nombre'],
-															apellido_paterno 			= form.cleaned_data['apellido_paterno'],
-															apellido_materno 			= form.cleaned_data['apellido_materno'],
-															siglas_nombre 				= form.cleaned_data['siglas_nombre'],
-															genero 						= form.cleaned_data['genero'],
-															direccion 					= form.cleaned_data['direccion'],
-															telefono 					= form.cleaned_data['telefono'],
-															no_seguro 					= form.cleaned_data['no_seguro'],
-															fecha_ingreso 				= form.cleaned_data['fecha_ingreso'],
-															puesto 						= form.cleaned_data['puesto'],
-															turno 						= form.cleaned_data['turno'],
-															tipo_plaza 					= form.cleaned_data['tipo_plaza'],
-															especificacion 				= form.cleaned_data['especificacion'],
-															tipo_pago 					= form.cleaned_data['tipo_pago'],
-															monto 						= form.cleaned_data['monto'],
-															dias_trabajo_al_mes 		= form.cleaned_data['dias_trabajo_al_mes'],
-															fecha_vencimiento_contrato 	= form.cleaned_data['fecha_vencimiento_contrato'],
-															fecha_baja 					= form.cleaned_data['fecha_baja'],
-															motivo_baja 				= form.cleaned_data['motivo_baja'],
-															)
-
-				return HttpResponseRedirect('/administracion/personal/')
-			except Exception, e:				
-				print "Error: ", e
-				mensaje = "El convenio no pudo ser actualizado"
-		else:
-			print "No paso"
-	else:
-		form=RegistrarPersonalForm(model_to_dict(personal))
-
-	convenios = Convenios.objects.filter(encargado=personal, habilitado=True).order_by('-fecha_creacion')
-	contratos = Contratos.objects.filter(encargado=personal, habilitado=True).order_by('-fecha_creacion')
-	entregables = Entregables.objects.filter(responsable=personal, habilitado=True).order_by('total')
-	propuestas = Propuestas.objects.filter(responsable=personal, habilitado=True).order_by('-fecha_creacion')
-	detalles_doc_generales = DetallesDocumentosGenerales.objects.filter(responsable=personal).order_by('-fecha_creacion')
-	detalles_doc_responsiva = DetalleDocumentoResponsiva.objects.filter(personal=personal)
-	detalles_pago_empleado = DetallePagoEmpleado.objects.filter(personal=personal)
-	facturas = Facturas.objects.filter(responsable=personal).order_by('-fecha_factura')
-	return render(request, 'inicio/personal_edit.html', {'form': form,
-														 'entregables': entregables, 
-														 'convenios': convenios,
-														 'contratos': contratos,
-														 'propuestas': propuestas,
-														 'detalles_doc_generales':detalles_doc_generales,
-														 'detalles_doc_responsiva':detalles_doc_responsiva,
-														 'detalles_pago_empleado':detalles_pago_empleado,
-														 'facturas': facturas})
-	
-
-@login_required(login_url='/')
-def eliminar_personal(request):
-	import json
-
-	if not request.is_ajax():
-		raise Http404
-
-	pk = request.POST.get('pk')
-
-	try:
-		personal = Personal.objects.filter(id=pk).update(habilitado=False)
-	except Exception, e:
-		print "Error: ", e
-		mensaje = {'mensaje': "Fallo la operación", 'error': True}
-	else:
-		mensaje = {'mensaje': "Operación exitosa", 'error': False}
-
-	content = json.dumps(mensaje)
-	http_response = HttpResponse(content, content_type="application/json")
-
-	return http_response
-
-#
-#==================OPERACIONES DE CLIENTES========================
-#
-@login_required(login_url='/')
-def clientes(request):
-	clientes_list = Clientes.objects.filter(habilitado=True).order_by('-fecha_creacion')
-
-	paginator = Paginator(clientes_list, 9)
-	page = request.GET.get('page', 1)
-
-	try:
-		clientes = paginator.page(page)
-	except PageNotAnInteger:
-		clientes = paginator.page(1)
-	except EmptyPage:
-		clientes = paginator.page(paginator.num_pages)
-
-	return render(request, 'inicio/clientes.html', {'clientes':clientes}, context_instance=RequestContext(request))
-
-class ClienteDetailView(DetailView):
-	
-	template_name = "inicio/cliente_detail.html"
-	model = Clientes
-
-	def get_object(self):
-		object = super(ClienteDetailView, self).get_object()
-		return object
-
-@login_required(login_url='/')
-def crear_cliente(request):
-	if request.method=="POST":
-		form = RegistrarClienteForm(request.POST)
-		if form.is_valid():
-			cliente = Clientes.objects.create(
-												nombre 	= form.cleaned_data['nombre'],
-												siglas	= form.cleaned_data['siglas'],
-												)
-
-			mensaje = "El cliente ha sido creada exitosamente"
-			return HttpResponseRedirect('/administracion/clientes/')
-		else:
-			print "No paso"
-	else:
-		form=RegistrarClienteForm()
-	return render(request, 'inicio/cliente_create.html', {'form': form})
-
-@login_required(login_url='/')
-def editar_cliente(request, pk):
-	if request.method=="POST":
-		form = RegistrarClienteForm(request.POST)
-		if form.is_valid():
-			try:
-				Clientes.objects.filter(id=int(pk)).update(
-															nombre 	= form.cleaned_data['nombre'],
-															siglas	= form.cleaned_data['siglas'],
-															)
-
-				return HttpResponseRedirect('/administracion/clientes/')
-			except Exception, e:				
-				print "Error: ", e
-				mensaje = "El cliente no pudo ser actualizado"
-		else:
-			print "No paso"
-	else:
-		cliente = Clientes.objects.get(id=int(pk))
-		form=RegistrarClienteForm(model_to_dict(cliente))
-	proyectos = Proyectos.objects.filter(cliente=cliente, habilitado=True).order_by('-fecha_inicio')
-
-	return render(request, 'inicio/cliente_edit.html', {'form': form,
-														'proyectos': proyectos})	
-
-@login_required(login_url='/')
-def eliminar_cliente(request):
-	import json
-
-	if not request.is_ajax():
-		raise Http404
-
-	pk = request.POST.get('pk')
-
-	try:
-		cliente = Clientes.objects.filter(id=pk).update(habilitado=False)
-	except Exception, e:
-		print "Error: ", e
-		mensaje = {'mensaje': "Fallo la operación", 'error': True}
-	else:
-		mensaje = {'mensaje': "Operación exitosa", 'error': False}
-
-	content = json.dumps(mensaje)
-	http_response = HttpResponse(content, content_type="application/json")
-
-	return http_response
-#
-#==================OPERACIONES DE ENTIDADES========================
-#
-
-@login_required(login_url='/')
-def entidades(request):
-	entidades_list = Entidades.objects.filter(habilitado=True).order_by('-fecha_creacion')
-
-	paginator = Paginator(entidades_list, 9)
-	page = request.GET.get('page', 1)
-
-	try:
-		entidades = paginator.page(page)
-	except PageNotAnInteger:
-		entidades = paginator.page(1)
-	except EmptyPage:
-		entidades = paginator.page(paginator.num_pages)
-
-	return render(request, 'inicio/entidades.html', {'entidades':entidades}, context_instance=RequestContext(request))
-
-class EntidadDetailView(DetailView):
-	
-	template_name = "inicio/entidad_detail.html"
-	model = Entidades
-
-	def get_object(self):
-		object = super(EntidadDetailView, self).get_object()
-		return object
-
-@login_required(login_url='/')
-def crear_entidad(request):
-	if request.method=="POST":
-		form = RegistrarEntidadForm(request.POST)
-		if form.is_valid():
-			entidad = Entidades.objects.create(
-												nombre 	= form.cleaned_data['nombre'],
-												siglas 	= form.cleaned_data['siglas'], 
-												tipo 	= form.cleaned_data['tipo'],
-												)
-
-			mensaje = "La entidad ha sido creada exitosamente"
-			return HttpResponseRedirect('/administracion/entidades/')
-		else:
-			print "No paso"
-	else:
-		form=RegistrarEntidadForm()
-	return render(request, 'inicio/entidad_create.html', {'form': form})
-
-@login_required(login_url='/')
-def editar_entidad(request, pk):
-	entidad = Entidades.objects.get(id=int(pk))
-	if request.method=="POST":
-		form = RegistrarEntidadForm(request.POST)
-		if form.is_valid():
-			try:
-				Entidades.objects.filter(id=int(pk)).update(
-															nombre 	= form.cleaned_data['nombre'],
-															siglas 	= form.cleaned_data['siglas'], 
-															tipo 	= form.cleaned_data['tipo'],
-															)
-
-				return HttpResponseRedirect('/administracion/entidades/')
-			except Exception, e:				
-				print "Error: ", e
-				mensaje = "La entidad no pudo ser actualizada"
-		else:
-			print "No paso"
-	else:
-		form=RegistrarEntidadForm(model_to_dict(entidad))
-	entidades_proyectos = EntidadProyecto.objects.filter(entidad=entidad)
-	return render(request, 'inicio/entidad_edit.html', {'form': form, 'entidades_proyectos': entidades_proyectos})	
-
-@login_required(login_url='/')
-def eliminar_entidad(request):
-	import json
-
-	if not request.is_ajax():
-		raise Http404
-
-	pk = request.POST.get('pk')
-
-	try:
-		entidad = Entidades.objects.filter(id=pk).update(habilitado=False)
-	except Exception, e:
-		print "Error: ", e
-		mensaje = {'mensaje': "Fallo la operación", 'error': True}
-	else:
-		mensaje = {'mensaje': "Operación exitosa", 'error': False}
-
-	content = json.dumps(mensaje)
-	http_response = HttpResponse(content, content_type="application/json")
-
-	return http_response
-
-#
-#==================OPERACIONES DE ENTIDADES PRYECTO========================
-#
-@login_required(login_url='/')
-def entidades_proyecto(request):
-	entidades_proyecto_list = EntidadProyecto.objects.all()
-	
-	paginator = Paginator(entidades_proyecto_list, 9)
-	page = request.GET.get('page', 1)
-
-	try:
-		entidades_proyecto = paginator.page(page)
-	except PageNotAnInteger:
-		entidades_proyecto = paginator.page(1)
-	except EmptyPage:
-		entidades_proyecto = paginator.page(paginator.num_pages)
-
-	return render(request, 'inicio/entidades_proyecto.html', {'entidades_proyecto':entidades_proyecto}, context_instance=RequestContext(request))
-
-class EntidadProyectoDetailView(DetailView):
-	
-	template_name = "inicio/entidad_detail.html"
-	model = Entidades
-
-	def get_object(self):
-		object = super(EntidadProyectoDetailView, self).get_object()
-		return object
-
-@login_required(login_url='/')
-def crear_entidad_proyecto(request):
-	if request.method=="POST":
-		form = RegistrarEntidadProyectoForm(request.POST)
-		if form.is_valid():
-			entidad = EntidadProyecto.objects.create(
-													entidad 	= form.cleaned_data['entidad'],
-													proyecto 	= form.cleaned_data['proyecto'],
-													porcentaje  = form.cleaned_data['porcentaje'],
-													)
-
-			mensaje = "La entidad ha sido creada exitosamente"
-			return HttpResponseRedirect('/administracion/entidades_proyecto/')
-		else:
-			print "No paso"
-	else:
-		form=RegistrarEntidadProyectoForm()
-	return render(request, 'inicio/entidad_proyecto_create.html', {'form': form})
-
-@login_required(login_url='/')
-def editar_entidad_proyecto(request, pk):
-	if request.method=="POST":
-		form = RegistrarEntidadProyectoForm(request.POST)
-		if form.is_valid():
-			try:
-				EntidadProyecto.objects.filter(id=int(pk)).update(
-													entidad 	= form.cleaned_data['entidad'],
-													proyecto 	= form.cleaned_data['proyecto'],
-													porcentaje  = form.cleaned_data['porcentaje'],
-															)
-
-				return HttpResponseRedirect('/administracion/entidades_proyecto/')
-			except Exception, e:				
-				print "Error: ", e
-				mensaje = "La entidad no pudo ser actualizada"
-		else:
-			print "No paso"
-	else:
-		entidad_proyecto = EntidadProyecto.objects.get(id=int(pk))
-		form=RegistrarEntidadProyectoForm(model_to_dict(entidad_proyecto))
-	return render(request, 'inicio/entidad_proyecto_edit.html', {'form': form})	
-
-@login_required(login_url='/')
-def editar_entidad_proyecto_1(request, pk):
-	entidad_proyecto = EntidadProyecto.objects.get(id=int(pk))
-	if request.method=="POST":
-		form = RegistrarEntidadProyectoForm(request.POST)
-		if form.is_valid():
-			try:
-				EntidadProyecto.objects.filter(id=int(pk)).update(
-													entidad 	= form.cleaned_data['entidad'],
-													proyecto 	= form.cleaned_data['proyecto'],
-													porcentaje  = form.cleaned_data['porcentaje'],
-															)
-
-				return render(request, "inicio/modal_ok.html", {'cabecera':"Operación exitosa", 'mensaje':"Los campos fueron actualizados correctamente"})
-			except Exception, e:				
-				print "Error: ", e
-				mensaje = "Entidad-proyecto no pudo ser actualizada"
-		else:
-			mensaje = "Los datos son invalidos"
-	else:
-		mensaje = ""
-		form=RegistrarEntidadProyectoForm(model_to_dict(entidad_proyecto))
-	return render(request, 'inicio/entidad_proyecto_edit_1.html', {'form': form, 'id': entidad_proyecto.id, 'mensaje':mensaje})
-
-#
 #==================OPERACIONES DE ENTREGABLES========================
 #
+
 @login_required(login_url='/')
 def entregables(request):
 	entregables_list = Entregables.objects.filter(habilitado=True).order_by('-proyecto__fecha_inicio')
@@ -1412,27 +1209,31 @@ def crear_entregable(request):
 	if request.method=="POST":
 		form = RegistrarEntregableForm(request.POST)
 		if form.is_valid():
-			entregable = Entregables.objects.create(
-													proyecto 	= form.cleaned_data['proyecto'],
-													responsable = form.cleaned_data['responsable'],
-													total 		= form.cleaned_data['total'],
-													)
-
-			mensaje = "El entregable ha sido creado exitosamente"
-			return HttpResponseRedirect('/administracion/entregables/')
+			try:
+				entregable = Entregables.objects.create(
+														proyecto 	= form.cleaned_data['proyecto'],
+														responsable = form.cleaned_data['responsable'],
+														total 		= form.cleaned_data['total'],
+														)
+			except Exception as e:
+				print "Error: ", e
+				mensaje = "Algo fallo al guardar el registro, favor de reportarlo al area de sistemas."
+			else:
+				mensaje = "El empleado ha sido creado exitosamente."
+				return HttpResponseRedirect('/administracion/editar_entregable/'+str(entregable.id)+'/')
 		else:
-			print "No paso"
+			mensaje = "Por favor, proporcione los datos correctos."
 	else:
+		mensaje = ""
 		form=RegistrarEntregableForm()
-	return render(request, 'inicio/entregable_create.html', {'form': form})
-
+	return render(request, 'inicio/entregable_create.html', {'form': form, 'mensaje': mensaje})
 
 @login_required(login_url='/')
 def editar_entregable(request, pk):
-	entregable = Entregables.objects.get(id=int(pk))	
+	entregable = Entregables.objects.get(id=int(pk))
+
 	if request.method=="POST":
 		form = RegistrarEntregableForm(request.POST)
-		print "POST_1", request.POST
 		if form.is_valid():
 			try:
 				Entregables.objects.filter(id=int(pk)).update(
@@ -1441,18 +1242,21 @@ def editar_entregable(request, pk):
 															total 		= form.cleaned_data['total'],
 															)
 
-				return HttpResponseRedirect('/administracion/entregables/')
 			except Exception, e:				
 				print "Error: ", e
-				mensaje = "El entregable no pudo ser actualizado"
+				mensaje = "Los datos no pudieron ser actualizados."
+			else:
+				mensaje = "Datos actualizados correctamente."
 		else:
-			print "No paso"
+			mensaje = "Por favor, proporcione los datos correctos."
 	else:
+		mensaje = ""
 		form=RegistrarEntregableForm(model_to_dict(entregable))
 
 	detalles_entregables = DetallesEntregables.objects.filter(entregable=entregable)
-	return render(request, 'inicio/entregable_edit.html', {'form': form, 'detalles_entregables': detalles_entregables})
-
+	return render(request, 'inicio/entregable_edit.html', {'mensaje': mensaje,
+														   'form': form,
+														   'detalles_entregables': detalles_entregables})
 
 @login_required(login_url='/')
 def editar_entregable_1(request, pk):
@@ -1483,7 +1287,6 @@ def editar_entregable_1(request, pk):
 		form=RegistrarEntregableForm(model_to_dict(entregable))
 		mensaje = None
 	return render(request, 'inicio/entregable_edit_1.html', {'form': form, 'id': entregable.id, 'mensaje':mensaje})	
-
 
 @login_required(login_url='/')
 def eliminar_entregable(request):
@@ -1541,25 +1344,37 @@ def crear_detalle_entregable(request):
 	if request.method=="POST":
 		form = RegistrarDetalleEntregableForm(request.POST,request.FILES)
 		if form.is_valid():
-			detalle_entregable = DetallesEntregables.objects.create(
-																	entregable 		= form.cleaned_data['entregable'],
-																	responsable 	= form.cleaned_data['responsable'],
-																	numero 			= form.cleaned_data['numero'],
-																	nombre 			= form.cleaned_data['nombre'],
-																	siglas 			= form.cleaned_data['siglas'],
-																	archivo 		= form.cleaned_data['archivo'],
-																	)
+			try:
+				detalle_entregable = DetallesEntregables.objects.create(
+																		entregable 		= form.cleaned_data['entregable'],
+																		responsable 	= form.cleaned_data['responsable'],
+																		numero 			= form.cleaned_data['numero'],
+																		nombre 			= form.cleaned_data['nombre'],
+																		siglas 			= form.cleaned_data['siglas'],
+																		status 			= form.cleaned_data['status'],
+																		)
 
-			mensaje = "El detalle ha sido creado exitosamente"
-			return HttpResponseRedirect('/administracion/detalle_entregables/')
+				archivo = form.cleaned_data['archivo']
+				if archivo:
+					detalle_entregable.archivo = archivo
+					detalle_entregable.save()
+
+			except Exception as e:
+				print "Error: ", e
+				mensaje = "Algo fallo al guardar el registro, favor de reportarlo al area de sistemas."
+			else:
+				mensaje = "El detalle ha sido creado exitosamente."
+				return HttpResponseRedirect('/administracion/editar_detalle_entregable/'+str(detalle_entregable.id)+'/')
 		else:
-			print "No paso"
+			mensaje = "Por favor, proporcione los datos correctos."
 	else:
+		mensaje = ""		
 		form=RegistrarDetalleEntregableForm()
-	return render(request, 'inicio/detalle_entregable_create.html', {'form': form})
+	return render(request, 'inicio/detalle_entregable_create.html', {'form': form, 'mensaje': mensaje})
 
 @login_required(login_url='/')
 def editar_detalle_entregable(request, pk):
+	detalle_entregable = DetallesEntregables.objects.get(id=int(pk))
 	if request.method=="POST":
 		form = RegistrarDetalleEntregableForm(request.POST, request.FILES)
 		if form.is_valid():
@@ -1570,19 +1385,28 @@ def editar_detalle_entregable(request, pk):
 																	numero 			= form.cleaned_data['numero'],
 																	nombre 			= form.cleaned_data['nombre'],
 																	siglas 			= form.cleaned_data['siglas'],
-																	archivo 		= form.cleaned_data['archivo'],
+																	status 			= form.cleaned_data['status'],
 																	)
-
+				archivo = form.cleaned_data['archivo']
+				if archivo:
+					if detalle_entregable.archivo and os.path.isfile(detalle_entregable.archivo.path):
+						os.remove(detalle_entregable.archivo.path)
+					detalle_entregable.archivo = archivo
+					detalle_entregable.save()
 
 			except Exception, e:				
 				print "Error: ", e
-				mensaje = "El entregable no pudo ser actualizado"
+				mensaje = "Los datos no pudieron ser actualizados."
+			else:
+				mensaje = "Datos actualizados correctamente."
 		else:
-			mensaje="Los datos son incorrectos"
+			mensaje = "Por favor, proporcione los datos correctos."
 	else:
-		detalle_entregable = DetallesEntregables.objects.get(id=int(pk))
+		mensaje = ""
 		form=RegistrarDetalleEntregableForm(model_to_dict(detalle_entregable))
-	return render(request, 'inicio/detalle_entregable_edit.html', {'form': form})
+	return render(request, 'inicio/detalle_entregable_edit.html', {'form': form, 
+																   'detalle_entregable': detalle_entregable,
+																   'mensaje':mensaje})
 
 @login_required(login_url='/')
 def editar_detalle_entregable_1(request, pk):
@@ -1608,16 +1432,422 @@ def editar_detalle_entregable_1(request, pk):
 				mensaje = "El detalle no pudo ser actualizado."
 		else:
 			mensaje = "Los datos no son validos."
-
 	else:
+		mensaje = ""
 		form=RegistrarDetalleEntregableForm(model_to_dict(detalle_entregable))
-		mensaje = None
 	return render(request, 'inicio/detalle_entregable_edit_1.html', {'form': form, 'id': detalle_entregable.id, 'mensaje':mensaje})	
 
+#
+#==================OPERACIONES DE FACTURAS========================
+#
+
+@login_required(login_url='/')
+def facturas(request):
+	facturas_list = Facturas.objects.all()
+
+	paginator = Paginator(facturas_list, 9)
+	page = request.GET.get('page', 1)
+
+	try:
+		facturas = paginator.page(page)
+	except PageNotAnInteger:
+		facturas = paginator.page(1)
+	except EmptyPage:
+		facturas = paginator.page(paginator.num_pages)
+
+	return render(request, 'inicio/facturas.html', {'facturas': facturas}, context_instance=RequestContext(request))
+
+class FacturaDetailView(DetailView):
+	
+	template_name = "inicio/factura_detail.html"
+	model = Facturas
+
+	def get_object(self):
+		object = super(FacturaDetailView, self).get_object()
+		return object
+
+@login_required(login_url='/')
+def crear_factura(request):
+	if request.method=="POST":
+		form = RegistrarFacturaForm(request.POST, request.FILES)
+		if form.is_valid():
+			try:
+				factura = Facturas.objects.create(
+													contrato 			= form.cleaned_data['contrato'],
+													responsable 		= form.cleaned_data['responsable'],
+													numero_factura 		= form.cleaned_data['numero_factura'],
+													fecha_entrega 		= form.cleaned_data['fecha_entrega'],
+													folio_venta 		= form.cleaned_data['folio_venta'],
+													rfc 				= form.cleaned_data['rfc'],
+													direccion 			= form.cleaned_data['direccion'],
+													subtotal 			= form.cleaned_data['subtotal'],
+													iva 				= form.cleaned_data['iva'],
+													total_con_numero 	= form.cleaned_data['total_con_numero'],
+													total_con_letra 	= form.cleaned_data['total_con_letra'],
+													status 				= form.cleaned_data['status'],
+													pagada 				= form.cleaned_data['pagada'],
+													)
+
+				archivo_xml 		= form.cleaned_data['archivo_xml']
+				archivo_fisico 		= form.cleaned_data['archivo_fisico']
+
+				if archivo_xml:
+					factura.archivo_xml = archivo_xml
+				if archivo_fisico:
+					factura.archivo_fisico = archivo_fisico
+
+				factura.save()
+
+			except Exception as e:
+				print "Error: ", e
+				mensaje = "Algo fallo al guardar el registro, favor de reportarlo al area de sistemas."
+			else:
+				mensaje = "La factura ha sido creada exitosamente."
+				return HttpResponseRedirect('/administracion/editar_factura/'+str(factura.id)+'/')
+		else:
+			mensaje = "Por favor, proporcione los datos correctos."
+	else:
+		mensaje = ""
+		form=RegistrarFacturaForm()
+	return render(request, 'inicio/factura_create.html', {'form': form, 'mensaje': mensaje})
+
+@login_required(login_url='/')
+def editar_factura(request, pk):
+	factura = Facturas.objects.get(id=int(pk))
+
+	if request.method=="POST":
+		form = RegistrarFacturaForm(request.POST, request.FILES)
+		if form.is_valid():
+			try:
+				Facturas.objects.filter(id=int(pk)).update(
+															contrato 			= form.cleaned_data['contrato'],
+															responsable 		= form.cleaned_data['responsable'],
+															numero_factura 		= form.cleaned_data['numero_factura'],
+															fecha_entrega 		= form.cleaned_data['fecha_entrega'],
+															folio_venta 		= form.cleaned_data['folio_venta'],
+															rfc 				= form.cleaned_data['rfc'],
+															direccion 			= form.cleaned_data['direccion'],
+															subtotal 			= form.cleaned_data['subtotal'],
+															iva 				= form.cleaned_data['iva'],
+															total_con_numero 	= form.cleaned_data['total_con_numero'],
+															total_con_letra 	= form.cleaned_data['total_con_letra'],
+															status 				= form.cleaned_data['status'],
+															pagada 				= form.cleaned_data['pagada'],
+															)
+
+				archivo_xml 		= form.cleaned_data['archivo_xml']
+				archivo_fisico 		= form.cleaned_data['archivo_fisico']
+
+				if archivo_xml:
+					if factura.archivo_xml and os.path.isfile(factura.archivo_xml.path):
+						os.remove(factura.archivo_xml.path)
+					factura.archivo_xml = archivo_xml
+
+				if archivo_fisico:
+					if factura.archivo_fisico and os.path.isfile(factura.archivo_fisico.path):
+						os.remove(factura.archivo_fisico.path)
+					factura.archivo_fisico = archivo_fisico
+				factura.save()
+
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "Los datos no pudieron ser actualizados."
+			else:
+				mensaje = "Datos actualizados correctamente."
+		else:
+			mensaje = "Por favor, proporcione los datos correctos."
+	else:
+		mensaje = ""
+		form=RegistrarFacturaForm(model_to_dict(factura))
+
+	detalle_facturas = DetallesFacturas.objects.filter(factura=factura)
+	print factura
+	return render(request, 'inicio/factura_edit.html', {'mensaje': mensaje,
+														'form': form,
+														'factura': factura,
+														'detalle_facturas': detalle_facturas})
+	
+@login_required(login_url='/')
+def editar_factura_1(request, pk):
+	factura = Facturas.objects.get(id=int(pk))
+	if request.method=="POST":
+		form = RegistrarFacturaForm(request.POST, request.FILES)
+		if form.is_valid():
+			try:
+				Facturas.objects.filter(id=int(pk)).update(
+															contrato 			= form.cleaned_data['contrato'],
+															responsable 		= form.cleaned_data['responsable'],
+															numero_factura 		= form.cleaned_data['numero_factura'],
+															fecha_entrega 		= form.cleaned_data['fecha_entrega'],
+															folio_venta 		= form.cleaned_data['folio_venta'],
+															rfc 				= form.cleaned_data['rfc'],
+															direccion 			= form.cleaned_data['direccion'],
+															subtotal 			= form.cleaned_data['subtotal'],
+															iva 				= form.cleaned_data['iva'],
+															total_con_numero 	= form.cleaned_data['total_con_numero'],
+															total_con_letra 	= form.cleaned_data['total_con_letra'],
+															pagada 				= form.cleaned_data['pagada'],
+															status 				= form.cleaned_data['status'],														
+															archivo_xml 		= form.cleaned_data['archivo_xml'],
+															archivo_fisico 		= form.cleaned_data['archivo_fisico'],
+															)
+				return render(request, "inicio/modal_ok.html", {'cabecera':"Operación exitosa", 'mensaje':"Los campos fueron actualizados correctamente"})
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "La factura no pudo ser actualizada"
+		else:
+			mensaje = "Los datos son invalidos"
+	else:
+		mensaje = ""
+		form=RegistrarFacturaForm(model_to_dict(factura))
+	return render(request, 'inicio/factura_edit_1.html', {'form': form, 'id': factura.id, 'mensaje': mensaje})
+
+
+#
+#==================OPERACIONES DE DETALLES DE FACTURAS========================
+#
+
+@login_required(login_url='/')
+def detalle_facturas(request):
+	detalle_facturas_list = DetallesFacturas.objects.all()
+
+	paginator = Paginator(detalle_facturas_list, 9)
+	page = request.GET.get('page', 1)
+
+	try:
+		detalle_facturas = paginator.page(page)
+	except PageNotAnInteger:
+		detalle_facturas = paginator.page(1)
+	except EmptyPage:
+		detalle_facturas = paginator.page(paginator.num_pages)
+
+	return render(request, 'inicio/detalle_facturas.html', {'detalle_facturas': detalle_facturas}, context_instance=RequestContext(request))
+
+class DetalleFacturaDetailView(DetailView):
+	
+	template_name = "inicio/detalle_factura_detail.html"
+	model = DetallesFacturas
+
+	def get_object(self):
+		object = super(DetalleFacturaDetailView, self).get_object()
+		return object
+
+@login_required(login_url='/')
+def crear_detalle_factura(request):
+	if request.method=="POST":
+		form = RegistrarDetalleFacturaForm(request.POST, request.FILES)
+		if form.is_valid():
+			try:
+				detalle_factura = DetallesFacturas.objects.create(
+																factura 		= form.cleaned_data['factura'],
+																descripcion 	= form.cleaned_data['descripcion'],
+																cantidad 		= form.cleaned_data['cantidad'],
+																)
+			except Exception as e:
+				print "Error: ", e
+				mensaje = "Algo fallo al guardar el registro, favor de reportarlo al area de sistemas."
+			else:
+				mensaje = "El detalle ha sido creado exitosamente."
+				return HttpResponseRedirect('/administracion/editar_detalle_factura/'+str(detalle_factura.id)+'/')
+		else:
+			mensaje = "Por favor, proporcione los datos correctos."
+	else:
+		mensaje = ""
+		form=RegistrarDetalleFacturaForm()
+	return render(request, 'inicio/detalle_factura_create.html', {'form': form, 'mensaje':mensaje})
+
+@login_required(login_url='/')
+def editar_detalle_factura(request, pk):
+	detalle_factura = DetallesFacturas.objects.get(id=int(pk))
+
+	if request.method=="POST":
+		form = RegistrarDetalleFacturaForm(request.POST, request.FILES)
+		if form.is_valid():
+			try:
+				DetallesFacturas.objects.filter(id=int(pk)).update(
+																factura 		= form.cleaned_data['factura'],
+																descripcion 	= form.cleaned_data['descripcion'],
+																cantidad 		= form.cleaned_data['cantidad'],
+																)
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "Los datos no pudieron ser actualizados."
+			else:
+				mensaje = "Datos actualizados correctamente."
+		else:
+			mensaje = "Por favor, proporcione los datos correctos."
+	else:
+		mensaje = ""
+		form=RegistrarDetalleFacturaForm(model_to_dict(detalle_factura))
+	return render(request, 'inicio/detalle_factura_edit.html', {'form': form, 'mensaje':mensaje})
+
+
+@login_required(login_url='/')
+def editar_detalle_factura_1(request, pk):
+	detalle_factura = DetallesFacturas.objects.get(id=int(pk))
+	if request.method=="POST":
+		form = RegistrarDetalleFacturaForm(request.POST, request.FILES)
+		if form.is_valid():
+			try:
+				DetallesFacturas.objects.filter(id=int(pk)).update(
+																factura 		= form.cleaned_data['factura'],
+																descripcion 	= form.cleaned_data['descripcion'],
+																cantidad 		= form.cleaned_data['cantidad'],
+																)
+				return render(request, "inicio/modal_ok.html", {'cabecera':"Operación exitosa", 'mensaje':"Los campos fueron actualizados correctamente"})
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "La factura no pudo ser actualizada"
+		else:
+			mensaje = "Los datos son invalidos"
+	else:
+		mensaje = ""
+		form=RegistrarDetalleFacturaForm(model_to_dict(detalle_factura))
+	return render(request, 'inicio/detalle_factura_edit_1.html', {'form': form, 'id': detalle_factura.id, 'mensaje': mensaje})
+
+
+#
+#==================OPERACIONES DE PROPUESTAS========================
+#
+@login_required(login_url='/')
+def propuestas(request):
+	propuestas_list = Propuestas.objects.filter(habilitado=True).order_by('-fecha_creacion')
+
+	paginator = Paginator(propuestas_list, 9)
+	page = request.GET.get('page', 1)
+
+	try:
+		propuestas = paginator.page(page)
+	except PageNotAnInteger:
+		propuestas = paginator.page(1)
+	except EmptyPage:
+		propuestas = paginator.page(paginator.num_pages)
+
+	return render(request, 'inicio/propuestas.html', {'propuestas':propuestas}, context_instance=RequestContext(request))
+
+class PropuestaDetailView(DetailView):
+	
+	template_name = "inicio/propuesta_detail.html"
+	model = Propuestas
+
+	def get_object(self):
+		object = super(PropuestaDetailView, self).get_object()
+		return object
+
+@login_required(login_url='/')
+def crear_propuesta(request):
+	if request.method=="POST":
+		form = RegistrarPropuestaForm(request.POST, request.FILES)
+		if form.is_valid():
+			try:
+				propuesta = Propuestas.objects.create(
+													numero_oficio 	= form.cleaned_data['numero_oficio'],
+													proyecto 		= form.cleaned_data['proyecto'],
+													responsable 	= form.cleaned_data['responsable'],
+													status 			= form.cleaned_data['status'],
+													)
+				archivo = form.cleaned_data['archivo']
+				if archivo:
+					propuesta.archivo = archivo
+					propuesta.save()
+			except Exception as e:
+				print "Error: ", e
+				mensaje = "Algo fallo al guardar el registro, favor de reportarlo al area de sistemas."
+			else:
+				mensaje = "La propuesta ha sido creado exitosamente."
+				return HttpResponseRedirect('/administracion/editar_propuesta/'+str(propuesta.id)+'/')
+		else:
+			mensaje = "Por favor, proporcione los datos correctos."
+	else:
+		mensaje = ""
+		form=RegistrarPropuestaForm()
+	return render(request, 'inicio/propuesta_create.html', {'form': form, 'mensaje':mensaje})
+
+@login_required(login_url='/')
+def editar_propuesta(request, pk):
+	propuesta = Propuestas.objects.get(id=int(pk))
+
+	if request.method=="POST":
+		form = RegistrarPropuestaForm(request.POST, request.FILES)
+		if form.is_valid():
+			try:
+				Propuestas.objects.filter(id=int(pk)).update(
+															numero_oficio 	= form.cleaned_data['numero_oficio'],
+															proyecto 		= form.cleaned_data['proyecto'],
+															responsable 	= form.cleaned_data['responsable'],
+															status 			= form.cleaned_data['status'],
+															)
+				archivo = form.cleaned_data['archivo']
+				if archivo:
+					if propuesta.archivo and os.path.isfile(propuesta.archivo.path):
+						os.remove(propuesta.path.file)	
+					propuesta.archivo = archivo
+					propuesta.save()
+
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "Los datos no pudieron ser actualizados."
+			else:
+				mensaje = "Datos actualizados correctamente."
+		else:
+			mensaje = "Por favor, proporcione los datos correctos."
+	else:
+		mensaje = ""
+		form=RegistrarPropuestaForm(model_to_dict(propuesta))
+	return render(request, 'inicio/propuesta_edit.html', {'form': form, 'propuesta': propuesta, 'mensaje': mensaje})
+
+@login_required(login_url='/')
+def editar_propuesta_1(request, pk):
+	propuesta = Propuestas.objects.get(id=int(pk))
+
+	if request.method=="POST":
+		form = RegistrarPropuestaForm(request.POST)
+		if form.is_valid():
+			try:
+				Propuestas.objects.filter(id=int(pk)).update(
+															numero_oficio 	= form.cleaned_data['numero_oficio'],
+															proyecto 		= form.cleaned_data['proyecto'],
+															responsable 	= form.cleaned_data['responsable'],
+															)
+
+				return render(request, "inicio/modal_ok.html", {'cabecera':"Operación exitosa", 'mensaje':"Los campos fueron actualizados correctamente"})
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "El convenio no pudo ser actualizado"
+		else:
+			mensaje = "Los datos son invalidos"
+	else:
+		mensaje = ''
+		form=RegistrarPropuestaForm(model_to_dict(propuesta))
+
+	return render(request, 'inicio/propuesta_edit_1.html', {'form': form, 'id': propuesta.id, 'mensaje': mensaje})	
+
+@login_required(login_url='/')
+def eliminar_propuesta(request):
+	import json
+
+	if not request.is_ajax():
+		raise Http404
+
+	pk = request.POST.get('pk')
+
+	try:
+		propuesta = Propuestas.objects.filter(id=pk).update(habilitado=False)
+	except Exception, e:
+		print "Error: ", e
+		mensaje = {'mensaje': "Fallo la operación", 'error': True}
+	else:
+		mensaje = {'mensaje': "Operación exitosa", 'error': False}
+
+	content = json.dumps(mensaje)
+	http_response = HttpResponse(content, content_type="application/json")
+
+	return http_response
 
 #
 #==================OPERACIONES DE DOCS GENERALES========================
 #
+
 @login_required(login_url='/')
 def docs_generales(request):
 	docs_generales_list = DocumentosGenerales.objects.all().order_by('-fecha_creacion')
@@ -1648,40 +1878,47 @@ def crear_doc_general(request):
 	if request.method=="POST":
 		form = RegistrarDocGeneralForm(request.POST)
 		if form.is_valid():
-			doc_general = DocumentosGenerales.objects.create(
-															proyecto 	= form.cleaned_data['proyecto'], 
-															clave 		= form.cleaned_data['clave'],
-															)
-
-			mensaje = "El documento ha sido creado exitosamente"
-			return HttpResponseRedirect('/administracion/doc_generales/')
+			try:
+				doc_general = DocumentosGenerales.objects.create(
+																entidad 	= form.cleaned_data['entidad'], 
+																clave 		= form.cleaned_data['clave'],
+																)
+			except Exception as e:
+				print "Error: ", e
+				mensaje = "Algo fallo al guardar el registro, favor de reportarlo al area de sistemas."
+			else:
+				mensaje = "El doc. general ha sido creado exitosamente."
+				return HttpResponseRedirect('/administracion/editar_doc_general/'+str(doc_general.id)+'/')
 		else:
-			print "No paso"
+			mensaje = "Por favor, proporcione los datos correctos."
 	else:
+		mensaje = ""		
 		form=RegistrarDocGeneralForm()
-	return render(request, 'inicio/doc_general_create.html', {'form': form})
+	return render(request, 'inicio/doc_general_create.html', {'form': form, 'mensaje': mensaje})
 
 @login_required(login_url='/')
 def editar_doc_general(request, pk):
+	doc_general = DocumentosGenerales.objects.get(id=int(pk))
+
 	if request.method=="POST":
 		form = RegistrarDocGeneralForm(request.POST)
 		if form.is_valid():
 			try:
 				DocumentosGenerales.objects.filter(id=int(pk)).update(
-																		proyecto 	= form.cleaned_data['proyecto'],
+																		entidad 	= form.cleaned_data['entidad'], 
 																		clave 		= form.cleaned_data['clave'],
 																	)
-
-				return HttpResponseRedirect('/administracion/doc_generales/')
 			except Exception, e:				
 				print "Error: ", e
-				mensaje = "El entregable no pudo ser actualizado"
+				mensaje = "Los datos no pudieron ser actualizados."
+			else:
+				mensaje = "Datos actualizados correctamente."
 		else:
-			print "No paso"
+			mensaje = "Por favor, proporcione los datos correctos."
 	else:
-		doc_general = DocumentosGenerales.objects.get(id=int(pk))
+		mensaje = ""
 		form=RegistrarDocGeneralForm(model_to_dict(doc_general))
-	return render(request, 'inicio/doc_general_edit.html', {'form': form})
+	return render(request, 'inicio/doc_general_edit.html', {'form': form, 'mensaje':mensaje})
 
 @login_required(login_url='/')
 def editar_doc_general_1(request, pk):
@@ -1695,7 +1932,7 @@ def editar_doc_general_1(request, pk):
 		if form.is_valid():
 			try:
 				DocumentosGenerales.objects.filter(id=int(pk)).update(
-																	proyecto 	= form.cleaned_data['proyecto'], 
+																	entidad 	= form.cleaned_data['entidad'], 
 																	clave 		= form.cleaned_data['clave'],
 																	)
 
@@ -1713,6 +1950,7 @@ def editar_doc_general_1(request, pk):
 #
 #==================OPERACIONES DE DETALLES DE DOCUMENTOS GENERALES========================
 #
+
 @login_required(login_url='/')
 def detalle_docs_generales(request):
 	detalle_docs_generales_list = DetallesDocumentosGenerales.objects.all().order_by('-fecha_creacion')
@@ -1743,25 +1981,34 @@ def crear_detalle_doc_general(request):
 	if request.method=="POST":
 		form = RegistrarDetalleDocGeneralForm(request.POST, request.FILES)
 		if form.is_valid():
-			detalle_doc_general = DetallesDocumentosGenerales.objects.create(
-																			documentos_generales 	= form.cleaned_data['documentos_generales'],
-																			responsable 			= form.cleaned_data['responsable'],
-																			numero 					= form.cleaned_data['numero'],
-																			nombre 					= form.cleaned_data['nombre'],
-																			siglas 					= form.cleaned_data['siglas'],
-																			archivo 				= form.cleaned_data['archivo'],
-																			)
-
-			mensaje = "El detalle ha sido creado exitosamente"
-			return HttpResponseRedirect('/administracion/detalle_docs_generales/')
+			try:				
+				detalle_doc_general = DetallesDocumentosGenerales.objects.create(
+																				documentos_generales 	= form.cleaned_data['documentos_generales'],
+																				responsable 			= form.cleaned_data['responsable'],
+																				nombre 					= form.cleaned_data['nombre'],
+																				status 					= form.cleaned_data['status'],
+																				)
+				archivo = form.cleaned_data['archivo']
+				if archivo:
+					detalle_doc_general.archivo = archivo
+					detalle_doc_general.save()
+			except Exception as e:
+				print "Error: ", e
+				mensaje = "Algo fallo al guardar el registro, favor de reportarlo al area de sistemas."
+			else:
+				mensaje = "El detalle ha sido creado exitosamente."
+				return HttpResponseRedirect('/administracion/editar_detalle_doc_general/'+str(detalle_doc_general.id)+'/')
 		else:
-			print "No paso"
+			mensaje = "Por favor, proporcione los datos correctos."
 	else:
+		mensaje = ""
 		form=RegistrarDetalleDocGeneralForm()
 	return render(request, 'inicio/detalle_doc_general_create.html', {'form': form})
 
 @login_required(login_url='/')
 def editar_detalle_doc_general(request, pk):
+	detalle_doc_general = DetallesDocumentosGenerales.objects.get(id=int(pk))
+
 	if request.method=="POST":
 		form = RegistrarDetalleDocGeneralForm(request.POST, request.FILES)
 		if form.is_valid():
@@ -1769,22 +2016,27 @@ def editar_detalle_doc_general(request, pk):
 				DetallesDocumentosGenerales.objects.filter(id=int(pk)).update(
 																			documentos_generales 	= form.cleaned_data['documentos_generales'],
 																			responsable 			= form.cleaned_data['responsable'],
-																			numero 					= form.cleaned_data['numero'],
 																			nombre 					= form.cleaned_data['nombre'],
-																			siglas 					= form.cleaned_data['siglas'],
-																			archivo 				= form.cleaned_data['archivo'],
+																			status 					= form.cleaned_data['status'],
 																			)
-				return HttpResponseRedirect('/administracion/detalle_docs_generales/')
+				archivo = form.cleaned_data['archivo']
+				if archivo:
+					if detalle_doc_general.archivo and os.path.isfile(detalle_doc_general.archivo.path):
+						os.remove(detalle_doc_general.archivo.path)
+					detalle_doc_general.archivo = archivo
+					detalle_doc_general.save()
+
 			except Exception, e:				
 				print "Error: ", e
-				mensaje = "El entregable no pudo ser actualizado"
+				mensaje = "Los datos no pudieron ser actualizados."
+			else:
+				mensaje = "Datos actualizados correctamente."
 		else:
-			mensaje = "Los datos son invalidos."
-			print "No paso"
+			mensaje = "Por favor, proporcione los datos correctos."
 	else:
-		detalle_doc_general = DetallesDocumentosGenerales.objects.get(id=int(pk))
+		mensaje = ""
 		form=RegistrarDetalleDocGeneralForm(model_to_dict(detalle_doc_general))
-	return render(request, 'inicio/detalle_doc_general_edit.html', {'form': form})
+	return render(request, 'inicio/detalle_doc_general_edit.html', {'form': form, 'mensaje': mensaje, 'detalle_doc_general': detalle_doc_general})
 
 @login_required(login_url='/')
 def editar_detalle_doc_general_1(request, pk):
@@ -1812,187 +2064,459 @@ def editar_detalle_doc_general_1(request, pk):
 		form=RegistrarDetalleDocGeneralForm(model_to_dict(detalle_doc_general))
 	return render(request, 'inicio/detalle_doc_general_edit_1.html', {'form': form, 'id': detalle_doc_general.id, 'mensaje': mensaje})
 
+
 #
-#==================OPERACIONES DE DETALLES DE DOCUMENTOS RESPONSIVA========================
+#==================OPERACIONES DE ENTIDADES========================
 #
 
 @login_required(login_url='/')
-def detalle_doc_responsiva(request):
-	detalle_doc_responsiva_list = DetalleDocumentoResponsiva.objects.all()
+def entidades(request):
+	entidades_list = Entidades.objects.filter(habilitado=True).order_by('-fecha_creacion')
 
-	paginator = Paginator(detalle_doc_responsiva_list, 9)
+	paginator = Paginator(entidades_list, 9)
 	page = request.GET.get('page', 1)
 
 	try:
-		detalles_doc_responsiva = paginator.page(page)
+		entidades = paginator.page(page)
 	except PageNotAnInteger:
-		detalles_doc_responsiva = paginator.page(1)
+		entidades = paginator.page(1)
 	except EmptyPage:
-		detalles_doc_responsiva = paginator.page(paginator.num_pages)
+		entidades = paginator.page(paginator.num_pages)
 
-	return render(request, 'inicio/detalles_doc_responsiva.html', {'detalles_doc_responsiva':detalles_doc_responsiva}, context_instance=RequestContext(request))
+	return render(request, 'inicio/entidades.html', {'entidades':entidades}, context_instance=RequestContext(request))
 
-class DetalleDocsResponsivaDetailView(DetailView):
+class EntidadDetailView(DetailView):
 	
-	template_name = "inicio/detalle_doc_responsiva_detail.html"
-	model = DetalleDocumentoResponsiva
+	template_name = "inicio/entidad_detail.html"
+	model = Entidades
 
 	def get_object(self):
-		object = super(DetalleDocsResponsivaDetailView, self).get_object()
+		object = super(EntidadDetailView, self).get_object()
 		return object
 
 @login_required(login_url='/')
-def crear_detalle_doc_responsiva(request):
+def crear_entidad(request):
 	if request.method=="POST":
-		form = RegistrarDetalleDocResponsivaForm(request.POST, request.FILES)
-		if form.is_valid():
-			detalle_doc_responsiva = DetalleDocumentoResponsiva.objects.create(
-																				personal 						= form.cleaned_data['personal'],
-																				archivo_documento_responsiva 	= form.cleaned_data['archivo_documento_responsiva'],
-																				)
-
-			mensaje = "El detalle ha sido creado exitosamente"
-			return HttpResponseRedirect('/administracion/detalles_doc_responsiva/')
-		else:
-			print "No paso"
-	else:
-		form=RegistrarDetalleDocResponsivaForm()
-	return render(request, 'inicio/detalle_doc_responsiva_create.html', {'form': form})
-
-@login_required(login_url='/')
-def editar_detalle_doc_responsiva(request, pk):
-	if request.method=="POST":
-		form = RegistrarDetalleDocResponsivaForm(request.POST, request.FILES)
+		form = RegistrarEntidadForm(request.POST)
 		if form.is_valid():
 			try:
-				DetalleDocumentoResponsiva.objects.filter(id=int(pk)).update(
-																			personal 						= form.cleaned_data['personal'],
-																			archivo_documento_responsiva 	= form.cleaned_data['archivo_documento_responsiva'],
-																			)
+				entidad = Entidades.objects.create(
+													nombre 	= form.cleaned_data['nombre'],
+													siglas 	= form.cleaned_data['siglas'], 
+													tipo 	= form.cleaned_data['tipo'],
+													)
+			except Exception as e:
+				print "Error: ", e
+				mensaje = "Algo fallo al guardar el registro, favor de reportarlo al area de sistemas."
+			else:
+				mensaje = "La entidad ha sido creada exitosamente."
+				return HttpResponseRedirect('/administracion/editar_entidad/'+str(entidad.id)+'/')
+		else:
+			mensaje = "Por favor, proporcione los datos correctos."
+	else:
+		mensaje = ""
+		form=RegistrarEntidadForm()
+	return render(request, 'inicio/entidad_create.html', {'form': form, 'mensaje': mensaje})
 
-				return HttpResponseRedirect('/administracion/detalles_doc_responsiva/')
+@login_required(login_url='/')
+def editar_entidad(request, pk):
+	entidad = Entidades.objects.get(id=int(pk))
+	if request.method=="POST":
+		form = RegistrarEntidadForm(request.POST)
+		if form.is_valid():
+			try:
+				Entidades.objects.filter(id=int(pk)).update(
+															nombre 	= form.cleaned_data['nombre'],
+															siglas 	= form.cleaned_data['siglas'], 
+															tipo 	= form.cleaned_data['tipo'],
+															)
+
 			except Exception, e:				
 				print "Error: ", e
-				mensaje = "El entregable no pudo ser actualizado"
+				mensaje = "Los datos no pudieron ser actualizados."
+			else:
+				mensaje = "Datos actualizados correctamente."
 		else:
-			print "No paso"
+			mensaje = "Por favor, proporcione los datos correctos."
 	else:
-		detalle_doc_general = DetalleDocumentoResponsiva.objects.get(id=int(pk))
-		form=RegistrarDetalleDocResponsivaForm(model_to_dict(detalle_doc_general))
-	return render(request, 'inicio/detalle_doc_responsiva_edit.html', {'form': form})
+		mensaje = ""
+		form=RegistrarEntidadForm(model_to_dict(entidad))
+	entidades_proyectos = EntidadProyecto.objects.filter(entidad=entidad)
+	return render(request, 'inicio/entidad_edit.html', {'form': form,'mensaje':mensaje, 'entidades_proyectos': entidades_proyectos})	
 
 @login_required(login_url='/')
-def editar_detalle_doc_responsiva_1(request, pk):
-	detalle_doc_responsiva = DetalleDocumentoResponsiva.objects.get(id=int(pk))
+def eliminar_entidad(request):
+	import json
+
+	if not request.is_ajax():
+		raise Http404
+
+	pk = request.POST.get('pk')
+
+	try:
+		entidad = Entidades.objects.filter(id=pk).update(habilitado=False)
+	except Exception, e:
+		print "Error: ", e
+		mensaje = {'mensaje': "Fallo la operación", 'error': True}
+	else:
+		mensaje = {'mensaje': "Operación exitosa", 'error': False}
+
+	content = json.dumps(mensaje)
+	http_response = HttpResponse(content, content_type="application/json")
+
+	return http_response
+
+#
+#==================OPERACIONES DE ENTIDADES PROYECTO========================
+#
+
+@login_required(login_url='/')
+def entidades_proyecto(request):
+	entidades_proyecto_list = EntidadProyecto.objects.all()
+	
+	paginator = Paginator(entidades_proyecto_list, 9)
+	page = request.GET.get('page', 1)
+
+	try:
+		entidades_proyecto = paginator.page(page)
+	except PageNotAnInteger:
+		entidades_proyecto = paginator.page(1)
+	except EmptyPage:
+		entidades_proyecto = paginator.page(paginator.num_pages)
+
+	return render(request, 'inicio/entidades_proyecto.html', {'entidades_proyecto':entidades_proyecto}, context_instance=RequestContext(request))
+
+class EntidadProyectoDetailView(DetailView):
+	
+	template_name = "inicio/entidad_proyecto_detail.html"
+	model = EntidadProyecto
+
+	def get_object(self):
+		object = super(EntidadProyectoDetailView, self).get_object()
+		return object
+
+@login_required(login_url='/')
+def crear_entidad_proyecto(request):
 	if request.method=="POST":
-		form = RegistrarDetalleDocResponsivaForm(request.POST, request.FILES)
+		form = RegistrarEntidadProyectoForm(request.POST)
 		if form.is_valid():
 			try:
-				DetalleDocumentoResponsiva.objects.filter(id=int(pk)).update(
-																			personal 						= form.cleaned_data['personal'],
-																			archivo_documento_responsiva 	= form.cleaned_data['archivo_documento_responsiva'],
-																			)
+				entidad_proyecto = EntidadProyecto.objects.create(
+														entidad 	= form.cleaned_data['entidad'],
+														proyecto 	= form.cleaned_data['proyecto'],
+														porcentaje  = form.cleaned_data['porcentaje'],
+														)
+			except Exception as e:
+				print "Error: ", e
+				mensaje = "Algo fallo al guardar el registro, favor de reportarlo al area de sistemas."
+			else:
+				mensaje = "La relación ha sido creada exitosamente."
+				return HttpResponseRedirect('/administracion/editar_entidad_proyecto/'+str(entidad_proyecto.id)+'/')
+		else:
+			mensaje = "Por favor, proporcione los datos correctos."
+	else:
+		mensaje = ""
+		form=RegistrarEntidadProyectoForm()
+	return render(request, 'inicio/entidad_proyecto_create.html', {'form': form, 'mensaje': mensaje})
+
+@login_required(login_url='/')
+def editar_entidad_proyecto(request, pk):
+	if request.method=="POST":
+		form = RegistrarEntidadProyectoForm(request.POST)
+		if form.is_valid():
+			try:
+				EntidadProyecto.objects.filter(id=int(pk)).update(
+													entidad 	= form.cleaned_data['entidad'],
+													proyecto 	= form.cleaned_data['proyecto'],
+													porcentaje  = form.cleaned_data['porcentaje'],
+															)
+
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "Los datos no pudieron ser actualizados."
+			else:
+				mensaje = "Datos actualizados correctamente."
+		else:
+			mensaje = "Por favor, proporcione los datos correctos."
+	else:
+		mensaje = ""
+		entidad_proyecto = EntidadProyecto.objects.get(id=int(pk))
+		form=RegistrarEntidadProyectoForm(model_to_dict(entidad_proyecto))
+	return render(request, 'inicio/entidad_proyecto_edit.html', {'form': form, 'mensaje':mensaje})	
+
+@login_required(login_url='/')
+def editar_entidad_proyecto_1(request, pk):
+	entidad_proyecto = EntidadProyecto.objects.get(id=int(pk))
+	if request.method=="POST":
+		form = RegistrarEntidadProyectoForm(request.POST)
+		if form.is_valid():
+			try:
+				EntidadProyecto.objects.filter(id=int(pk)).update(
+													entidad 	= form.cleaned_data['entidad'],
+													proyecto 	= form.cleaned_data['proyecto'],
+													porcentaje  = form.cleaned_data['porcentaje'],
+															)
+
 				return render(request, "inicio/modal_ok.html", {'cabecera':"Operación exitosa", 'mensaje':"Los campos fueron actualizados correctamente"})
 			except Exception, e:				
 				print "Error: ", e
-				mensaje = "El detalle no pudo ser actualizado"
+				mensaje = "Entidad-proyecto no pudo ser actualizada"
 		else:
 			mensaje = "Los datos son invalidos"
 	else:
 		mensaje = ""
-		form=RegistrarDetalleDocResponsivaForm(model_to_dict(detalle_doc_responsiva))
-	return render(request, 'inicio/detalle_doc_responsiva_edit_1.html', {'form': form, 'id': detalle_doc_responsiva.id, 'mensaje': mensaje})
-
+		form=RegistrarEntidadProyectoForm(model_to_dict(entidad_proyecto))
+	return render(request, 'inicio/entidad_proyecto_edit_1.html', {'form': form, 'id': entidad_proyecto.id, 'mensaje':mensaje})
 
 #
-#==================OPERACIONES DE DETALLE DE PAGO EMPLEADO========================
+#==================OPERACIONES DE PAGOS========================
 #
+
 @login_required(login_url='/')
-def detalles_pago_empleado(request):
-	detalles_pago_empleado_list = DetallePagoEmpleado.objects.all()
+def pagos(request):
+	pagos_list = Pagos.objects.all().order_by('fecha_pago')
 
-	paginator = Paginator(detalles_pago_empleado_list, 9)
+	paginator = Paginator(pagos_list, 9)
 	page = request.GET.get('page', 1)
 
 	try:
-		detalles_pago_empleado = paginator.page(page)
+		pagos = paginator.page(page)
 	except PageNotAnInteger:
-		detalles_pago_empleado = paginator.page(1)
+		pagos = paginator.page(1)
 	except EmptyPage:
-		detalles_pago_empleado = paginator.page(paginator.num_pages)
+		pagos = paginator.page(paginator.num_pages)
 
-	return render(request, 'inicio/detalles_pago_empleado.html', {'detalles_pago_empleado':detalles_pago_empleado}, context_instance=RequestContext(request))
+	return render(request, 'inicio/pagos.html', {'pagos':pagos}, context_instance=RequestContext(request))
 
-class DetallePagoEmpleadoDetailView(DetailView):
+class PagoDetailView(DetailView):
 	
-	template_name = "inicio/detalle_pago_empleado_detail.html"
-	model = DetallePagoEmpleado
+	template_name = "inicio/pago_detail.html"
+	model = Pagos
 
 	def get_object(self):
-		object = super(DetallePagoEmpleadoDetailView, self).get_object()
+		object = super(PagoDetailView, self).get_object()
 		return object
 
 @login_required(login_url='/')
-def crear_detalle_pago_empleado(request):
+def crear_pago(request):
 	if request.method=="POST":
-		form = RegistrarPagoEmpleadoForm(request.POST, request.FILES)
-		if form.is_valid():
-			detalle_pago_empleado = DetallePagoEmpleado.objects.create(
-																	personal 					= form.cleaned_data['personal'],
-																	responsable 				= form.cleaned_data['responsable'],
-																	archivo_documento_de_pago 	= form.cleaned_data['archivo_documento_de_pago'],
-																	)
-
-			mensaje = "El detalle ha sido creado exitosamente"
-			return HttpResponseRedirect('/administracion/detalles_pago_empleado/')
-		else:
-			print "No paso"
-	else:
-		form=RegistrarPagoEmpleadoForm()
-	return render(request, 'inicio/detalle_pago_empleado_create.html', {'form': form})
-
-@login_required(login_url='/')
-def editar_detalle_pago_empleado(request, pk):
-	if request.method=="POST":
-		form = RegistrarPagoEmpleadoForm(request.POST, request.FILES)
+		form = RegistrarPagoForm(request.POST)
 		if form.is_valid():
 			try:
-				DetallePagoEmpleado.objects.filter(id=int(pk)).update(
-																	personal 					= form.cleaned_data['personal'],
-																	responsable 				= form.cleaned_data['responsable'],
-																	archivo_documento_de_pago 	= form.cleaned_data['archivo_documento_de_pago'],
-																	)
+				pago = Pagos.objects.create(
+											proyecto 	= form.cleaned_data['proyecto'],
+											monto_total = form.cleaned_data['monto_total'],
+											fecha_pago 	= form.cleaned_data['fecha_pago'],
+	  									  )
 
-				return HttpResponseRedirect('/administracion/detalles_pago_empleado/')
+			except Exception as e:
+				print "Error: ", e
+				mensaje = "Algo fallo al guardar el registro, favor de reportarlo al area de sistemas."
+			else:
+				mensaje = "El pago ha sido creado exitosamente."
+				return HttpResponseRedirect('/administracion/editar_pago/'+str(pago.id)+'/')
+		else:
+			mensaje = "Por favor, proporcione los datos correctos."
+	else:
+		mensaje = ""
+		form=RegistrarPagoForm()
+	return render(request, 'inicio/pago_create.html', {'form': form, 'mensaje': mensaje})
+
+@login_required(login_url='/')
+def editar_pago(request, pk):
+	pago = Pagos.objects.get(id=int(pk))
+	if request.method=="POST":
+		form = RegistrarPagoForm(request.POST)
+		if form.is_valid():
+			try:
+				Pagos.objects.filter(id=int(pk)).update(
+														proyecto 	= form.cleaned_data['proyecto'],
+														monto_total = form.cleaned_data['monto_total'],
+														fecha_pago 	= form.cleaned_data['fecha_pago'],
+														)
+
 			except Exception, e:				
 				print "Error: ", e
-				mensaje = "El detalle no pudo ser actualizado"
+				mensaje = "Los datos no pudieron ser actualizados."
+			else:
+				mensaje = "Datos actualizados correctamente."
 		else:
-			print "No paso"
+			mensaje = "Por favor, proporcione los datos correctos."
 	else:
-		detalle_pago_empleado = DetallePagoEmpleado.objects.get(id=int(pk))
-		form=RegistrarPagoEmpleadoForm(model_to_dict(detalle_pago_empleado))
-	return render(request, 'inicio/detalle_pago_empleado_edit.html', {'form': form})
+		mensaje = ""
+		form=RegistrarPagoForm(model_to_dict(pago))
+	detalles_pago = DetallePagos.objects.filter(pago=pago)
+
+	return render(request, 'inicio/pago_edit.html', {'form': form, 'mensaje': mensaje, 'detalles_pago':detalles_pago})
 
 @login_required(login_url='/')
-def editar_detalle_pago_empleado_1(request, pk):
-	detalle_pago_empleado = DetallePagoEmpleado.objects.get(id=int(pk))
+def editar_pago_1(request, pk):
+	pago = Pagos.objects.get(id=int(pk))
+
 	if request.method=="POST":
-		form = RegistrarPagoEmpleadoForm(request.POST, request.FILES)
+		form = RegistrarPagoForm(request.POST)
 		if form.is_valid():
 			try:
-				DetallePagoEmpleado.objects.filter(id=int(pk)).update(
-																	personal 					= form.cleaned_data['personal'],
-																	responsable 				= form.cleaned_data['responsable'],
-																	archivo_documento_de_pago 	= form.cleaned_data['archivo_documento_de_pago'],
-																	)
+				Pagos.objects.filter(id=int(pk)).update(
+														proyecto 	= form.cleaned_data['proyecto'],
+														monto_total = form.cleaned_data['monto_total'],
+														fecha_pago 	= form.cleaned_data['fecha_pago'],
+														)
+
 				return render(request, "inicio/modal_ok.html", {'cabecera':"Operación exitosa", 'mensaje':"Los campos fueron actualizados correctamente"})
 			except Exception, e:				
 				print "Error: ", e
-				mensaje = "El detalle no pudo ser actualizado"
+				mensaje = "El pago no pudo ser actualizado"
 		else:
-			mensaje = "Los datos son invalidos"
+			mensaje = "Proporcione los datos correctos."
 	else:
 		mensaje = ""
-		form=RegistrarPagoEmpleadoForm(model_to_dict(detalle_pago_empleado))
-	return render(request, 'inicio/detalle_pago_empleado_edit_1.html', {'form': form, 'id': detalle_pago_empleado.id, 'mensaje': mensaje})
+		form=RegistrarPagoForm(model_to_dict(pago))
+	return render(request, 'inicio/pago_edit_1.html', {'form': form, 'id': pago.id, 'mensaje': mensaje})
+
+#
+#==================OPERACIONES DE DETALLE DE PAGOS========================
+#
+
+@login_required(login_url='/')
+def detalle_pagos(request):
+	detalle_pagos_list = DetallePagos.objects.all().order_by('fecha_pago')
+
+	paginator = Paginator(detalle_pagos_list, 9)
+	page = request.GET.get('page', 1)
+
+	try:
+		detalle_pagos = paginator.page(page)
+	except PageNotAnInteger:
+		detalle_pagos = paginator.page(1)
+	except EmptyPage:
+		detalle_pagos = paginator.page(paginator.num_pages)
+
+	return render(request, 'inicio/detalle_pagos.html', {'detalle_pagos':detalle_pagos}, context_instance=RequestContext(request))
+
+class DetallePagosDetailView(DetailView):
+	
+	template_name = "inicio/detalle_pago_detail.html"
+	model = DetallePagos
+
+	def get_object(self):
+		object = super(DetallePagosDetailView, self).get_object()
+		return object
+
+@login_required(login_url='/')
+def crear_detalle_pago(request):
+	if request.method=="POST":
+		form = RegistrarDetallePagoForm(request.POST, request.FILES)
+		if form.is_valid():
+			try:
+				detalle_pago = DetallePagos.objects.create(
+															entregable 			= form.cleaned_data['entregable'],
+															pago 				= form.cleaned_data['pago'],
+															detalle_pago 		= form.cleaned_data['detalle_pago'],
+															nombre_pago_origen 	= form.cleaned_data['nombre_pago_origen'],
+															siglas_pago_origen	= form.cleaned_data['siglas_pago_origen'],
+															nombre_pago_destino	= form.cleaned_data['nombre_pago_destino'],
+															siglas_pago_destino	= form.cleaned_data['siglas_pago_destino'],
+															fecha_pago			= form.cleaned_data['fecha_pago'],
+															monto 				= form.cleaned_data['monto'],
+															porcentaje_de_pago	= form.cleaned_data['porcentaje_de_pago'],
+															tipo_de_pago		= form.cleaned_data['tipo_de_pago'],
+															responsable 		= form.cleaned_data['responsable'],
+															pagado 				= form.cleaned_data['pagado'],
+					  									  )
+
+				documento_deposito = form.cleaned_data['documento_deposito']
+				if documento_deposito:
+					detalle_pago.documento_deposito = documento_deposito
+					detalle_pago.save()
+
+			except Exception as e:
+				print "Error: ", e
+				mensaje = "Algo fallo al guardar el registro, favor de reportarlo al area de sistemas."
+			else:
+				mensaje = "El detalle ha sido creado exitosamente."
+				return HttpResponseRedirect('/administracion/editar_detalle_pago/'+str(detalle_pago.id)+'/')
+		else:
+			mensaje = "Por favor, proporcione los datos correctos."
+	else:
+		mensaje = ""
+		form=RegistrarDetallePagoForm()
+	return render(request, 'inicio/detalle_pago_create.html', {'form': form, 'mensaje': mensaje})
+
+@login_required(login_url='/')
+def editar_detalle_pago(request, pk):
+	detalle_pago = DetallePagos.objects.get(id=int(pk))
+	if request.method=="POST":
+		form = RegistrarDetallePagoForm(request.POST, request.FILES)
+		if form.is_valid():
+			try:
+				DetallePagos.objects.filter(id=int(pk)).update(
+														entregable 			= form.cleaned_data['entregable'],
+														pago 				= form.cleaned_data['pago'],
+														detalle_pago 		= form.cleaned_data['detalle_pago'],
+														nombre_pago_origen 	= form.cleaned_data['nombre_pago_origen'],
+														siglas_pago_origen	= form.cleaned_data['siglas_pago_origen'],
+														nombre_pago_destino	= form.cleaned_data['nombre_pago_destino'],
+														siglas_pago_destino	= form.cleaned_data['siglas_pago_destino'],
+														fecha_pago			= form.cleaned_data['fecha_pago'],
+														monto 				= form.cleaned_data['monto'],
+														porcentaje_de_pago	= form.cleaned_data['porcentaje_de_pago'],
+														tipo_de_pago		= form.cleaned_data['tipo_de_pago'],
+														responsable 		= form.cleaned_data['responsable'],
+														pagado 				= form.cleaned_data['pagado'],
+														)
+				
+				documento_deposito	= form.cleaned_data['documento_deposito']
+				if documento_deposito:
+					if detalle_pago.documento_deposito and os.path.isfile(detalle_pago.documento_deposito.path):
+						os.remove(detalle_pago.documento_deposito.path)
+					detalle_pago.documento_deposito = documento_deposito
+					detalle_pago.save() 
+
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "Los datos no pudieron ser actualizados."
+			else:
+				mensaje = "Datos actualizados correctamente."
+		else:
+			mensaje = "Por favor, proporcione los datos correctos."
+	else:
+		mensaje = ""
+		form=RegistrarDetallePagoForm(model_to_dict(detalle_pago))
+	return render(request, 'inicio/detalle_pago_edit.html', {'form': form, 'mensaje': mensaje, 'detalle_pago': detalle_pago})
+
+@login_required(login_url='/')
+def editar_detalle_pago_1(request, pk):
+	detalle_pago = DetallePagos.objects.get(id=int(pk))
+
+	if request.method=="POST":
+		form = RegistrarDetallePagoForm(request.POST, request.FILES)
+		if form.is_valid():
+			try:
+				DetallePagos.objects.filter(id=int(pk)).update(
+														entregable 			= form.cleaned_data['entregable'],
+														pago 				= form.cleaned_data['pago'],
+														detalle_pago 		= form.cleaned_data['detalle_pago'],														
+														nombre_pago_origen 	= form.cleaned_data['nombre_pago_origen'],
+														siglas_pago_origen	= form.cleaned_data['siglas_pago_origen'],
+														nombre_pago_destino	= form.cleaned_data['nombre_pago_destino'],
+														siglas_pago_destino	= form.cleaned_data['siglas_pago_destino'],
+														fecha_pago			= form.cleaned_data['fecha_pago'],
+														monto 				= form.cleaned_data['monto'],
+														porcentaje_de_pago	= form.cleaned_data['porcentaje_de_pago'],
+														tipo_de_pago		= form.cleaned_data['tipo_de_pago'],
+														documento_deposito	= form.cleaned_data['documento_deposito'],
+														responsable 		= form.cleaned_data['responsable'],
+														pagado 				= form.cleaned_data['pagado'],
+														)
+
+				return render(request, "inicio/modal_ok.html", {'cabecera':"Operación exitosa", 'mensaje':"Los campos fueron actualizados correctamente"})
+			except Exception, e:				
+				print "Error: ", e
+				mensaje = "El detalle de pago no pudo ser actualizado"
+		else:
+			mensaje = "Proporcione los datos correctos."
+	else:
+		mensaje = ""
+		form=RegistrarDetallePagoForm(model_to_dict(detalle_pago))
+	return render(request, 'inicio/detalle_pago_edit_1.html', {'form': form, 'id': detalle_pago.id, 'mensaje': mensaje})

@@ -10,90 +10,21 @@
 			$.fancybox({'content': data,
      					'openEffect': 'elastic',
 						'closeEffect': 'elastic',
-						'afterClose':function(){ window.location.reload();},
 					   });
 		});   	
      }
-
-     function aviso(doc_general_id){
-     	$.fancybox.showLoading();
-     	var data = {mensaje: "¿Está seguro de querer eliminar este documento?"}
-     	$.get('/administracion/modal_aviso/', data, function(response){
-     		$.fancybox({'content': response,
-     					'afterShow':function(){
-     						$('#aceptar').click(function(){
-     								$(this).attr("disabled", "disabled");
-									//$.fancybox.close();
-									eliminar(doc_general_id);
-     						});
-
-     						$("#cancelar").click(function(){
-									$.fancybox.close();
-     						});
-     					},
-     					});
-
-     	});
-     }
-
-     function eliminar(doc_general_id){
-     	$.fancybox.showLoading();
-
-     	var csrfmiddlewaretoken = $("input[name='csrfmiddlewaretoken']").val();
-     	var data = {'pk': doc_general_id, 'csrfmiddlewaretoken': csrfmiddlewaretoken}
-
-     	$.post('/administracion/eliminar_doc_general/', data, function(response){
-     		if(response.error){
-     			$.get('/administracion/modal_error/', {}, function(_response){ 
-					$.fancybox({'content': _response,
-	     					'openEffect': 'elastic',
-							'closeEffect': 'elastic',
-							'afterClose':function(){ window.location.reload();},
-								});
-     			});
-     		}
-     		else{
-     			$.fancybox.showLoading();
-     			$.get('/administracion/modal_ok/', {}, function(_response){
-					$.fancybox({'content': _response,
-	     					'openEffect': 'elastic',
-							'closeEffect': 'elastic',
-							'afterClose':function(){ window.location.reload();},
-							});
-     			});
-     		}
-
-     	});
-     } 
     </script>
     {% endblock %}
 
     {% block extrastyle %}
-    <style>
-    .bienvenida{
-    	padding-right: 15px;
-    }
-    .menu{
-    	padding-left: 15px;
-    	width: 15%;
-    }
-    .panel{
-    	width: 80%;
-    	margin-left: 10%;
-    	margin-right: 10%;
-    }
-    .agregar{
-	    margin-left: 98%;
-	    margin-top: -20px    	
-    }
-    </style>
+	 <link rel="stylesheet" type="text/css" href="{% static "css/list_views.css"%}" media="screen">
     {% endblock %}
-{% block breadcrumbs %}
-<ol class="breadcrumb" style="margin-top:-20px">
-	<li><a href="{% url 'administracion:index' %}">Inicio</a></li>
-	<li class="active">Doc. Generales</li>
-</ol>
-{% endblock %}
+	{% block breadcrumbs %}
+	<ol class="breadcrumb" style="margin-top:-20px">
+		<li><a href="{% url 'administracion:index' %}">Inicio</a></li>
+		<li class="active">Doc. Generales</li>
+	</ol>
+	{% endblock %}
     {% block contenido %}
 	<div class="panel panel-primary">
 	  <!-- Default panel contents -->
@@ -110,7 +41,7 @@
 		<table class="table table-striped">
 			<thead>
 				<tr>
-					<th>Proyecto</th>
+					<th>Entidad</th>
 					<th>Clave</th>
 					<th>Fecha de creación</th>
 					<th>Acciones</th>
@@ -118,7 +49,7 @@
 			</thead>
 			{% for doc in doc_generales %}
 			<tr>
-				<td>{{ doc.proyecto }}</td>
+				<td>{{ doc.entidad }}</td>
 				<td>{{ doc.clave }}</td>
 				<td>{{ doc.fecha_creacion }}</td>
 				<td>

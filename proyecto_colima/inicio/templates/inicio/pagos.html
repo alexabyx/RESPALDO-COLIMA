@@ -1,0 +1,89 @@
+{% extends "inicio/base_colima.html" %}
+{% load i18n %}
+{% load staticfiles %}
+	{% block titulo %}Proyectos{% endblock %}
+	{% block extrascript %}
+    <script>
+     function detalle(pago_id){
+     	$.fancybox.showLoading();
+		$.get('/administracion/detalle_pago/'+pago_id+'/', {}, function(data){ 
+			$.fancybox({'content': data,
+						'openEffect': 'elastic',
+						'closeEffect': 'elastic',
+					   });
+		});   	
+     }
+    </script>
+    {% endblock %}
+
+    {% block extrastyle %}
+	<link rel="stylesheet" type="text/css" href="{% static "css/list_views.css"%}" media="screen">
+    {% endblock %}
+
+	{% block breadcrumbs %}
+	<ol class="breadcrumb" style="margin-top:-20px">
+		<li><a href="{% url 'administracion:index' %}">Inicio</a></li>
+		<li class="active">Pagos</li>
+	</ol>
+	{% endblock %}
+
+    {% block contenido %}
+	<div class="panel panel-primary">
+	  <!-- Default panel contents -->
+	  <div class="panel-heading">
+	  	  	Listado de pagos
+	  <div>
+	  	<a title="Agregar nuevo" href="{% url 'administracion:crear-pago' %}">
+	  		<img class="agregar" src="{% static "icons/agregar.png" %}">
+	  		<!-- <button type="button" class="btn btn-default agregar" />Agregar nuevo</button>-->
+	  	</a>
+	  </div>
+	  </div>
+
+	  <!-- Table -->
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th>Proyecto</th>
+					<th>Monto total</th>
+					<th>Fecha de pago</th>
+					<th>Acciones</th>
+				</tr>
+			</thead>
+			{% for pago in pagos %}
+			<tr>
+				<td>{{ pago.proyecto }}</td>
+				<td>$
+				{%if pago.monto_total%}
+				{{ pago.monto_total }}
+				{% else%}
+				0.00
+				{% endif %}
+				</td>
+				<td>{{ pago.fecha_pago }}</td>
+				<td>
+					{% csrf_token %}
+					<a onClick="detalle({{pago.id}});" title="Consultar">
+						<img src="{% static "icons/consultar.png" %}">
+					</a>&nbsp; &nbsp;
+					<a href="{% url 'administracion:editar-pago' pago.id %}" title="Editar" >
+						<img src="{% static "icons/editar.png" %}"> 
+					</a>
+			</tr>
+			{% endfor %}			
+		</table>
+	</div>	
+	<div>
+		<nav>
+		  <ul class="pager">
+		    {% if pagos.has_previous %}
+	           <li><a href="?page={{ pagos.previous_page_number }}">Anterior</a></li> 
+		    {% endif %}                                    
+			Página {{ pagos.number }} de {{ pagos.paginator.num_pages }}
+		    {% if pagos.has_next %}
+	    		<li><a href="?page={{ pagos.next_page_number }}">Siguiente</a></li>
+		    {% endif %}
+		  </ul>
+		</nav>	
+	</div>
+	{% endblock %}	

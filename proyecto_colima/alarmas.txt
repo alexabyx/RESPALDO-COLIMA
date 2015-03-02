@@ -1,0 +1,31 @@
+Alarmas:
+	Usuario que emite la alarma
+	Fecha de creación
+	Fecha de expiración
+	Ususario receptor de la alarma
+	estado (Revisado, pendiente) (cancelar ... Cerrar la ventanita)
+
+
+
+
+Historico:
+	a todos los modelos
+	
+	Cat_estado_historico
+		1.-Activo
+		2.-Historicos
+		3.-Cancelados
+
+
+DocumentosGenerales
+	ya no referencia a un proyecto, ahora referencia a un entidad
+
+Facturas
+	fecha_factura ---> fecha_emision
++   fecha_entrega 
++   
+
+Detalle PAgos
++	pago 				= models.ForeignKey(Pagos, null=True)
++	detalle_pago 		= models.ForeignKey(DetallePagos, null=True)
+

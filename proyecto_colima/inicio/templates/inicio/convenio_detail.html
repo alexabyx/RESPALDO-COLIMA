@@ -1,6 +1,6 @@
 <style>
 .input-group-addon{
-  width:40%;
+  width:50%;
 }
 </style>
 
@@ -9,6 +9,12 @@
 </div>
 
 <div class="modal-body">
+
+	<div class="input-group">
+	  <span class="input-group-addon" id="basic-addon1">No. de oficio de invitación</span>
+	  <input type="text" class="form-control" readonly="readonly" value="{{object.numero}}" aria-describedby="basic-addon1"><br>
+	</div>
+
 	<div class="input-group">
 	  <span class="input-group-addon" id="basic-addon1">Proyecto</span>
 	  <input type="text" class="form-control" readonly="readonly" value="{{object.proyecto}}" aria-describedby="basic-addon1"><br>
@@ -19,18 +25,24 @@
 	  <input type="text" class="form-control" readonly="readonly" value="{{object.encargado}}" aria-describedby="basic-addon1"><br>
 	</div>
 		<div class="input-group">
-	  <span class="input-group-addon" id="basic-addon1">Creacíon</span>
+	  <span class="input-group-addon" id="basic-addon1">Fecha de creacíon</span>
 	  <input type="text" class="form-control" readonly="readonly" value="{{object.fecha_creacion}}" aria-describedby="basic-addon1"><br>
 	</div>
-		<div class="input-group">
+	<div class="input-group">
 	  <span class="input-group-addon" id="basic-addon1">Archivo</span>
-	  <input type="text" class="form-control" readonly="readonly" value="{{object.archivo}}" aria-describedby="basic-addon1"><br>
+	  {% if object.archivo %}
+		  <a target="_blank" href="{{object.archivo_liga}}">
+		  <input type="text" class="form-control" readonly="readonly" value="{{object.archivo}}" aria-describedby="basic-addon1">
+		  </a>
+	  {% else %}
+	  <input type="text" class="form-control" readonly="readonly" value="{{object.archivo}}" aria-describedby="basic-addon1">
+	  {% endif%} 
+		<br>
 	</div>
-
 </div>
 
 <div class="modal-footer">
 	<center>
-<button type="button" class="btn btn-default" data-dismiss="modal" onclick="javascript: $.fancybox.close()">Aceptar</button>
+		<button type="button" class="btn btn-primary" data-dismiss="modal" onclick="javascript: $.fancybox.close()">Aceptar</button>
 	</center>
-  	
+</div>

@@ -447,3 +447,61 @@
       dataType: 'html'
     });
   }
+  function editarDetallePago(tipo, id){
+    if(tipo == 0){
+      var method = "GET";
+      var data_aux = {};        
+    }
+    else{
+      var method = "POST";
+      var data_aux = $("#formulario").serialize();
+
+      $("#div_confirmacion").css('display', 'none');
+      $("#div_formulario").css('display', 'block');
+    }
+
+    $.ajax({
+      type: method,
+      url: "/administracion/editar_detalle_pago_1/"+id+"/",
+      data: data_aux,
+      'beforeSend': function(data2){
+                    $.fancybox.showLoading();
+                    $("#div_formulario").css('display', 'none');
+                    $("#div_confirmacion").css('display', 'none');
+      },
+      'success': function(data1){
+                    $.fancybox.showLoading();
+                    $.fancybox(data1);
+      },
+      dataType: 'html'
+    });
+  }
+  function editarPago(tipo, id){
+    if(tipo == 0){
+      var method = "GET";
+      var data_aux = {};        
+    }
+    else{
+      var method = "POST";
+      var data_aux = $("#formulario").serialize();
+
+      $("#div_confirmacion").css('display', 'none');
+      $("#div_formulario").css('display', 'block');
+    }
+
+    $.ajax({
+      type: method,
+      url: "/administracion/editar_pago_1/"+id+"/",
+      data: data_aux,
+      'beforeSend': function(data2){
+                    $.fancybox.showLoading();
+                    $("#div_formulario").css('display', 'none');
+                    $("#div_confirmacion").css('display', 'none');
+      },
+      'success': function(data1){
+                    $.fancybox.showLoading();
+                    $.fancybox(data1);
+      },
+      dataType: 'html'
+    });
+  }

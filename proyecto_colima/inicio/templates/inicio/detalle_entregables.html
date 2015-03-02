@@ -10,62 +10,20 @@
 			$.fancybox({'content': data,
 						'openEffect': 'elastic',
 						'closeEffect': 'elastic',
-						'afterClose':function(){ window.location.reload();},
 					   });
 		});   	
      }
-
-     function aviso(detalle_entregable_id){
-     	$.fancybox.showLoading();
-     	var data = {mensaje: "¿Está seguro de querer eliminar este detalle_entregable?"}
-     	$.get('/administracion/modal_aviso/', data, function(response){
-     		$.fancybox({'content': response,
-     					'afterShow':function(){
-     						$('#aceptar').click(function(){
-     								$(this).attr("disabled", "disabled");
-									//$.fancybox.close();
-									eliminar(detalle_entregable_id);
-     						});
-
-     						$("#cancelar").click(function(){
-									$.fancybox.close();
-     						});
-     					},
-     					});
-
-     	});
-     }
-
- 
     </script>
     {% endblock %}
-
     {% block extrastyle %}
-    <style>
-    .bienvenida{
-    	padding-right: 15px;
-    }
-    .menu{
-    	padding-left: 15px;
-    	width: 15%;
-    }
-    .panel{
-    	width: 80%;
-    	margin-left: 10%;
-    	margin-right: 10%;
-    }
-    .agregar{
-	    margin-left: 98%;
-	    margin-top: -20px    	
-    }
-    </style>
+    <link rel="stylesheet" type="text/css" href="{% static "css/list_views.css"%}" media="screen">
     {% endblock %}
-{% block breadcrumbs %}
-<ol class="breadcrumb" style="margin-top:-20px">
-	<li><a href="{% url 'administracion:index' %}">Inicio</a></li>
-	<li class="active">Detalles de entregables</li>
-</ol>
-{% endblock %}
+	{% block breadcrumbs %}
+	<ol class="breadcrumb" style="margin-top:-20px">
+		<li><a href="{% url 'administracion:index' %}">Inicio</a></li>
+		<li class="active">Detalles de entregables</li>
+	</ol>
+	{% endblock %}
     {% block contenido %}
 	<div class="panel panel-primary">
 	  <!-- Default panel contents -->
@@ -84,9 +42,10 @@
 			<thead>
 				<tr>
 					<th>Entregable</th>
-					<th>Nombre</th>
-					<th>No.</th>
-					<th>Creación</th>
+					<th>Nombre del entregable</th>
+					<th>Número del entregable</th>
+					<th>Estatus</th>
+					<th>Fecha de creación</th>
 					<th>Acciones</th>
 				</tr>
 			</thead>
@@ -94,7 +53,8 @@
 			<tr>
 				<td>{{ detalle.entregable }} </td>
 				<td>{{ detalle.nombre }}</td>
-				<td>{{ detalle.numero }}</td>
+				<td>#{{ detalle.numero }}</td>
+				<td>{{ detalle.status_status }}</td>
 				<td>{{ detalle.fecha_creacion }}</td>
 				<td>
 					{% csrf_token %}
